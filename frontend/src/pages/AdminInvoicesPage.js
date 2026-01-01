@@ -158,11 +158,12 @@ const AdminBillingPage = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="pricing" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
             <TabsTrigger value="pricing" data-testid="tab-pricing">Set Up Pricing</TabsTrigger>
             <TabsTrigger value="create" data-testid="tab-create">Create Invoices</TabsTrigger>
             <TabsTrigger value="open" data-testid="tab-open">Open Invoices</TabsTrigger>
             <TabsTrigger value="revenue" data-testid="tab-revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="payment-settings" data-testid="tab-payment-settings">Payment Settings</TabsTrigger>
           </TabsList>
 
           {/* Set Up Pricing Tab */}
