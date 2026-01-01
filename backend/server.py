@@ -1693,14 +1693,34 @@ async def get_conversations(current_user: dict = Depends(get_current_user)):
     return conversations
 
 # Timesheet Routes
-@api_router.get("/timesheets", response_model=List[Timesheet])
+@api_router.get("/timesheets")
 async def get_timesheets(current_user: dict = Depends(get_current_user)):
     query = {}
     if current_user['role'] == 'walker':
         query['walker_id'] = current_user['id']
     
     timesheets = await db.timesheets.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return timesheets
+    
+    # Normalize old and new timesheet formats
+    normalized = []
+    for ts in timesheets:
+        normalized.append({
+            "id": ts.get("id"),
+            "walker_id": ts.get("walker_id"),
+            "period_start": ts.get("period_start") or ts.get("week_start", ""),
+            "period_end": ts.get("period_end") or ts.get("week_end", ""),
+            "total_hours": ts.get("total_hours", 0),
+            "total_walks": ts.get("total_walks", 0),
+            "total_earnings": ts.get("total_earnings", 0),
+            "appointment_ids": ts.get("appointment_ids") or ts.get("appointments", []),
+            "walk_details": ts.get("walk_details", []),
+            "submitted": ts.get("submitted", False),
+            "approved": ts.get("approved", False),
+            "paid": ts.get("paid", False),
+            "created_at": ts.get("created_at")
+        })
+    
+    return normalized
 
 @api_router.get("/payroll/current")
 async def get_current_payroll(current_user: dict = Depends(get_current_user)):
