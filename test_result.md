@@ -316,11 +316,12 @@ metadata:
 test_plan:
   current_focus:
     - "Mobile chat input focus retention"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Mobile chat input focus retention"
   test_all: false
   test_priority: "high_first"
   backend_testing_complete: true
-  frontend_testing_complete: false
+  frontend_testing_complete: true
 
 agent_communication:
   - agent: "main"
