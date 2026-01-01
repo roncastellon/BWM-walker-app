@@ -226,6 +226,24 @@ frontend:
         agent: "testing"
         comment: "✅ PASSED - Chat dropdown working correctly for both Walker and Admin roles. All required filter options present (All Contacts, My Clients, Team). 'All (Team Broadcast)' button found and functional. Filter selection works properly. Team chat opens successfully when clicked."
 
+  - task: "Mobile chat input focus retention"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MessagesPage.js"
+    stuck_count: 3
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported mobile chat input loses focus after typing one character, making keyboard disappear"
+      - working: false
+        agent: "main"
+        comment: "Previous agent implemented multiple fixes including memoized MessageInput component and Layout.js polling skip for messages pages"
+      - working: true
+        agent: "main"
+        comment: "Tested with Playwright mobile viewport (375x812). Typed 'Hello world test' successfully - focus maintained throughout. Fix appears to be working with memoized MessageInput + Layout.js polling skip"
+
   - task: "Calendar appointment click-to-detail modal"
     implemented: true
     working: true
