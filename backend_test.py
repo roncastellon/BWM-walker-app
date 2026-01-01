@@ -328,6 +328,256 @@ class WagWalkAPITester:
             token=self.tokens['client'], description="Get client invoices"
         )
 
+    def test_chat_contacts_endpoint(self):
+        """Test chat contacts endpoint with different filters"""
+        print("\n🔍 Testing Chat Contacts Endpoint...")
+        
+        # Test as walker - should support all, clients, team filters
+        if self.tokens.get('walker'):
+            # Test all contacts
+            self.run_test(
+                "Walker - All Contacts", "GET", "messages/contacts?contact_type=all", 200,
+                token=self.tokens['walker'], description="Walker getting all contacts"
+            )
+            
+            # Test clients filter (My Clients)
+            self.run_test(
+                "Walker - My Clients", "GET", "messages/contacts?contact_type=clients", 200,
+                token=self.tokens['walker'], description="Walker getting client contacts"
+            )
+            
+            # Test team filter
+            self.run_test(
+                "Walker - Team", "GET", "messages/contacts?contact_type=team", 200,
+                token=self.tokens['walker'], description="Walker getting team contacts"
+            )
+        
+        # Test as admin - should support all, clients, team filters
+        if self.tokens.get('admin'):
+            # Test all contacts
+            self.run_test(
+                "Admin - All Contacts", "GET", "messages/contacts?contact_type=all", 200,
+                token=self.tokens['admin'], description="Admin getting all contacts"
+            )
+            
+            # Test clients filter
+            self.run_test(
+                "Admin - Clients", "GET", "messages/contacts?contact_type=clients", 200,
+                token=self.tokens['admin'], description="Admin getting client contacts"
+            )
+            
+            # Test team filter
+            self.run_test(
+                "Admin - Team", "GET", "messages/contacts?contact_type=team", 200,
+                token=self.tokens['admin'], description="Admin getting team contacts"
+            )
+        
+        # Test as client - should only see assigned walker and admins
+        if self.tokens.get('client'):
+            self.run_test(
+                "Client - Contacts", "GET", "messages/contacts", 200,
+                token=self.tokens['client'], description="Client getting available contacts"
+            )
+
+    def test_appointment_detail_endpoint(self):
+        """Test appointment detail endpoint"""
+        print("\n🔍 Testing Appointment Detail Endpoint...")
+        
+        if not self.appointments.get('walk'):
+            print("⚠️  Skipping appointment detail test - no appointment created")
+            return
+            
+        appt_id = self.appointments['walk']['id']
+        
+        # Test getting appointment detail
+        success, response = self.run_test(
+            "Appointment Detail", "GET", f"appointments/{appt_id}/detail", 200,
+            token=self.tokens['client'], description="Get detailed appointment info with client, walker, service, pets"
+        )
+        
+        if success:
+            # Verify response contains expected fields
+            required_fields = ['client', 'service', 'pets']
+            missing_fields = [field for field in required_fields if field not in response]
+            if missing_fields:
+                print(f"⚠️  Missing fields in appointment detail: {missing_fields}")
+            else:
+                print("✅ Appointment detail contains all required fields")
+
+    def test_invoice_detail_endpoint(self):
+        """Test invoice detail endpoint"""
+        print("\n🔍 Testing Invoice Detail Endpoint...")
+        
+        if not self.tokens.get('admin'):
+            print("⚠️  Skipping invoice detail test - no admin token")
+            return
+        
+        # First, get open invoices to find an invoice ID
+        success, invoices = self.run_test(
+            "Get Open Invoices", "GET", "invoices/open", 200,
+            token=self.tokens['admin'], description="Get open invoices for testing"
+        )
+        
+        if success and invoices:
+            invoice_id = invoices[0]['id']
+            
+            # Test getting invoice detail
+            success, response = self.run_test(
+                "Invoice Detail", "GET", f"invoices/{invoice_id}/detail", 200,
+                token=self.tokens['admin'], description="Get detailed invoice with client, appointments, company info"
+            )
+            
+            if success:
+                # Verify response contains expected fields
+                required_fields = ['client', 'appointments', 'company_info']
+                missing_fields = [field for field in required_fields if field not in response]
+                if missing_fields:
+                    print(f"⚠️  Missing fields in invoice detail: {missing_fields}")
+                else:
+                    print("✅ Invoice detail contains all required fields")
+        else:
+            print("⚠️  No invoices available for detail testing")
+
+    def test_company_info_endpoints(self):
+        """Test company info settings endpoints"""
+        print("\n🔍 Testing Company Info Endpoints...")
+        
+        if not self.tokens.get('admin'):
+            print("⚠️  Skipping company info tests - no admin token")
+            return
+        
+        # Test GET company info
+        success, company_info = self.run_test(
+            "Get Company Info", "GET", "settings/company-info", 200,
+            token=self.tokens['admin'], description="Get company branding information"
+        )
+        
+        # Test PUT company info
+        test_company_data = {
+            "company_name": "WagWalk Pet Services Test",
+            "address": "123 Test Street, Test City, TC 12345",
+            "phone": "555-TEST-123",
+            "email": "test@wagwalk.com",
+            "logo_url": "https://example.com/logo.png",
+            "tax_id": "12-3456789",
+            "website": "https://wagwalk.com"
+        }
+        
+        self.run_test(
+            "Update Company Info", "PUT", "settings/company-info", 200,
+            data=test_company_data, token=self.tokens['admin'],
+            description="Update company branding information (admin only)"
+        )
+        
+        # Verify the update worked
+        success, updated_info = self.run_test(
+            "Verify Company Info Update", "GET", "settings/company-info", 200,
+            token=self.tokens['admin'], description="Verify company info was updated"
+        )
+        
+        if success and updated_info.get('company_name') == test_company_data['company_name']:
+            print("✅ Company info update verified")
+        else:
+            print("⚠️  Company info update verification failed")
+
+    def test_notification_config_endpoint(self):
+        """Test notification configuration endpoint"""
+        print("\n🔍 Testing Notification Config Endpoint...")
+        
+        if not self.tokens.get('admin'):
+            print("⚠️  Skipping notification config test - no admin token")
+            return
+        
+        success, config = self.run_test(
+            "Notification Config", "GET", "settings/notification-config", 200,
+            token=self.tokens['admin'], description="Get SendGrid/Twilio configuration status"
+        )
+        
+        if success:
+            # Verify expected fields are present
+            expected_fields = ['sendgrid_configured', 'twilio_configured']
+            missing_fields = [field for field in expected_fields if field not in config]
+            if missing_fields:
+                print(f"⚠️  Missing fields in notification config: {missing_fields}")
+            else:
+                print("✅ Notification config contains all required fields")
+                print(f"   SendGrid configured: {config.get('sendgrid_configured', False)}")
+                print(f"   Twilio configured: {config.get('twilio_configured', False)}")
+
+    def test_send_invoice_email_sms(self):
+        """Test send invoice email/SMS endpoints (should return errors since not configured)"""
+        print("\n🔍 Testing Send Invoice Email/SMS Endpoints...")
+        
+        if not self.tokens.get('admin'):
+            print("⚠️  Skipping send invoice tests - no admin token")
+            return
+        
+        # First, get an invoice ID
+        success, invoices = self.run_test(
+            "Get Invoices for Email/SMS Test", "GET", "invoices/open", 200,
+            token=self.tokens['admin'], description="Get invoices for email/SMS testing"
+        )
+        
+        if success and invoices:
+            invoice_id = invoices[0]['id']
+            
+            # Test send email (should fail since SendGrid not configured)
+            self.run_test(
+                "Send Invoice Email", "POST", f"invoices/{invoice_id}/send-email", 400,
+                token=self.tokens['admin'], description="Send invoice email (should fail - SendGrid not configured)"
+            )
+            
+            # Test send SMS (should fail since Twilio not configured)
+            self.run_test(
+                "Send Invoice SMS", "POST", f"invoices/{invoice_id}/send-sms", 400,
+                token=self.tokens['admin'], description="Send invoice SMS (should fail - Twilio not configured)"
+            )
+        else:
+            print("⚠️  No invoices available for email/SMS testing")
+
+    def test_demo_user_login(self):
+        """Test login with demo credentials"""
+        print("\n🔍 Testing Demo User Login...")
+        
+        # Test demo admin login
+        admin_login = {
+            "username": "demo_admin",
+            "password": "demo123"
+        }
+        success, response = self.run_test(
+            "Demo Admin Login", "POST", "auth/login", 200,
+            data=admin_login, description="Login with demo admin credentials"
+        )
+        if success:
+            self.tokens['demo_admin'] = response.get('access_token')
+            self.users['demo_admin'] = response.get('user')
+        
+        # Test demo walker login
+        walker_login = {
+            "username": "demo_walker",
+            "password": "demo123"
+        }
+        success, response = self.run_test(
+            "Demo Walker Login", "POST", "auth/login", 200,
+            data=walker_login, description="Login with demo walker credentials"
+        )
+        if success:
+            self.tokens['demo_walker'] = response.get('access_token')
+            self.users['demo_walker'] = response.get('user')
+        
+        # Test demo client login
+        client_login = {
+            "username": "demo_client",
+            "password": "demo123"
+        }
+        success, response = self.run_test(
+            "Demo Client Login", "POST", "auth/login", 200,
+            data=client_login, description="Login with demo client credentials"
+        )
+        if success:
+            self.tokens['demo_client'] = response.get('access_token')
+            self.users['demo_client'] = response.get('user')
+
     def test_unauthorized_access(self):
         """Test unauthorized access scenarios"""
         # Test without token
