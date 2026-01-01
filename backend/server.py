@@ -59,6 +59,10 @@ class ServiceType(str, Enum):
     OVERNIGHT = "overnight"
     TRANSPORT = "transport"
     CONCIERGE = "concierge"
+    # Pet Sitting Services
+    PETSIT_YOUR_LOCATION_3 = "petsit_your_location_3"  # At client's home, 3 visits/day
+    PETSIT_YOUR_LOCATION_4 = "petsit_your_location_4"  # At client's home, 4 visits/day
+    PETSIT_OUR_LOCATION = "petsit_our_location"        # Boarding at our location
 
 class AppointmentStatus(str, Enum):
     SCHEDULED = "scheduled"
@@ -76,6 +80,168 @@ class BillingCycle(str, Enum):
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"
+
+# US Standard Holidays for pricing surcharge
+US_HOLIDAYS = [
+    # New Year's
+    (1, 1),
+    # Memorial Day - last Monday of May (we'll check dynamically)
+    # July 4th
+    (7, 4),
+    # Labor Day - first Monday of September (we'll check dynamically)
+    # Thanksgiving - 4th Thursday of November (we'll check dynamically)
+    # Christmas
+    (12, 25),
+]
+
+def get_holiday_dates(year: int) -> List[str]:
+    """Get all holiday dates including day before and day after for a given year"""
+    from datetime import date
+    import calendar
+    
+    holidays = []
+    
+    # Fixed holidays
+    fixed_holidays = [
+        date(year, 1, 1),   # New Year's Day
+        date(year, 7, 4),   # Independence Day
+        date(year, 12, 25), # Christmas
+    ]
+    
+    # Memorial Day - Last Monday of May
+    may_cal = calendar.monthcalendar(year, 5)
+    # Find the last Monday
+    for week in reversed(may_cal):
+        if week[calendar.MONDAY] != 0:
+            memorial_day = date(year, 5, week[calendar.MONDAY])
+            break
+    fixed_holidays.append(memorial_day)
+    
+    # Labor Day - First Monday of September
+    sep_cal = calendar.monthcalendar(year, 9)
+    for week in sep_cal:
+        if week[calendar.MONDAY] != 0:
+            labor_day = date(year, 9, week[calendar.MONDAY])
+            break
+    fixed_holidays.append(labor_day)
+    
+    # Thanksgiving - 4th Thursday of November
+    nov_cal = calendar.monthcalendar(year, 11)
+    thursday_count = 0
+    for week in nov_cal:
+        if week[calendar.THURSDAY] != 0:
+            thursday_count += 1
+            if thursday_count == 4:
+                thanksgiving = date(year, 11, week[calendar.THURSDAY])
+                break
+    fixed_holidays.append(thanksgiving)
+    
+    # Add day before, day of, and day after for each holiday
+    for holiday in fixed_holidays:
+        day_before = holiday - timedelta(days=1)
+        day_after = holiday + timedelta(days=1)
+        holidays.extend([
+            day_before.strftime("%Y-%m-%d"),
+            holiday.strftime("%Y-%m-%d"),
+            day_after.strftime("%Y-%m-%d"),
+        ])
+    
+    return list(set(holidays))  # Remove duplicates
+
+def is_holiday_date(date_str: str) -> bool:
+    """Check if a date is a holiday (or day before/after)"""
+    from datetime import date
+    check_date = date.fromisoformat(date_str)
+    year = check_date.year
+    holiday_dates = get_holiday_dates(year)
+    return date_str in holiday_dates
+
+def calculate_petsit_price(service_type: str, num_dogs: int, start_date: str, end_date: str = None) -> dict:
+    """Calculate pet sitting price with multi-dog and holiday pricing"""
+    from datetime import date
+    
+    base_prices = {
+        "petsit_your_location_3": 50.00,  # 3 visits/day
+        "petsit_your_location_4": 75.00,  # 4 visits/day
+        "petsit_our_location": 50.00,     # per night
+    }
+    
+    if service_type not in base_prices:
+        return {"total": 0, "breakdown": []}
+    
+    base_price = base_prices[service_type]
+    breakdown = []
+    total = 0
+    
+    # Calculate number of days/nights
+    start = date.fromisoformat(start_date)
+    end = date.fromisoformat(end_date) if end_date else start
+    
+    if service_type == "petsit_our_location":
+        # For boarding, count nights (end_date - start_date)
+        num_nights = max(1, (end - start).days)
+        
+        # Calculate for each night
+        current = start
+        for i in range(num_nights):
+            night_date = (current + timedelta(days=i)).strftime("%Y-%m-%d")
+            night_price = base_price
+            
+            # Add 2nd dog at half price
+            if num_dogs > 1:
+                night_price += (num_dogs - 1) * (base_price / 2)
+            
+            # Check for holiday surcharge
+            is_holiday = is_holiday_date(night_date)
+            holiday_surcharge = 10.00 * num_dogs if is_holiday else 0
+            
+            night_total = night_price + holiday_surcharge
+            total += night_total
+            
+            breakdown.append({
+                "date": night_date,
+                "base": base_price,
+                "dogs": num_dogs,
+                "dog_surcharge": (num_dogs - 1) * (base_price / 2) if num_dogs > 1 else 0,
+                "holiday": is_holiday,
+                "holiday_surcharge": holiday_surcharge,
+                "subtotal": night_total
+            })
+    else:
+        # For at-your-location, count days (any part counts as full day)
+        num_days = max(1, (end - start).days + 1)
+        
+        for i in range(num_days):
+            day_date = (start + timedelta(days=i)).strftime("%Y-%m-%d")
+            day_price = base_price
+            
+            # No multi-dog discount for visits (each dog same price)
+            day_price = base_price * num_dogs
+            
+            # Check for holiday surcharge
+            is_holiday = is_holiday_date(day_date)
+            holiday_surcharge = 10.00 * num_dogs if is_holiday else 0
+            
+            day_total = day_price + holiday_surcharge
+            total += day_total
+            
+            breakdown.append({
+                "date": day_date,
+                "base": base_price,
+                "dogs": num_dogs,
+                "holiday": is_holiday,
+                "holiday_surcharge": holiday_surcharge,
+                "subtotal": day_total
+            })
+    
+    return {
+        "total": round(total, 2),
+        "breakdown": breakdown,
+        "service_type": service_type,
+        "num_dogs": num_dogs,
+        "start_date": start_date,
+        "end_date": end_date or start_date
+    }
 
 # Models
 class UserBase(BaseModel):
