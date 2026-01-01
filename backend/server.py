@@ -569,6 +569,53 @@ async def get_invoices(current_user: dict = Depends(get_current_user)):
     invoices = await db.invoices.find(query, {"_id": 0}).to_list(500)
     return invoices
 
+@api_router.post("/invoices/{invoice_id}/mark-paid")
+async def mark_invoice_paid(invoice_id: str, payment_method: str, current_user: dict = Depends(get_current_user)):
+    """Mark an invoice as paid (for Zelle, Venmo, CashApp payments)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    if payment_method not in ['zelle', 'venmo', 'cashapp', 'cash', 'check', 'other']:
+        raise HTTPException(status_code=400, detail="Invalid payment method")
+    
+    paid_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {
+            "status": "paid",
+            "paid_date": paid_date,
+            "payment_method": payment_method
+        }}
+    )
+    return {"message": "Invoice marked as paid", "payment_method": payment_method}
+
+@api_router.get("/settings/payment-info")
+async def get_payment_info():
+    """Get business payment info for Zelle, Venmo, CashApp"""
+    settings = await db.settings.find_one({"type": "payment_info"}, {"_id": 0})
+    if settings:
+        return settings.get('data', {})
+    # Return defaults
+    return {
+        "zelle": {"enabled": True, "email": "", "phone": "", "name": ""},
+        "venmo": {"enabled": True, "username": ""},
+        "cashapp": {"enabled": True, "cashtag": ""},
+        "instructions": "Please include your invoice number in the payment memo."
+    }
+
+@api_router.put("/settings/payment-info")
+async def update_payment_info(payment_info: dict, current_user: dict = Depends(get_current_user)):
+    """Update business payment info (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    await db.settings.update_one(
+        {"type": "payment_info"},
+        {"$set": {"type": "payment_info", "data": payment_info}},
+        upsert=True
+    )
+    return {"message": "Payment info updated"}
+
 @api_router.get("/invoices/open")
 async def get_open_invoices(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
