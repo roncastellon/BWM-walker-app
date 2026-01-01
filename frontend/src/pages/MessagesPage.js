@@ -288,7 +288,7 @@ const MessagesPage = () => {
   );
 
   // Chat Area Component
-  const ChatArea = () => (
+  const ChatArea = ({ isMobile }) => (
     <Card className="h-full rounded-2xl shadow-sm flex flex-col">
       {selectedContact || isGroupChat ? (
         <>
