@@ -121,12 +121,12 @@ const MessagesPage = () => {
 
   const getFilterOptions = () => {
     if (isClient) {
-      return [{ value: 'all', label: 'My Walkers' }];
+      return [{ value: 'all', label: 'My Contacts' }];
     }
     return [
       { value: 'all', label: 'All Contacts' },
       { value: 'clients', label: 'My Clients' },
-      { value: 'staff', label: 'Staff Only' },
+      { value: 'team', label: 'Team' },
     ];
   };
 
