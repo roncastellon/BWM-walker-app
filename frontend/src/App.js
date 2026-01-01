@@ -1,53 +1,243 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import "@/index.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { Toaster } from "./components/ui/sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Pages
+import AuthPage from "./pages/AuthPage";
+import ClientDashboard from "./pages/ClientDashboard";
+import WalkerDashboard from "./pages/WalkerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import SchedulePage from "./pages/SchedulePage";
+import BillingPage from "./pages/BillingPage";
+import PetsPage from "./pages/PetsPage";
+import MessagesPage from "./pages/MessagesPage";
+import CalendarPage from "./pages/CalendarPage";
+import PayrollPage from "./pages/PayrollPage";
+import WalkerProfilePage from "./pages/WalkerProfilePage";
+import AdminClientsPage from "./pages/AdminClientsPage";
+import AdminWalkersPage from "./pages/AdminWalkersPage";
+import AdminInvoicesPage from "./pages/AdminInvoicesPage";
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, loading, isAuthenticated } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+    // Redirect to appropriate dashboard based on role
+    switch (user?.role) {
+      case 'admin':
+        return <Navigate to="/admin" replace />;
+      case 'walker':
+        return <Navigate to="/walker" replace />;
+      default:
+        return <Navigate to="/dashboard" replace />;
     }
-  };
+  }
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  return children;
+};
+
+// Home redirect based on auth state
+const HomeRedirect = () => {
+  const { user, loading, isAuthenticated } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  switch (user?.role) {
+    case 'admin':
+      return <Navigate to="/admin" replace />;
+    case 'walker':
+      return <Navigate to="/walker" replace />;
+    default:
+      return <Navigate to="/dashboard" replace />;
+  }
+};
+
+function AppRoutes() {
+  const { isAuthenticated } = useAuth();
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <Routes>
+      {/* Home redirect */}
+      <Route path="/" element={<HomeRedirect />} />
+
+      {/* Auth */}
+      <Route
+        path="/auth"
+        element={isAuthenticated ? <HomeRedirect /> : <AuthPage />}
+      />
+
+      {/* Client Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/schedule"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <SchedulePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/billing"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <BillingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pets"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <PetsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute allowedRoles={['client', 'walker', 'admin']}>
+            <MessagesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Walker Routes */}
+      <Route
+        path="/walker"
+        element={
+          <ProtectedRoute allowedRoles={['walker']}>
+            <WalkerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/walker/schedule"
+        element={
+          <ProtectedRoute allowedRoles={['walker']}>
+            <CalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/walker/payroll"
+        element={
+          <ProtectedRoute allowedRoles={['walker']}>
+            <PayrollPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/walker/chat"
+        element={
+          <ProtectedRoute allowedRoles={['walker']}>
+            <MessagesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/walker/profile"
+        element={
+          <ProtectedRoute allowedRoles={['walker']}>
+            <WalkerProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin Routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/calendar"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <CalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/clients"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminClientsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/walkers"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminWalkersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/invoices"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminInvoicesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/chat"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <MessagesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
-};
+}
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+        <Toaster richColors position="top-right" />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
