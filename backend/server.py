@@ -522,6 +522,25 @@ async def get_invoices(current_user: dict = Depends(get_current_user)):
     invoices = await db.invoices.find(query, {"_id": 0}).to_list(500)
     return invoices
 
+@api_router.get("/invoices/open")
+async def get_open_invoices(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    invoices = await db.invoices.find({"status": {"$in": ["pending", "overdue"]}}, {"_id": 0}).to_list(500)
+    
+    # Enrich with client names
+    enriched = []
+    for inv in invoices:
+        client = await db.users.find_one({"id": inv['client_id']}, {"_id": 0, "full_name": 1, "email": 1})
+        enriched.append({
+            **inv,
+            "client_name": client.get('full_name') if client else "Unknown",
+            "client_email": client.get('email') if client else ""
+        })
+    
+    return enriched
+
 @api_router.get("/invoices/{invoice_id}", response_model=Invoice)
 async def get_invoice(invoice_id: str, current_user: dict = Depends(get_current_user)):
     invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
