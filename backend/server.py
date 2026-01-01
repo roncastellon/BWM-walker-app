@@ -678,6 +678,242 @@ async def get_invoice(invoice_id: str, current_user: dict = Depends(get_current_
         raise HTTPException(status_code=404, detail="Invoice not found")
     return invoice
 
+@api_router.get("/invoices/{invoice_id}/detail")
+async def get_invoice_detail(invoice_id: str, current_user: dict = Depends(get_current_user)):
+    """Get detailed invoice with all related information"""
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Get client info
+    client = await db.users.find_one({"id": invoice['client_id']}, {"_id": 0, "password_hash": 0})
+    
+    # Get appointment details with service info
+    appointment_details = []
+    for appt_id in invoice.get('appointment_ids', []):
+        appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+        if appt:
+            service = await db.services.find_one({"service_type": appt['service_type']}, {"_id": 0})
+            walker = None
+            if appt.get('walker_id'):
+                walker = await db.users.find_one({"id": appt['walker_id']}, {"_id": 0, "full_name": 1})
+            
+            # Get pet names
+            pet_names = []
+            for pet_id in appt.get('pet_ids', []):
+                pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+                if pet:
+                    pet_names.append(pet['name'])
+            
+            appointment_details.append({
+                "id": appt['id'],
+                "service_name": service['name'] if service else appt['service_type'],
+                "service_price": service['price'] if service else 0,
+                "scheduled_date": appt['scheduled_date'],
+                "scheduled_time": appt['scheduled_time'],
+                "walker_name": walker['full_name'] if walker else "Unassigned",
+                "pet_names": pet_names,
+                "status": appt['status']
+            })
+    
+    # Get company info
+    company_info = await db.settings.find_one({"type": "company_info"}, {"_id": 0})
+    
+    return {
+        **invoice,
+        "client": client,
+        "appointments": appointment_details,
+        "company_info": company_info.get('data', {}) if company_info else {}
+    }
+
+# Company Info Settings
+@api_router.get("/settings/company-info")
+async def get_company_info():
+    """Get company branding info for invoices"""
+    settings = await db.settings.find_one({"type": "company_info"}, {"_id": 0})
+    if settings:
+        return settings.get('data', {})
+    return {
+        "company_name": "",
+        "address": "",
+        "phone": "",
+        "email": "",
+        "logo_url": "",
+        "tax_id": "",
+        "website": ""
+    }
+
+@api_router.put("/settings/company-info")
+async def update_company_info(company_info: dict, current_user: dict = Depends(get_current_user)):
+    """Update company branding info (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    await db.settings.update_one(
+        {"type": "company_info"},
+        {"$set": {"type": "company_info", "data": company_info}},
+        upsert=True
+    )
+    return {"message": "Company info updated"}
+
+# Email/SMS Notification Settings
+@api_router.get("/settings/notification-config")
+async def get_notification_config(current_user: dict = Depends(get_current_user)):
+    """Get email/SMS configuration status"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    return {
+        "sendgrid_configured": bool(os.environ.get('SENDGRID_API_KEY')),
+        "twilio_configured": bool(os.environ.get('TWILIO_ACCOUNT_SID') and os.environ.get('TWILIO_AUTH_TOKEN')),
+        "sender_email": os.environ.get('SENDER_EMAIL', ''),
+        "twilio_phone": os.environ.get('TWILIO_PHONE_NUMBER', '')
+    }
+
+# Send Invoice via Email
+@api_router.post("/invoices/{invoice_id}/send-email")
+async def send_invoice_email(invoice_id: str, current_user: dict = Depends(get_current_user)):
+    """Send invoice to client via email"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    sendgrid_key = os.environ.get('SENDGRID_API_KEY')
+    sender_email = os.environ.get('SENDER_EMAIL')
+    
+    if not sendgrid_key or not sender_email:
+        raise HTTPException(status_code=400, detail="SendGrid not configured. Add SENDGRID_API_KEY and SENDER_EMAIL to environment.")
+    
+    if not SENDGRID_AVAILABLE:
+        raise HTTPException(status_code=400, detail="SendGrid library not installed")
+    
+    # Get invoice details
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    client = await db.users.find_one({"id": invoice['client_id']}, {"_id": 0})
+    if not client or not client.get('email'):
+        raise HTTPException(status_code=400, detail="Client email not found")
+    
+    company_info = await db.settings.find_one({"type": "company_info"}, {"_id": 0})
+    company = company_info.get('data', {}) if company_info else {}
+    
+    # Build email content
+    company_name = company.get('company_name', 'WagWalk')
+    html_content = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #f97316; color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">{company_name}</h1>
+            <p style="margin: 5px 0;">Invoice</p>
+        </div>
+        <div style="padding: 20px;">
+            <p>Dear {client.get('full_name', 'Valued Customer')},</p>
+            <p>Please find your invoice details below:</p>
+            
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Invoice ID:</strong> {invoice['id'][:8]}...</p>
+                <p><strong>Amount Due:</strong> ${invoice['amount']:.2f}</p>
+                <p><strong>Due Date:</strong> {invoice['due_date']}</p>
+                <p><strong>Status:</strong> {invoice['status'].upper()}</p>
+            </div>
+            
+            <p>To pay this invoice, please log into your account or use one of our accepted payment methods.</p>
+            
+            <p style="margin-top: 30px;">Thank you for choosing {company_name}!</p>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                {company.get('address', '')}<br>
+                {company.get('phone', '')} | {company.get('email', '')}
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    try:
+        sg = SendGridAPIClient(sendgrid_key)
+        message = Mail(
+            from_email=sender_email,
+            to_emails=client['email'],
+            subject=f"Invoice from {company_name} - ${invoice['amount']:.2f} Due",
+            html_content=html_content
+        )
+        response = sg.send(message)
+        
+        # Log the notification
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "type": "email",
+            "invoice_id": invoice_id,
+            "recipient": client['email'],
+            "status": "sent" if response.status_code == 202 else "failed",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {"message": "Invoice email sent successfully", "recipient": client['email']}
+    except Exception as e:
+        logging.error(f"SendGrid error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+# Send Invoice via SMS
+@api_router.post("/invoices/{invoice_id}/send-sms")
+async def send_invoice_sms(invoice_id: str, current_user: dict = Depends(get_current_user)):
+    """Send invoice notification to client via SMS"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    twilio_phone = os.environ.get('TWILIO_PHONE_NUMBER')
+    
+    if not account_sid or not auth_token or not twilio_phone:
+        raise HTTPException(status_code=400, detail="Twilio not configured. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to environment.")
+    
+    if not TWILIO_AVAILABLE:
+        raise HTTPException(status_code=400, detail="Twilio library not installed")
+    
+    # Get invoice details
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    client = await db.users.find_one({"id": invoice['client_id']}, {"_id": 0})
+    if not client or not client.get('phone'):
+        raise HTTPException(status_code=400, detail="Client phone number not found")
+    
+    company_info = await db.settings.find_one({"type": "company_info"}, {"_id": 0})
+    company = company_info.get('data', {}) if company_info else {}
+    company_name = company.get('company_name', 'WagWalk')
+    
+    # Build SMS content
+    sms_body = f"{company_name}: You have a new invoice for ${invoice['amount']:.2f} due on {invoice['due_date']}. Log in to your account to view and pay. Thank you!"
+    
+    try:
+        twilio_client = TwilioClient(account_sid, auth_token)
+        message = twilio_client.messages.create(
+            body=sms_body,
+            from_=twilio_phone,
+            to=client['phone']
+        )
+        
+        # Log the notification
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "type": "sms",
+            "invoice_id": invoice_id,
+            "recipient": client['phone'],
+            "status": "sent" if message.sid else "failed",
+            "message_sid": message.sid,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {"message": "Invoice SMS sent successfully", "recipient": client['phone']}
+    except Exception as e:
+        logging.error(f"Twilio error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send SMS: {str(e)}")
+
 # Payment Routes
 @api_router.post("/payments/checkout")
 async def create_checkout_session(invoice_id: str, origin_url: str, current_user: dict = Depends(get_current_user)):
