@@ -899,25 +899,6 @@ async def update_service_pricing(service_id: str, name: Optional[str] = None, pr
     
     return {"message": "Service updated successfully"}
 
-@api_router.get("/invoices/open")
-async def get_open_invoices(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'admin':
-        raise HTTPException(status_code=403, detail="Admin only")
-    
-    invoices = await db.invoices.find({"status": {"$in": ["pending", "overdue"]}}, {"_id": 0}).to_list(500)
-    
-    # Enrich with client names
-    enriched = []
-    for inv in invoices:
-        client = await db.users.find_one({"id": inv['client_id']}, {"_id": 0, "full_name": 1, "email": 1})
-        enriched.append({
-            **inv,
-            "client_name": client.get('full_name') if client else "Unknown",
-            "client_email": client.get('email') if client else ""
-        })
-    
-    return enriched
-
 # Dashboard Stats
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
