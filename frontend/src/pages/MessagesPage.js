@@ -193,9 +193,9 @@ const MessagesPage = () => {
                     <Users className={`w-5 h-5 ${isGroupChat ? 'text-primary-foreground' : 'text-secondary'}`} />
                   </div>
                   <div className="text-left">
-                    <p className="font-medium">Team Chat</p>
+                    <p className="font-medium">All (Team Broadcast)</p>
                     <p className={`text-xs ${isGroupChat ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                      Staff communication
+                      Message entire backend team
                     </p>
                   </div>
                 </button>
