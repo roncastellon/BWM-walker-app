@@ -651,6 +651,96 @@ async def stripe_webhook(request: Request):
         return {"received": False}
 
 # Message Routes
+@api_router.get("/messages/contacts")
+async def get_message_contacts(contact_type: str = "all", current_user: dict = Depends(get_current_user)):
+    """Get contacts for messaging based on type: clients, staff, all"""
+    contacts = []
+    
+    if current_user['role'] == 'client':
+        # Clients can only message walkers assigned to their appointments
+        appointments = await db.appointments.find(
+            {"client_id": current_user['id'], "walker_id": {"$ne": None}},
+            {"_id": 0, "walker_id": 1}
+        ).to_list(500)
+        walker_ids = list(set(appt['walker_id'] for appt in appointments if appt.get('walker_id')))
+        
+        if walker_ids:
+            walkers = await db.users.find(
+                {"id": {"$in": walker_ids}, "is_active": True},
+                {"_id": 0, "password_hash": 0}
+            ).to_list(100)
+            contacts = [{"type": "walker", **w} for w in walkers]
+    
+    elif current_user['role'] == 'walker':
+        if contact_type == 'clients':
+            # Walkers can only message clients on their schedule
+            appointments = await db.appointments.find(
+                {"walker_id": current_user['id']},
+                {"_id": 0, "client_id": 1}
+            ).to_list(500)
+            client_ids = list(set(appt['client_id'] for appt in appointments))
+            
+            if client_ids:
+                clients = await db.users.find(
+                    {"id": {"$in": client_ids}, "is_active": True},
+                    {"_id": 0, "password_hash": 0}
+                ).to_list(100)
+                contacts = [{"type": "client", **c} for c in clients]
+        
+        elif contact_type == 'staff':
+            # All staff (walkers and admins, excluding clients)
+            staff = await db.users.find(
+                {"role": {"$in": ["walker", "admin"]}, "is_active": True, "id": {"$ne": current_user['id']}},
+                {"_id": 0, "password_hash": 0}
+            ).to_list(100)
+            contacts = [{"type": s['role'], **s} for s in staff]
+        
+        else:  # all
+            # Get scheduled clients
+            appointments = await db.appointments.find(
+                {"walker_id": current_user['id']},
+                {"_id": 0, "client_id": 1}
+            ).to_list(500)
+            client_ids = list(set(appt['client_id'] for appt in appointments))
+            
+            if client_ids:
+                clients = await db.users.find(
+                    {"id": {"$in": client_ids}, "is_active": True},
+                    {"_id": 0, "password_hash": 0}
+                ).to_list(100)
+                contacts.extend([{"type": "client", **c} for c in clients])
+            
+            # Add staff
+            staff = await db.users.find(
+                {"role": {"$in": ["walker", "admin"]}, "is_active": True, "id": {"$ne": current_user['id']}},
+                {"_id": 0, "password_hash": 0}
+            ).to_list(100)
+            contacts.extend([{"type": s['role'], **s} for s in staff])
+    
+    elif current_user['role'] == 'admin':
+        if contact_type == 'clients':
+            clients = await db.users.find(
+                {"role": "client", "is_active": True},
+                {"_id": 0, "password_hash": 0}
+            ).to_list(100)
+            contacts = [{"type": "client", **c} for c in clients]
+        
+        elif contact_type == 'staff':
+            staff = await db.users.find(
+                {"role": {"$in": ["walker", "admin"]}, "is_active": True, "id": {"$ne": current_user['id']}},
+                {"_id": 0, "password_hash": 0}
+            ).to_list(100)
+            contacts = [{"type": s['role'], **s} for s in staff]
+        
+        else:  # all
+            all_users = await db.users.find(
+                {"is_active": True, "id": {"$ne": current_user['id']}},
+                {"_id": 0, "password_hash": 0}
+            ).to_list(500)
+            contacts = [{"type": u['role'], **u} for u in all_users]
+    
+    return contacts
+
 @api_router.post("/messages", response_model=Message)
 async def send_message(msg_data: MessageCreate, current_user: dict = Depends(get_current_user)):
     message = Message(
