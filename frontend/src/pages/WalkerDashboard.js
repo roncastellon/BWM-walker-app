@@ -149,7 +149,12 @@ const WalkerDashboard = () => {
   const endWalk = async () => {
     if (!activeWalk) return;
     try {
-      await api.post(`/appointments/${activeWalk.id}/complete`);
+      // Try stop-tracking first (for GPS tracked walks), fallback to /end
+      try {
+        await api.post(`/appointments/${activeWalk.id}/stop-tracking`);
+      } catch {
+        await api.post(`/appointments/${activeWalk.id}/end`);
+      }
       toast.success('Walk completed!');
       setActiveWalk(null);
       fetchData();
