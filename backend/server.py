@@ -517,6 +517,39 @@ async def get_appointment(appt_id: str):
         raise HTTPException(status_code=404, detail="Appointment not found")
     return appt
 
+@api_router.get("/appointments/{appt_id}/detail")
+async def get_appointment_detail(appt_id: str, current_user: dict = Depends(get_current_user)):
+    """Get detailed appointment info for calendar modal"""
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Get client info
+    client = await db.users.find_one({"id": appt['client_id']}, {"_id": 0, "password_hash": 0})
+    
+    # Get walker info
+    walker = None
+    if appt.get('walker_id'):
+        walker = await db.users.find_one({"id": appt['walker_id']}, {"_id": 0, "password_hash": 0})
+    
+    # Get service info
+    service = await db.services.find_one({"service_type": appt['service_type']}, {"_id": 0})
+    
+    # Get pet info
+    pets = []
+    for pet_id in appt.get('pet_ids', []):
+        pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
+        if pet:
+            pets.append(pet)
+    
+    return {
+        **appt,
+        "client": client,
+        "walker": walker,
+        "service": service,
+        "pets": pets
+    }
+
 @api_router.put("/appointments/{appt_id}")
 async def update_appointment(appt_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
     appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
