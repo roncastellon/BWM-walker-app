@@ -402,6 +402,19 @@ const AdminBillingPage = () => {
                             )}
                           </Badge>
                           <p className="text-2xl font-bold">${invoice.amount.toFixed(2)}</p>
+                          <Select onValueChange={(method) => markInvoiceAsPaid(invoice.id, method)}>
+                            <SelectTrigger className="w-36" data-testid={`mark-paid-${invoice.id}`}>
+                              <SelectValue placeholder="Mark as Paid" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="zelle">Paid via Zelle</SelectItem>
+                              <SelectItem value="venmo">Paid via Venmo</SelectItem>
+                              <SelectItem value="cashapp">Paid via CashApp</SelectItem>
+                              <SelectItem value="cash">Paid in Cash</SelectItem>
+                              <SelectItem value="check">Paid by Check</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     ))}
