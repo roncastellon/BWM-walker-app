@@ -41,7 +41,9 @@ const Layout = ({ children }) => {
   // Poll for unread messages (but not on messages page to avoid conflicts)
   useEffect(() => {
     const isOnMessagesPage = location.pathname.includes('/messages') || 
-                              location.pathname.includes('/chat');
+                              location.pathname.includes('/chat') ||
+                              location.pathname === '/admin/chat' ||
+                              location.pathname === '/walker/chat';
     
     const fetchUnreadCount = async () => {
       if (isOnMessagesPage) return; // Don't poll on messages page
