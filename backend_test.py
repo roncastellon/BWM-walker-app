@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timedelta
 
 class WagWalkAPITester:
-    def __init__(self, base_url="https://pawpal-11.preview.emergentagent.com"):
+    def __init__(self, base_url="https://petbuddy-15.preview.emergentagent.com"):
         self.base_url = base_url
         self.tokens = {}  # Store tokens for different users
         self.users = {}   # Store user data
