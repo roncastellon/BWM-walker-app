@@ -18,6 +18,7 @@ import WalkerProfilePage from "./pages/WalkerProfilePage";
 import AdminClientsPage from "./pages/AdminClientsPage";
 import AdminWalkersPage from "./pages/AdminWalkersPage";
 import AdminInvoicesPage from "./pages/AdminInvoicesPage";
+import LiveTrackingPage from "./pages/LiveTrackingPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
