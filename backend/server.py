@@ -1052,11 +1052,17 @@ async def stripe_webhook(request: Request):
 # Message Routes
 @api_router.get("/messages/contacts")
 async def get_message_contacts(contact_type: str = "all", current_user: dict = Depends(get_current_user)):
-    """Get contacts for messaging based on type: clients, staff, all"""
+    """Get contacts for messaging based on type: clients, team, all
+    
+    Permissions:
+    - Client: Can see their scheduled walker + all admins
+    - Walker: Can see My Clients (scheduled), Team (walkers+admins), All
+    - Admin: Can see everyone
+    """
     contacts = []
     
     if current_user['role'] == 'client':
-        # Clients can only message walkers assigned to their appointments
+        # Clients can message walkers assigned to their appointments AND all admins
         appointments = await db.appointments.find(
             {"client_id": current_user['id'], "walker_id": {"$ne": None}},
             {"_id": 0, "walker_id": 1}
@@ -1068,7 +1074,14 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
                 {"id": {"$in": walker_ids}, "is_active": True},
                 {"_id": 0, "password_hash": 0}
             ).to_list(100)
-            contacts = [{"type": "walker", **w} for w in walkers]
+            contacts.extend([{"type": "walker", **w} for w in walkers])
+        
+        # Add all admins
+        admins = await db.users.find(
+            {"role": "admin", "is_active": True},
+            {"_id": 0, "password_hash": 0}
+        ).to_list(100)
+        contacts.extend([{"type": "admin", **a} for a in admins])
     
     elif current_user['role'] == 'walker':
         if contact_type == 'clients':
@@ -1086,8 +1099,8 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
                 ).to_list(100)
                 contacts = [{"type": "client", **c} for c in clients]
         
-        elif contact_type == 'staff':
-            # All staff (walkers and admins, excluding clients)
+        elif contact_type == 'team':
+            # Team = All walkers and admins (renamed from 'staff')
             staff = await db.users.find(
                 {"role": {"$in": ["walker", "admin"]}, "is_active": True, "id": {"$ne": current_user['id']}},
                 {"_id": 0, "password_hash": 0}
@@ -1109,7 +1122,7 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
                 ).to_list(100)
                 contacts.extend([{"type": "client", **c} for c in clients])
             
-            # Add staff
+            # Add team
             staff = await db.users.find(
                 {"role": {"$in": ["walker", "admin"]}, "is_active": True, "id": {"$ne": current_user['id']}},
                 {"_id": 0, "password_hash": 0}
@@ -1124,7 +1137,8 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
             ).to_list(100)
             contacts = [{"type": "client", **c} for c in clients]
         
-        elif contact_type == 'staff':
+        elif contact_type == 'team':
+            # Team = All walkers and admins
             staff = await db.users.find(
                 {"role": {"$in": ["walker", "admin"]}, "is_active": True, "id": {"$ne": current_user['id']}},
                 {"_id": 0, "password_hash": 0}
