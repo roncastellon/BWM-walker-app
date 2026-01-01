@@ -3,10 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Calendar } from '../components/ui/calendar';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
   Clock, User, PawPrint, ChevronLeft, ChevronRight, 
   CalendarDays, CalendarRange, Calendar as CalendarIcon 
@@ -14,7 +13,7 @@ import {
 import { 
   format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths,
   startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameDay, isSameMonth, isToday
+  isSameMonth, isToday
 } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -24,7 +23,7 @@ const CalendarPage = () => {
   const [walkers, setWalkers] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedWalker, setSelectedWalker] = useState('all');
-  const [viewMode, setViewMode] = useState('week'); // day, week, month
+  const [viewMode, setViewMode] = useState('week');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,13 +55,36 @@ const CalendarPage = () => {
     }
   };
 
-  const getStatusColor = (status) => {
+  // Get walker color by ID
+  const getWalkerColor = (walkerId) => {
+    const walker = walkers.find(w => w.id === walkerId);
+    return walker?.walker_color || '#9CA3AF'; // gray if no walker assigned
+  };
+
+  // Get walker name by ID
+  const getWalkerName = (walkerId) => {
+    const walker = walkers.find(w => w.id === walkerId);
+    return walker?.full_name || 'Unassigned';
+  };
+
+  // Generate styles based on walker color
+  const getAppointmentStyles = (appt) => {
+    const color = appt.walker_id ? getWalkerColor(appt.walker_id) : '#9CA3AF';
+    return {
+      backgroundColor: `${color}20`,
+      borderColor: color,
+      borderWidth: '2px',
+      borderStyle: 'solid',
+    };
+  };
+
+  const getStatusBadgeColor = (status) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'scheduled': return 'bg-blue-100 text-blue-800';
+      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -89,7 +111,6 @@ const CalendarPage = () => {
 
   const goToToday = () => setCurrentDate(new Date());
 
-  // Get dates for current view
   const getViewDates = () => {
     if (viewMode === 'day') {
       return [currentDate];
@@ -116,21 +137,17 @@ const CalendarPage = () => {
     }
   };
 
-  const timeSlots = [
-    '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
-    '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'
-  ];
-
   const renderAppointmentCard = (appt, compact = false) => (
     <div
       key={appt.id}
-      className={`p-2 rounded-lg border ${getStatusColor(appt.status)} ${compact ? 'text-xs' : ''}`}
+      className={`p-2 rounded-lg ${compact ? 'text-xs' : ''}`}
+      style={getAppointmentStyles(appt)}
       data-testid={`calendar-appt-${appt.id}`}
     >
       <div className="flex items-center justify-between gap-1">
         <span className="font-medium">{appt.scheduled_time}</span>
         {!compact && (
-          <Badge variant="outline" className="text-xs rounded-full">
+          <Badge className={`${getStatusBadgeColor(appt.status)} text-xs rounded-full`}>
             {appt.status}
           </Badge>
         )}
@@ -141,10 +158,10 @@ const CalendarPage = () => {
       <p className={`text-muted-foreground ${compact ? 'truncate' : ''}`}>
         {appt.client_name}
       </p>
-      {!compact && appt.walker_name && (
-        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+      {!compact && (
+        <p className="text-xs flex items-center gap-1 mt-1" style={{ color: getWalkerColor(appt.walker_id) }}>
           <PawPrint className="w-3 h-3" />
-          {appt.walker_name}
+          <span className="font-medium">{appt.walker_id ? getWalkerName(appt.walker_id) : 'Unassigned'}</span>
         </p>
       )}
       {!compact && isAdmin && (
@@ -158,7 +175,13 @@ const CalendarPage = () => {
           <SelectContent>
             {walkers.map((walker) => (
               <SelectItem key={walker.id} value={walker.id}>
-                {walker.full_name}
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: walker.walker_color }}
+                  />
+                  {walker.full_name}
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -190,7 +213,6 @@ const CalendarPage = () => {
           </div>
           
           <div className="flex flex-wrap items-center gap-3">
-            {/* View Mode Tabs */}
             <Tabs value={viewMode} onValueChange={setViewMode} className="w-auto">
               <TabsList>
                 <TabsTrigger value="day" className="gap-1" data-testid="view-day">
@@ -210,7 +232,7 @@ const CalendarPage = () => {
 
             {isAdmin && (
               <Select value={selectedWalker} onValueChange={setSelectedWalker}>
-                <SelectTrigger className="w-40" data-testid="filter-walker">
+                <SelectTrigger className="w-44" data-testid="filter-walker">
                   <SelectValue placeholder="Filter by walker" />
                 </SelectTrigger>
                 <SelectContent>
@@ -218,7 +240,13 @@ const CalendarPage = () => {
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {walkers.map((walker) => (
                     <SelectItem key={walker.id} value={walker.id}>
-                      {walker.full_name}
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: walker.walker_color }}
+                        />
+                        {walker.full_name}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -325,7 +353,6 @@ const CalendarPage = () => {
         {viewMode === 'month' && (
           <Card className="rounded-2xl shadow-sm overflow-hidden">
             <CardContent className="p-0">
-              {/* Month header */}
               <div className="grid grid-cols-7 border-b bg-muted/30">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                   <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
@@ -334,7 +361,6 @@ const CalendarPage = () => {
                 ))}
               </div>
               
-              {/* Month grid */}
               <div className="grid grid-cols-7">
                 {(() => {
                   const monthStart = startOfMonth(currentDate);
@@ -363,8 +389,9 @@ const CalendarPage = () => {
                           {dayAppts.slice(0, 3).map((appt) => (
                             <div
                               key={appt.id}
-                              className={`text-xs p-1 rounded truncate ${getStatusColor(appt.status)}`}
-                              title={`${appt.scheduled_time} - ${appt.client_name}`}
+                              className="text-xs p-1 rounded truncate"
+                              style={getAppointmentStyles(appt)}
+                              title={`${appt.scheduled_time} - ${appt.client_name} (${getWalkerName(appt.walker_id)})`}
                             >
                               {appt.scheduled_time} {appt.service_type.replace('_', ' ')}
                             </div>
@@ -384,25 +411,38 @@ const CalendarPage = () => {
           </Card>
         )}
 
-        {/* Legend */}
-        <div className="flex flex-wrap gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-blue-100 border border-blue-200"></div>
-            <span>Scheduled</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-yellow-100 border border-yellow-200"></div>
-            <span>In Progress</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-green-100 border border-green-200"></div>
-            <span>Completed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-red-100 border border-red-200"></div>
-            <span>Cancelled</span>
-          </div>
-        </div>
+        {/* Walker Legend */}
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Walker Legend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              {walkers.map((walker) => (
+                <div key={walker.id} className="flex items-center gap-2">
+                  <div 
+                    className="w-4 h-4 rounded-full border-2" 
+                    style={{ 
+                      backgroundColor: `${walker.walker_color}20`,
+                      borderColor: walker.walker_color 
+                    }}
+                  />
+                  <span className="text-sm">{walker.full_name}</span>
+                </div>
+              ))}
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-4 h-4 rounded-full border-2" 
+                  style={{ 
+                    backgroundColor: '#9CA3AF20',
+                    borderColor: '#9CA3AF' 
+                  }}
+                />
+                <span className="text-sm text-muted-foreground">Unassigned</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );
