@@ -107,87 +107,108 @@ user_problem_statement: "WagWalk Pet Services App - Chat enhancement with dropdo
 backend:
   - task: "Chat contacts endpoint with team filter"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Updated /messages/contacts endpoint to support 'team' filter (renamed from 'staff'). Walkers can chat with My Clients, Team, All. Clients can see scheduled walker + admins."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Chat contacts endpoint working correctly. Tested all filters (all, clients, team) for walker and admin roles. Client role correctly shows only assigned walker + admins. All contact_type filters return proper user lists with correct permissions."
 
   - task: "Appointment detail endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added /appointments/{appt_id}/detail endpoint that returns full appointment info including client, walker (with color), service details, and pet info"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Appointment detail endpoint working correctly. Returns complete appointment info with client, walker, service, and pets data. All required fields present in response."
 
   - task: "Invoice detail endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added /invoices/{invoice_id}/detail endpoint that returns full invoice with client info, appointment details with service/pet/walker info, and company branding"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Invoice detail endpoint working correctly. Returns complete invoice with client info, appointment details, and company branding. All required fields (client, appointments, company_info) present in response."
 
   - task: "Company info settings endpoints"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added GET/PUT /settings/company-info endpoints for company name, address, phone, email, logo URL, tax ID, website"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Company info endpoints working correctly. GET returns current settings, PUT updates successfully (admin only). Verified update persistence by retrieving updated data."
 
   - task: "SendGrid email invoice endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added /invoices/{invoice_id}/send-email endpoint using SendGrid. Requires SENDGRID_API_KEY and SENDER_EMAIL env vars. Returns error message if not configured."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - SendGrid email endpoint working correctly. Returns proper 400 error when SendGrid not configured (expected behavior). Endpoint correctly validates admin permissions and checks for required environment variables."
 
   - task: "Twilio SMS invoice endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added /invoices/{invoice_id}/send-sms endpoint using Twilio. Requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER env vars. Returns error message if not configured."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Twilio SMS endpoint working correctly. Returns proper 400 error when Twilio not configured (expected behavior). Endpoint correctly validates admin permissions and checks for required environment variables."
 
   - task: "Notification config status endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added /settings/notification-config endpoint to check if SendGrid and Twilio are configured (checks env vars)"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Notification config endpoint working correctly. Returns sendgrid_configured: false and twilio_configured: false (correct since API keys not set). Contains all required fields and proper admin-only access control."
 
 frontend:
   - task: "Chat dropdown with My Clients, Team, All filters"
