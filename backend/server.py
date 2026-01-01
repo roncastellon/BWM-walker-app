@@ -102,6 +102,7 @@ class UserResponse(BaseModel):
     bio: Optional[str] = None
     profile_image: Optional[str] = None
     is_active: bool
+    billing_cycle: Optional[str] = "weekly"
 
 class TokenResponse(BaseModel):
     access_token: str
