@@ -125,6 +125,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/tracking"
+        element={
+          <ProtectedRoute allowedRoles={['client', 'walker', 'admin']}>
+            <LiveTrackingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/messages"
         element={
           <ProtectedRoute allowedRoles={['client', 'walker', 'admin']}>
