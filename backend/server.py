@@ -72,6 +72,7 @@ class UserBase(BaseModel):
     role: UserRole = UserRole.CLIENT
     bio: Optional[str] = None
     profile_image: Optional[str] = None
+    billing_cycle: Optional[str] = "weekly"  # daily, weekly, monthly
 
 class UserCreate(BaseModel):
     username: str
