@@ -330,9 +330,12 @@ async def create_pet(pet_data: PetCreate, current_user: dict = Depends(get_curre
     return pet
 
 @api_router.get("/pets", response_model=List[Pet])
-async def get_pets(current_user: dict = Depends(get_current_user)):
+async def get_pets(owner_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     if current_user['role'] == 'client':
         pets = await db.pets.find({"owner_id": current_user['id']}, {"_id": 0}).to_list(100)
+    elif owner_id:
+        # Admin/walker filtering by owner
+        pets = await db.pets.find({"owner_id": owner_id}, {"_id": 0}).to_list(100)
     else:
         pets = await db.pets.find({}, {"_id": 0}).to_list(500)
     return pets
