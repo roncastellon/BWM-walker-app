@@ -806,10 +806,16 @@ async def end_walk(appt_id: str, current_user: dict = Depends(get_current_user))
         {"$set": {
             "status": "completed",
             "end_time": end_time.isoformat(),
-            "actual_duration_minutes": duration
+            "actual_duration_minutes": duration,
+            "is_tracking": False
         }}
     )
     return {"message": "Walk completed", "duration_minutes": duration}
+
+# Alias for /end endpoint
+@api_router.post("/appointments/{appt_id}/complete")
+async def complete_walk(appt_id: str, current_user: dict = Depends(get_current_user)):
+    return await end_walk(appt_id, current_user)
 
 @api_router.put("/appointments/{appt_id}/assign")
 async def assign_walker(appt_id: str, walker_id: str, current_user: dict = Depends(get_current_user)):
