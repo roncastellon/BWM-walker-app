@@ -528,6 +528,138 @@ const AdminBillingPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Payment Settings Tab */}
+          <TabsContent value="payment-settings" className="space-y-6">
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-primary" />
+                  Payment Settings
+                </CardTitle>
+                <CardDescription>Configure payment methods clients can use to pay invoices</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Zelle Settings */}
+                <div className="p-4 rounded-xl bg-purple-50 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <span className="text-purple-600 font-bold">Z</span>
+                    </div>
+                    <h3 className="font-medium">Zelle</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="zelle-name">Recipient Name</Label>
+                      <Input
+                        id="zelle-name"
+                        value={paymentSettings.zelle?.name || ''}
+                        onChange={(e) => setPaymentSettings({
+                          ...paymentSettings,
+                          zelle: { ...paymentSettings.zelle, name: e.target.value }
+                        })}
+                        placeholder="Business Name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zelle-email">Email</Label>
+                      <Input
+                        id="zelle-email"
+                        value={paymentSettings.zelle?.email || ''}
+                        onChange={(e) => setPaymentSettings({
+                          ...paymentSettings,
+                          zelle: { ...paymentSettings.zelle, email: e.target.value }
+                        })}
+                        placeholder="payments@business.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zelle-phone">Phone</Label>
+                      <Input
+                        id="zelle-phone"
+                        value={paymentSettings.zelle?.phone || ''}
+                        onChange={(e) => setPaymentSettings({
+                          ...paymentSettings,
+                          zelle: { ...paymentSettings.zelle, phone: e.target.value }
+                        })}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Venmo Settings */}
+                <div className="p-4 rounded-xl bg-blue-50 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-500 font-bold">V</span>
+                    </div>
+                    <h3 className="font-medium">Venmo</h3>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="venmo-username">Venmo Username</Label>
+                    <Input
+                      id="venmo-username"
+                      value={paymentSettings.venmo?.username || ''}
+                      onChange={(e) => setPaymentSettings({
+                        ...paymentSettings,
+                        venmo: { ...paymentSettings.venmo, username: e.target.value }
+                      })}
+                      placeholder="@YourBusiness"
+                    />
+                  </div>
+                </div>
+
+                {/* CashApp Settings */}
+                <div className="p-4 rounded-xl bg-green-50 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                    </div>
+                    <h3 className="font-medium">Cash App</h3>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cashapp-tag">$Cashtag</Label>
+                    <Input
+                      id="cashapp-tag"
+                      value={paymentSettings.cashapp?.cashtag || ''}
+                      onChange={(e) => setPaymentSettings({
+                        ...paymentSettings,
+                        cashapp: { ...paymentSettings.cashapp, cashtag: e.target.value }
+                      })}
+                      placeholder="YourBusiness"
+                    />
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div className="space-y-2">
+                  <Label htmlFor="payment-instructions">Payment Instructions</Label>
+                  <Textarea
+                    id="payment-instructions"
+                    value={paymentSettings.instructions || ''}
+                    onChange={(e) => setPaymentSettings({
+                      ...paymentSettings,
+                      instructions: e.target.value
+                    })}
+                    placeholder="Instructions shown to clients when paying..."
+                    rows={2}
+                  />
+                  <p className="text-xs text-muted-foreground">This message will be shown to clients on the payment page</p>
+                </div>
+
+                <Button 
+                  onClick={savePaymentSettings} 
+                  disabled={savingPaymentSettings}
+                  className="rounded-full"
+                  data-testid="save-payment-settings"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {savingPaymentSettings ? 'Saving...' : 'Save Payment Settings'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </Layout>
