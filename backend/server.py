@@ -753,6 +753,171 @@ async def approve_timesheet(timesheet_id: str, current_user: dict = Depends(get_
     await db.timesheets.update_one({"id": timesheet_id}, {"$set": {"approved": True}})
     return {"message": "Timesheet approved"}
 
+# Revenue & Billing Routes
+@api_router.get("/revenue/summary")
+async def get_revenue_summary(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    now = datetime.now(timezone.utc)
+    today = now.strftime("%Y-%m-%d")
+    
+    # Calculate week start (Monday)
+    week_start = (now - timedelta(days=now.weekday())).strftime("%Y-%m-%d")
+    
+    # Calculate month start
+    month_start = now.replace(day=1).strftime("%Y-%m-%d")
+    
+    # Calculate year start
+    year_start = now.replace(month=1, day=1).strftime("%Y-%m-%d")
+    
+    # Get all paid invoices
+    paid_invoices = await db.invoices.find({"status": "paid"}, {"_id": 0}).to_list(10000)
+    
+    daily_revenue = 0.0
+    weekly_revenue = 0.0
+    monthly_revenue = 0.0
+    yearly_revenue = 0.0
+    
+    for inv in paid_invoices:
+        paid_date = inv.get('paid_date', '')
+        amount = inv.get('amount', 0)
+        
+        if paid_date:
+            if paid_date == today:
+                daily_revenue += amount
+            if paid_date >= week_start:
+                weekly_revenue += amount
+            if paid_date >= month_start:
+                monthly_revenue += amount
+            if paid_date >= year_start:
+                yearly_revenue += amount
+    
+    return {
+        "daily": round(daily_revenue, 2),
+        "weekly": round(weekly_revenue, 2),
+        "month_to_date": round(monthly_revenue, 2),
+        "year_to_date": round(yearly_revenue, 2),
+        "total_paid_invoices": len(paid_invoices),
+        "as_of": now.isoformat()
+    }
+
+@api_router.get("/billing/clients-due")
+async def get_clients_due_for_billing(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Get all clients with their billing cycles
+    clients = await db.users.find({"role": "client"}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    
+    clients_due = []
+    for client in clients:
+        billing_cycle = client.get('billing_cycle', 'weekly')
+        
+        # Get uninvoiced completed appointments for this client
+        uninvoiced_appts = await db.appointments.find({
+            "client_id": client['id'],
+            "status": "completed",
+            "invoiced": {"$ne": True}
+        }, {"_id": 0}).to_list(500)
+        
+        if uninvoiced_appts:
+            # Calculate total amount
+            total = 0.0
+            for appt in uninvoiced_appts:
+                service = await db.services.find_one({"service_type": appt['service_type']}, {"_id": 0})
+                if service:
+                    total += service['price']
+            
+            clients_due.append({
+                "client_id": client['id'],
+                "client_name": client['full_name'],
+                "email": client['email'],
+                "billing_cycle": billing_cycle,
+                "uninvoiced_appointments": len(uninvoiced_appts),
+                "total_amount": round(total, 2),
+                "appointment_ids": [a['id'] for a in uninvoiced_appts]
+            })
+    
+    return clients_due
+
+@api_router.post("/billing/generate-invoice")
+async def generate_invoice_for_client(client_id: str, appointment_ids: List[str], current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Calculate total from appointments
+    total = 0.0
+    for appt_id in appointment_ids:
+        appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+        if appt:
+            service = await db.services.find_one({"service_type": appt['service_type']}, {"_id": 0})
+            if service:
+                total += service['price']
+            # Mark appointment as invoiced
+            await db.appointments.update_one({"id": appt_id}, {"$set": {"invoiced": True}})
+    
+    due_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
+    invoice = Invoice(
+        client_id=client_id,
+        appointment_ids=appointment_ids,
+        amount=total,
+        due_date=due_date
+    )
+    invoice_dict = invoice.model_dump()
+    invoice_dict['created_at'] = invoice_dict['created_at'].isoformat()
+    await db.invoices.insert_one(invoice_dict)
+    
+    return {"message": "Invoice created", "invoice_id": invoice.id, "amount": total}
+
+@api_router.put("/users/{user_id}/billing-cycle")
+async def update_client_billing_cycle(user_id: str, billing_cycle: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    if billing_cycle not in ['daily', 'weekly', 'monthly']:
+        raise HTTPException(status_code=400, detail="Invalid billing cycle. Use: daily, weekly, monthly")
+    
+    await db.users.update_one({"id": user_id}, {"$set": {"billing_cycle": billing_cycle}})
+    return {"message": f"Billing cycle updated to {billing_cycle}"}
+
+@api_router.put("/services/{service_id}")
+async def update_service_pricing(service_id: str, name: Optional[str] = None, price: Optional[float] = None, description: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    update_data = {}
+    if name is not None:
+        update_data['name'] = name
+    if price is not None:
+        update_data['price'] = price
+    if description is not None:
+        update_data['description'] = description
+    
+    if update_data:
+        await db.services.update_one({"id": service_id}, {"$set": update_data})
+    
+    return {"message": "Service updated successfully"}
+
+@api_router.get("/invoices/open")
+async def get_open_invoices(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    invoices = await db.invoices.find({"status": {"$in": ["pending", "overdue"]}}, {"_id": 0}).to_list(500)
+    
+    # Enrich with client names
+    enriched = []
+    for inv in invoices:
+        client = await db.users.find_one({"id": inv['client_id']}, {"_id": 0, "full_name": 1, "email": 1})
+        enriched.append({
+            **inv,
+            "client_name": client.get('full_name') if client else "Unknown",
+            "client_email": client.get('email') if client else ""
+        })
+    
+    return enriched
+
 # Dashboard Stats
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
