@@ -58,6 +58,11 @@ class InvoiceStatus(str, Enum):
     OVERDUE = "overdue"
     CANCELLED = "cancelled"
 
+class BillingCycle(str, Enum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+
 # Models
 class UserBase(BaseModel):
     username: str
