@@ -404,14 +404,14 @@ const SchedulePage = () => {
                 <div className="space-y-2">
                   <Label>Preferred Walker (Optional)</Label>
                   <Select
-                    value={formData.walker_id}
-                    onValueChange={(value) => setFormData({ ...formData, walker_id: value })}
+                    value={formData.walker_id || "any"}
+                    onValueChange={(value) => setFormData({ ...formData, walker_id: value === "any" ? "" : value })}
                   >
                     <SelectTrigger data-testid="select-walker">
                       <SelectValue placeholder="Any available walker" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any available</SelectItem>
+                      <SelectItem value="any">Any available</SelectItem>
                       {walkers.map((walker) => (
                         <SelectItem key={walker.id} value={walker.id}>
                           {walker.full_name}
