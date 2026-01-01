@@ -392,14 +392,14 @@ const MessagesPage = () => {
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck="false"
-                data-testid="message-input"
+                data-testid={`message-input-${isMobile ? 'mobile' : 'desktop'}`}
               />
               <Button 
                 type="submit" 
                 size="icon" 
                 className="rounded-full shrink-0" 
                 disabled={!newMessage.trim()}
-                data-testid="send-btn"
+                data-testid={`send-btn-${isMobile ? 'mobile' : 'desktop'}`}
               >
                 <Send className="w-4 h-4" />
               </Button>
