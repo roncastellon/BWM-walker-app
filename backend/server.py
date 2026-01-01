@@ -73,6 +73,7 @@ class UserBase(BaseModel):
     bio: Optional[str] = None
     profile_image: Optional[str] = None
     billing_cycle: Optional[str] = "weekly"  # daily, weekly, monthly
+    walker_color: Optional[str] = None  # hex color for calendar display
 
 class UserCreate(BaseModel):
     username: str
