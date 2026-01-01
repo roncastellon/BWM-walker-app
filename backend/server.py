@@ -611,6 +611,252 @@ async def assign_walker(appt_id: str, walker_id: str, current_user: dict = Depen
     await db.appointments.update_one({"id": appt_id}, {"$set": {"walker_id": walker_id}})
     return {"message": "Walker assigned successfully"}
 
+# GPS Walk Tracking Routes
+import math
+
+def calculate_distance(coords: List[Dict]) -> float:
+    """Calculate total distance in meters from GPS coordinates using Haversine formula"""
+    if len(coords) < 2:
+        return 0.0
+    
+    total_distance = 0.0
+    R = 6371000  # Earth's radius in meters
+    
+    for i in range(1, len(coords)):
+        lat1, lon1 = math.radians(coords[i-1]['lat']), math.radians(coords[i-1]['lng'])
+        lat2, lon2 = math.radians(coords[i]['lat']), math.radians(coords[i]['lng'])
+        
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        
+        total_distance += R * c
+    
+    return round(total_distance, 2)
+
+@api_router.post("/appointments/{appt_id}/start-tracking")
+async def start_gps_tracking(appt_id: str, lat: float, lng: float, current_user: dict = Depends(get_current_user)):
+    """Start GPS tracking for a walk"""
+    if current_user['role'] not in ['admin', 'walker']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    start_time = datetime.now(timezone.utc).isoformat()
+    initial_coord = {"lat": lat, "lng": lng, "timestamp": start_time}
+    
+    await db.appointments.update_one(
+        {"id": appt_id},
+        {"$set": {
+            "status": "in_progress",
+            "start_time": start_time,
+            "walker_id": current_user['id'],
+            "is_tracking": True,
+            "gps_route": [initial_coord],
+            "distance_meters": 0
+        }}
+    )
+    return {"message": "Walk tracking started", "start_time": start_time}
+
+@api_router.post("/appointments/{appt_id}/update-location")
+async def update_gps_location(appt_id: str, lat: float, lng: float, current_user: dict = Depends(get_current_user)):
+    """Update GPS location during a walk"""
+    if current_user['role'] not in ['admin', 'walker']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if not appt.get('is_tracking'):
+        raise HTTPException(status_code=400, detail="Walk tracking not started")
+    
+    timestamp = datetime.now(timezone.utc).isoformat()
+    new_coord = {"lat": lat, "lng": lng, "timestamp": timestamp}
+    
+    # Get existing route and add new coordinate
+    route = appt.get('gps_route', [])
+    route.append(new_coord)
+    
+    # Calculate total distance
+    distance = calculate_distance(route)
+    
+    await db.appointments.update_one(
+        {"id": appt_id},
+        {"$set": {
+            "gps_route": route,
+            "distance_meters": distance
+        }}
+    )
+    return {"message": "Location updated", "distance_meters": distance, "point_count": len(route)}
+
+@api_router.post("/appointments/{appt_id}/stop-tracking")
+async def stop_gps_tracking(appt_id: str, lat: Optional[float] = None, lng: Optional[float] = None, current_user: dict = Depends(get_current_user)):
+    """Stop GPS tracking and complete the walk"""
+    if current_user['role'] not in ['admin', 'walker']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    end_time = datetime.now(timezone.utc)
+    
+    # Add final location if provided
+    route = appt.get('gps_route', [])
+    if lat is not None and lng is not None:
+        route.append({"lat": lat, "lng": lng, "timestamp": end_time.isoformat()})
+    
+    # Calculate final distance
+    distance = calculate_distance(route)
+    
+    # Calculate duration
+    duration = 0
+    if appt.get('start_time'):
+        start_time = datetime.fromisoformat(appt['start_time'].replace('Z', '+00:00'))
+        duration = int((end_time - start_time).total_seconds() / 60)
+    
+    await db.appointments.update_one(
+        {"id": appt_id},
+        {"$set": {
+            "status": "completed",
+            "end_time": end_time.isoformat(),
+            "actual_duration_minutes": duration,
+            "is_tracking": False,
+            "gps_route": route,
+            "distance_meters": distance
+        }}
+    )
+    return {
+        "message": "Walk completed",
+        "duration_minutes": duration,
+        "distance_meters": distance,
+        "route_points": len(route)
+    }
+
+@api_router.get("/appointments/{appt_id}/live-tracking")
+async def get_live_tracking(appt_id: str, current_user: dict = Depends(get_current_user)):
+    """Get live tracking data for an appointment (client, walker, admin can view)"""
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Clients can only view their own appointments
+    if current_user['role'] == 'client' and appt['client_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized to view this walk")
+    
+    # Get walker info
+    walker = None
+    if appt.get('walker_id'):
+        walker = await db.users.find_one({"id": appt['walker_id']}, {"_id": 0, "full_name": 1, "phone": 1, "walker_color": 1})
+    
+    # Get pet info
+    pets = []
+    for pet_id in appt.get('pet_ids', []):
+        pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1, "breed": 1})
+        if pet:
+            pets.append(pet)
+    
+    return {
+        "appointment_id": appt_id,
+        "status": appt.get('status'),
+        "is_tracking": appt.get('is_tracking', False),
+        "start_time": appt.get('start_time'),
+        "gps_route": appt.get('gps_route', []),
+        "distance_meters": appt.get('distance_meters', 0),
+        "walker": walker,
+        "pets": pets,
+        "current_location": appt.get('gps_route', [])[-1] if appt.get('gps_route') else None
+    }
+
+@api_router.get("/walks/active")
+async def get_active_walks(current_user: dict = Depends(get_current_user)):
+    """Get all currently active walks with GPS tracking"""
+    query = {"is_tracking": True, "status": "in_progress"}
+    
+    # Clients only see their own walks
+    if current_user['role'] == 'client':
+        query["client_id"] = current_user['id']
+    # Walkers only see their own walks
+    elif current_user['role'] == 'walker':
+        query["walker_id"] = current_user['id']
+    # Admins see all
+    
+    walks = await db.appointments.find(query, {"_id": 0}).to_list(100)
+    
+    # Enrich with walker and pet info
+    enriched = []
+    for walk in walks:
+        walker = None
+        if walk.get('walker_id'):
+            walker = await db.users.find_one({"id": walk['walker_id']}, {"_id": 0, "full_name": 1, "walker_color": 1})
+        
+        pets = []
+        for pet_id in walk.get('pet_ids', []):
+            pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+            if pet:
+                pets.append(pet['name'])
+        
+        client = await db.users.find_one({"id": walk['client_id']}, {"_id": 0, "full_name": 1})
+        
+        enriched.append({
+            **walk,
+            "walker_name": walker.get('full_name') if walker else "Unknown",
+            "walker_color": walker.get('walker_color') if walker else "#9CA3AF",
+            "pet_names": pets,
+            "client_name": client.get('full_name') if client else "Unknown"
+        })
+    
+    return enriched
+
+@api_router.get("/walks/completed")
+async def get_completed_walks(current_user: dict = Depends(get_current_user), limit: int = 20):
+    """Get completed walks with GPS route data"""
+    query = {"status": "completed", "gps_route": {"$exists": True, "$ne": []}}
+    
+    # Filter by role
+    if current_user['role'] == 'client':
+        query["client_id"] = current_user['id']
+    elif current_user['role'] == 'walker':
+        query["walker_id"] = current_user['id']
+    
+    walks = await db.appointments.find(query, {"_id": 0}).sort("end_time", -1).limit(limit).to_list(limit)
+    
+    # Enrich with info
+    enriched = []
+    for walk in walks:
+        walker = None
+        if walk.get('walker_id'):
+            walker = await db.users.find_one({"id": walk['walker_id']}, {"_id": 0, "full_name": 1, "walker_color": 1})
+        
+        pets = []
+        for pet_id in walk.get('pet_ids', []):
+            pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+            if pet:
+                pets.append(pet['name'])
+        
+        client = await db.users.find_one({"id": walk['client_id']}, {"_id": 0, "full_name": 1})
+        
+        enriched.append({
+            "id": walk['id'],
+            "scheduled_date": walk['scheduled_date'],
+            "start_time": walk.get('start_time'),
+            "end_time": walk.get('end_time'),
+            "duration_minutes": walk.get('actual_duration_minutes', 0),
+            "distance_meters": walk.get('distance_meters', 0),
+            "gps_route": walk.get('gps_route', []),
+            "walker_name": walker.get('full_name') if walker else "Unknown",
+            "walker_color": walker.get('walker_color') if walker else "#9CA3AF",
+            "pet_names": pets,
+            "client_name": client.get('full_name') if client else "Unknown"
+        })
+    
+    return enriched
+
 # Invoice Routes
 @api_router.post("/invoices", response_model=Invoice)
 async def create_invoice(client_id: str, appointment_ids: List[str], current_user: dict = Depends(get_current_user)):
