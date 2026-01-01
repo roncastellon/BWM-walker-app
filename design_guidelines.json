@@ -1,0 +1,170 @@
+{
+  "identity": {
+    "name": "E1",
+    "role": "Creative Designer (Top 1%)",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ],
+    "anti_patterns": [
+      "Purple/Teal for CTA",
+      "Inter everywhere",
+      "Center-Everything Disease",
+      "Gradient Overload"
+    ]
+  },
+  "project": {
+    "name": "WagWalk",
+    "description": "A premium, trustworthy, and energetic dog walking and pet sitting platform.",
+    "target_audience": "Pet owners who treat pets like family; Professional walkers who need efficiency.",
+    "tone": "Friendly, Reliable, Energetic, Warm",
+    "theme_strategy": "Light Mode Default (Warm/Organic) with Dark Mode Option"
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Nunito",
+      "body": "Manrope",
+      "accent": "Fredoka"
+    },
+    "weights": {
+      "heading": "700",
+      "body": "400",
+      "bold": "600"
+    },
+    "installation": "import '@fontsource/nunito/400.css'; import '@fontsource/nunito/700.css'; import '@fontsource/manrope/400.css'; import '@fontsource/manrope/600.css'; import '@fontsource/fredoka/600.css';"
+  },
+  "colors": {
+    "palette_name": "Playful Trust",
+    "light": {
+      "background": "40 20% 97%",
+      "foreground": "220 20% 20%",
+      "card": "0 0% 100%",
+      "card_foreground": "220 20% 20%",
+      "popover": "0 0% 100%",
+      "popover_foreground": "220 20% 20%",
+      "primary": "25 95% 53%",
+      "primary_foreground": "0 0% 100%",
+      "secondary": "150 30% 45%",
+      "secondary_foreground": "0 0% 100%",
+      "muted": "40 10% 90%",
+      "muted_foreground": "220 10% 40%",
+      "accent": "190 80% 60%",
+      "accent_foreground": "0 0% 100%",
+      "destructive": "0 84.2% 60.2%",
+      "destructive_foreground": "0 0% 98%",
+      "border": "220 10% 90%",
+      "input": "220 10% 90%",
+      "ring": "25 95% 53%"
+    },
+    "dark": {
+      "background": "220 20% 10%",
+      "foreground": "40 20% 97%",
+      "card": "220 20% 12%",
+      "card_foreground": "40 20% 97%",
+      "popover": "220 20% 12%",
+      "popover_foreground": "40 20% 97%",
+      "primary": "25 95% 53%",
+      "primary_foreground": "0 0% 100%",
+      "secondary": "150 30% 45%",
+      "secondary_foreground": "0 0% 100%",
+      "muted": "220 20% 15%",
+      "muted_foreground": "220 10% 60%",
+      "accent": "190 80% 60%",
+      "accent_foreground": "0 0% 100%",
+      "destructive": "0 62.8% 30.6%",
+      "destructive_foreground": "0 0% 98%",
+      "border": "220 20% 20%",
+      "input": "220 20% 20%",
+      "ring": "25 95% 53%"
+    }
+  },
+  "layout": {
+    "spacing_scale": "Generous (2x standard)",
+    "container_padding": "p-6 md:p-12 lg:p-20",
+    "grid_strategies": {
+      "marketing": "Bento Mode A (Asymmetric, 'Tetris' Grid)",
+      "dashboard": "Control Room Mode B (Dense, 'Control Room' Grid)"
+    },
+    "border_radius": {
+      "default": "rounded-xl",
+      "button": "rounded-full",
+      "card": "rounded-2xl"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-bold px-8 py-3",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-6 py-2",
+      "ghost": "hover:bg-muted text-foreground rounded-full px-4 py-2"
+    },
+    "cards": {
+      "marketing": "bg-card text-card-foreground rounded-3xl shadow-xl border border-border/50 hover:-translate-y-1 transition-transform duration-300 overflow-hidden",
+      "dashboard": "bg-card text-card-foreground rounded-xl shadow-sm border border-border hover:shadow-md transition-shadow duration-200"
+    },
+    "inputs": {
+      "default": "rounded-lg border-border bg-background px-4 py-3 focus:ring-2 focus:ring-primary/20 transition-all"
+    }
+  },
+  "visual_enhancers": {
+    "textures": "Use subtle grain/noise overlays on solid backgrounds to avoid 'digital flatness'.",
+    "shadows": "Soft, colored shadows (e.g., shadow-orange-500/20) for primary actions.",
+    "glassmorphism": "Use backdrop-blur-xl with bg-white/70 for sticky headers and floating navs.",
+    "motion": "Use framer-motion for entrance animations (staggerChildren). Hover states must be snappy (duration-200)."
+  },
+  "images": {
+    "hero_dog": {
+      "url": "https://images.unsplash.com/photo-1557976606-d068b9719915",
+      "alt": "Happy puppy on grass",
+      "category": "hero"
+    },
+    "walker_city": {
+      "url": "https://images.unsplash.com/photo-1653257292366-a8b976a75d49",
+      "alt": "Dog walker in city",
+      "category": "marketing"
+    },
+    "cat_relaxing": {
+      "url": "https://images.unsplash.com/photo-1760214695261-de239229d637",
+      "alt": "Relaxing white cat",
+      "category": "marketing"
+    },
+    "dog_running": {
+      "url": "https://images.unsplash.com/photo-1594649063675-318d4c4322d1",
+      "alt": "Border collie running",
+      "category": "marketing"
+    },
+    "walker_group": {
+      "url": "https://images.unsplash.com/photo-1654672336582-08ef009b2f1d",
+      "alt": "Group dog walk",
+      "category": "marketing"
+    }
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Rounded, stroke-width-2",
+    "instructions": "Use Lucide icons for all UI elements. For marketing sections, use larger sizes with colored backgrounds."
+  },
+  "tech_stack": {
+    "framework": "React",
+    "styling": "Tailwind CSS",
+    "components": "Shadcn UI",
+    "animation": "Framer Motion",
+    "charts": "Recharts (via Shadcn Charts)",
+    "toast": "Sonner"
+  },
+  "universal_guidelines": [
+    "DO NOT use generic 'Inter' font for headings.",
+    "DO NOT use purple/teal gradients.",
+    "DO NOT center-align everything.",
+    "ALWAYS use 'data-testid' on interactive elements.",
+    "ALWAYS use 'sonner' for toasts.",
+    "ALWAYS use 'lucide-react' for icons.",
+    "Ensure contrast ratios meet WCAG AA standards.",
+    "Use 2-3x more spacing than typical designs.",
+    "Create depth through layered design elements with z-index hierarchy."
+  ],
+  "instructions_to_main_agent": "1. Install fonts: `npm install @fontsource/nunito @fontsource/manrope @fontsource/fredoka`. 2. Update `tailwind.config.js` with the provided colors and fonts. 3. Create a `Layout` component that handles the sidebar/header structure. 4. Use the provided image URLs for placeholders. 5. Follow the 'Bento' grid strategy for the dashboard overview."
+}
