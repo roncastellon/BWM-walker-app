@@ -25,6 +25,7 @@ import {
   X,
   PawPrint,
   FileText,
+  Navigation,
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
