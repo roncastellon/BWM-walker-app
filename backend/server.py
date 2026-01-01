@@ -1699,7 +1699,7 @@ async def get_unread_message_count(current_user: dict = Depends(get_current_user
     unread_direct = await db.messages.count_documents({
         "receiver_id": current_user['id'],
         "is_group_message": False,
-        "read": {"$ne": True}
+        "read": False
     })
     
     # For staff, also count unread group messages
