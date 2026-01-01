@@ -109,6 +109,28 @@ const AdminBillingPage = () => {
     });
   };
 
+  const savePaymentSettings = async () => {
+    setSavingPaymentSettings(true);
+    try {
+      await api.put('/settings/payment-info', paymentSettings);
+      toast.success('Payment settings saved');
+    } catch (error) {
+      toast.error('Failed to save payment settings');
+    } finally {
+      setSavingPaymentSettings(false);
+    }
+  };
+
+  const markInvoiceAsPaid = async (invoiceId, paymentMethod) => {
+    try {
+      await api.post(`/invoices/${invoiceId}/mark-paid?payment_method=${paymentMethod}`);
+      toast.success('Invoice marked as paid');
+      fetchAllData();
+    } catch (error) {
+      toast.error('Failed to mark invoice as paid');
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
