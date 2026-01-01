@@ -104,6 +104,7 @@ class UserResponse(BaseModel):
     profile_image: Optional[str] = None
     is_active: bool
     billing_cycle: Optional[str] = "weekly"
+    walker_color: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
