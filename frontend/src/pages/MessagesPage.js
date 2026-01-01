@@ -434,7 +434,7 @@ const MessagesPage = () => {
             <ContactsList />
           </div>
           <div className="flex-1 min-w-0">
-            <ChatArea />
+            <ChatArea isMobile={false} />
           </div>
         </div>
 
@@ -446,7 +446,7 @@ const MessagesPage = () => {
             </div>
           ) : (
             <div className="w-full">
-              <ChatArea />
+              <ChatArea isMobile={true} />
             </div>
           )}
         </div>
