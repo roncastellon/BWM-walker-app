@@ -228,11 +228,11 @@ frontend:
 
   - task: "Mobile chat input focus retention"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/pages/MessagesPage.js"
-    stuck_count: 3
+    stuck_count: 4
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
@@ -243,6 +243,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "Tested with Playwright mobile viewport (375x812). Typed 'Hello world test' successfully - focus maintained throughout. Fix appears to be working with memoized MessageInput + Layout.js polling skip"
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE CONFIRMED: Mobile chat input focus retention is NOT working. Tested with mobile viewport (375x812) on walker and client roles. Focus lost at character 7 when typing 'Testing' - only 'g' remained. Full message test (40 chars) resulted in 0 characters retained. The memoized MessageInput component and Layout.js polling skip are not sufficient to fix the focus retention issue. This is a blocking bug for mobile users."
 
   - task: "Calendar appointment click-to-detail modal"
     implemented: true
