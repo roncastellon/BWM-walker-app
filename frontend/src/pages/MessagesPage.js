@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -20,9 +20,11 @@ const MessagesPage = () => {
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [contactFilter, setContactFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [showChat, setShowChat] = useState(false); // For mobile view toggle
+  const [showChat, setShowChat] = useState(false);
   const messagesEndRef = useRef(null);
   const pollInterval = useRef(null);
+  const inputRef = useRef(null);
+  const hasMarkedRead = useRef(false);
 
   useEffect(() => {
     fetchContacts();
@@ -33,8 +35,9 @@ const MessagesPage = () => {
 
   useEffect(() => {
     if (selectedContact || isGroupChat) {
+      hasMarkedRead.current = false;
       fetchMessages();
-      pollInterval.current = setInterval(fetchMessages, 3000);
+      pollInterval.current = setInterval(fetchMessagesOnly, 5000);
     }
     return () => {
       if (pollInterval.current) clearInterval(pollInterval.current);
@@ -56,17 +59,40 @@ const MessagesPage = () => {
     }
   };
 
+  // Fetch messages and mark as read (only on first load)
   const fetchMessages = async () => {
     try {
       let url = '/messages';
       if (isGroupChat) {
         url += '?group=true';
-        // Mark group messages as read
-        await api.post('/messages/mark-read?mark_group=true');
+        if (!hasMarkedRead.current) {
+          api.post('/messages/mark-read?mark_group=true').catch(() => {});
+          hasMarkedRead.current = true;
+        }
       } else if (selectedContact) {
         url += `?receiver_id=${selectedContact.id}`;
-        // Mark direct messages from this contact as read
-        await api.post(`/messages/mark-read?sender_id=${selectedContact.id}`);
+        if (!hasMarkedRead.current) {
+          api.post(`/messages/mark-read?sender_id=${selectedContact.id}`).catch(() => {});
+          hasMarkedRead.current = true;
+        }
+      } else {
+        return;
+      }
+      const response = await api.get(url);
+      setMessages(response.data.reverse());
+    } catch (error) {
+      console.error('Failed to load messages');
+    }
+  };
+
+  // Fetch messages only (for polling, no mark-read)
+  const fetchMessagesOnly = async () => {
+    try {
+      let url = '/messages';
+      if (isGroupChat) {
+        url += '?group=true';
+      } else if (selectedContact) {
+        url += `?receiver_id=${selectedContact.id}`;
       } else {
         return;
       }
@@ -81,18 +107,25 @@ const MessagesPage = () => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
+    const messageToSend = newMessage.trim();
+    setNewMessage('');
+    
     try {
       await api.post('/messages', {
         receiver_id: isGroupChat ? null : selectedContact?.id,
         is_group_message: isGroupChat,
-        content: newMessage.trim(),
+        content: messageToSend,
       });
-      setNewMessage('');
-      fetchMessages();
+      fetchMessagesOnly();
     } catch (error) {
       toast.error('Failed to send message');
+      setNewMessage(messageToSend);
     }
   };
+
+  const handleInputChange = useCallback((e) => {
+    setNewMessage(e.target.value);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -137,13 +170,13 @@ const MessagesPage = () => {
   const selectContact = (contact) => {
     setSelectedContact(contact);
     setIsGroupChat(false);
-    setShowChat(true); // Show chat on mobile
+    setShowChat(true);
   };
 
   const selectGroupChat = () => {
     setSelectedContact(null);
     setIsGroupChat(true);
-    setShowChat(true); // Show chat on mobile
+    setShowChat(true);
   };
 
   const goBackToContacts = () => {
@@ -167,7 +200,6 @@ const MessagesPage = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Contacts</CardTitle>
         </div>
-        {/* Filter Dropdown */}
         {!isClient && (
           <Select value={contactFilter} onValueChange={setContactFilter}>
             <SelectTrigger className="mt-2" data-testid="contact-filter">
@@ -185,7 +217,6 @@ const MessagesPage = () => {
         )}
       </CardHeader>
       <CardContent className="flex-1 overflow-auto p-2">
-        {/* Group Chat for Staff */}
         {(isAdmin || isWalker) && (
           <button
             onClick={selectGroupChat}
@@ -208,7 +239,6 @@ const MessagesPage = () => {
           </button>
         )}
 
-        {/* Contact List */}
         {contacts.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -264,7 +294,6 @@ const MessagesPage = () => {
         <>
           <CardHeader className="border-b border-border pb-4">
             <div className="flex items-center gap-3">
-              {/* Back button for mobile */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -354,13 +383,24 @@ const MessagesPage = () => {
           <div className="p-4 border-t border-border">
             <form onSubmit={sendMessage} className="flex gap-2">
               <Input
+                ref={inputRef}
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Type a message..."
                 className="flex-1 rounded-full"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
                 data-testid="message-input"
               />
-              <Button type="submit" size="icon" className="rounded-full shrink-0" data-testid="send-btn">
+              <Button 
+                type="submit" 
+                size="icon" 
+                className="rounded-full shrink-0" 
+                disabled={!newMessage.trim()}
+                data-testid="send-btn"
+              >
                 <Send className="w-4 h-4" />
               </Button>
             </form>
@@ -388,7 +428,7 @@ const MessagesPage = () => {
           </p>
         </div>
 
-        {/* Desktop Layout - Side by side */}
+        {/* Desktop Layout */}
         <div className="hidden md:flex flex-1 gap-6 min-h-0">
           <div className="w-80 shrink-0">
             <ContactsList />
@@ -398,7 +438,7 @@ const MessagesPage = () => {
           </div>
         </div>
 
-        {/* Mobile Layout - Toggle between contacts and chat */}
+        {/* Mobile Layout */}
         <div className="flex md:hidden flex-1 min-h-0">
           {!showChat ? (
             <div className="w-full">
