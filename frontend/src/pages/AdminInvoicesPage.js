@@ -6,11 +6,12 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
+import { Textarea } from '../components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { 
   DollarSign, FileText, Clock, CheckCircle, AlertCircle, 
-  TrendingUp, Calendar, Users, Edit2, Save, RefreshCw 
+  TrendingUp, Calendar, Users, Edit2, Save, RefreshCw, Settings, CreditCard
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -24,6 +25,13 @@ const AdminBillingPage = () => {
   const [loading, setLoading] = useState(true);
   const [editingService, setEditingService] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', description: '' });
+  const [paymentSettings, setPaymentSettings] = useState({
+    zelle: { enabled: true, email: '', phone: '', name: '' },
+    venmo: { enabled: true, username: '' },
+    cashapp: { enabled: true, cashtag: '' },
+    instructions: 'Please include your invoice number in the payment memo.',
+  });
+  const [savingPaymentSettings, setSavingPaymentSettings] = useState(false);
 
   useEffect(() => {
     fetchAllData();
@@ -32,18 +40,22 @@ const AdminBillingPage = () => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [servicesRes, clientsDueRes, openInvRes, revenueRes, clientsRes] = await Promise.all([
+      const [servicesRes, clientsDueRes, openInvRes, revenueRes, clientsRes, paymentInfoRes] = await Promise.all([
         api.get('/services'),
         api.get('/billing/clients-due'),
         api.get('/invoices/open'),
         api.get('/revenue/summary'),
         api.get('/users/clients'),
+        api.get('/settings/payment-info'),
       ]);
       setServices(servicesRes.data);
       setClientsDue(clientsDueRes.data);
       setOpenInvoices(openInvRes.data);
       setRevenue(revenueRes.data);
       setClients(clientsRes.data);
+      if (paymentInfoRes.data && Object.keys(paymentInfoRes.data).length > 0) {
+        setPaymentSettings(paymentInfoRes.data);
+      }
     } catch (error) {
       toast.error('Failed to load billing data');
     } finally {
