@@ -1,29 +1,68 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Badge } from '../components/ui/badge';
-import { MessageCircle, Send, Users, User, Filter, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Send, Users, Filter, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Memoized input component to prevent re-renders
+const MessageInput = memo(({ onSend, isMobile }) => {
+  const [text, setText] = useState('');
+  const inputRef = useRef(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (text.trim()) {
+      onSend(text.trim());
+      setText('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <input
+        ref={inputRef}
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Type a message..."
+        className="flex-1 h-10 px-4 rounded-full border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="sentences"
+        data-testid={`message-input-${isMobile ? 'mobile' : 'desktop'}`}
+      />
+      <Button 
+        type="submit" 
+        size="icon" 
+        className="rounded-full shrink-0" 
+        disabled={!text.trim()}
+        data-testid={`send-btn-${isMobile ? 'mobile' : 'desktop'}`}
+      >
+        <Send className="w-4 h-4" />
+      </Button>
+    </form>
+  );
+});
+
+MessageInput.displayName = 'MessageInput';
 
 const MessagesPage = () => {
   const { user, api, isAdmin, isWalker, isClient } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [messages, setMessages] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [contactFilter, setContactFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const messagesEndRef = useRef(null);
   const pollInterval = useRef(null);
-  const inputRef = useRef(null);
   const hasMarkedRead = useRef(false);
 
   useEffect(() => {
@@ -59,7 +98,6 @@ const MessagesPage = () => {
     }
   };
 
-  // Fetch messages and mark as read (only on first load)
   const fetchMessages = async () => {
     try {
       let url = '/messages';
@@ -85,7 +123,6 @@ const MessagesPage = () => {
     }
   };
 
-  // Fetch messages only (for polling, no mark-read)
   const fetchMessagesOnly = async () => {
     try {
       let url = '/messages';
@@ -103,29 +140,18 @@ const MessagesPage = () => {
     }
   };
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-
-    const messageToSend = newMessage.trim();
-    setNewMessage('');
-    
+  const sendMessage = useCallback(async (content) => {
     try {
       await api.post('/messages', {
         receiver_id: isGroupChat ? null : selectedContact?.id,
         is_group_message: isGroupChat,
-        content: messageToSend,
+        content: content,
       });
       fetchMessagesOnly();
     } catch (error) {
       toast.error('Failed to send message');
-      setNewMessage(messageToSend);
     }
-  };
-
-  const handleInputChange = useCallback((e) => {
-    setNewMessage(e.target.value);
-  }, []);
+  }, [api, isGroupChat, selectedContact]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -181,6 +207,8 @@ const MessagesPage = () => {
 
   const goBackToContacts = () => {
     setShowChat(false);
+    setSelectedContact(null);
+    setIsGroupChat(false);
   };
 
   if (loading) {
@@ -193,7 +221,6 @@ const MessagesPage = () => {
     );
   }
 
-  // Contacts List Component
   const ContactsList = () => (
     <Card className="h-full rounded-2xl shadow-sm flex flex-col">
       <CardHeader className="pb-3">
@@ -287,21 +314,21 @@ const MessagesPage = () => {
     </Card>
   );
 
-  // Chat Area Component
   const ChatArea = ({ isMobile }) => (
     <Card className="h-full rounded-2xl shadow-sm flex flex-col">
       {selectedContact || isGroupChat ? (
         <>
           <CardHeader className="border-b border-border pb-4">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={goBackToContacts}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={goBackToContacts}
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              )}
               
               {isGroupChat ? (
                 <>
@@ -381,29 +408,7 @@ const MessagesPage = () => {
           </ScrollArea>
 
           <div className="p-4 border-t border-border">
-            <form onSubmit={sendMessage} className="flex gap-2">
-              <Input
-                ref={inputRef}
-                value={newMessage}
-                onChange={handleInputChange}
-                placeholder="Type a message..."
-                className="flex-1 rounded-full"
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck="false"
-                data-testid={`message-input-${isMobile ? 'mobile' : 'desktop'}`}
-              />
-              <Button 
-                type="submit" 
-                size="icon" 
-                className="rounded-full shrink-0" 
-                disabled={!newMessage.trim()}
-                data-testid={`send-btn-${isMobile ? 'mobile' : 'desktop'}`}
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </form>
+            <MessageInput onSend={sendMessage} isMobile={isMobile} />
           </div>
         </>
       ) : (
