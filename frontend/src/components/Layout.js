@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -26,13 +26,44 @@ import {
   PawPrint,
   FileText,
   Navigation,
+  Bell,
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
-  const { user, logout, isAdmin, isWalker, isClient } = useAuth();
+  const { user, api, logout, isAdmin, isWalker, isClient } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
+  const prevCountRef = useRef(0);
+
+  // Poll for unread messages
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await api.get('/messages/unread-count');
+        const newCount = response.data.unread_count;
+        
+        // Check if count increased (new message arrived)
+        if (newCount > prevCountRef.current) {
+          setHasNewMessage(true);
+          // Reset animation after 3 seconds
+          setTimeout(() => setHasNewMessage(false), 3000);
+        }
+        
+        prevCountRef.current = newCount;
+        setUnreadCount(newCount);
+      } catch (error) {
+        console.error('Failed to fetch unread count');
+      }
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 5000); // Poll every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [api]);
 
   const handleLogout = () => {
     logout();
@@ -73,65 +104,27 @@ const Layout = ({ children }) => {
 
   const navItems = getNavItems();
 
+  const getMessagesPath = () => {
+    if (isAdmin) return '/admin/chat';
+    if (isWalker) return '/walker/chat';
+    return '/messages';
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-border/50 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-muted"
-            data-testid="mobile-menu-toggle"
-          >
-            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+      {/* Top Navigation Bar */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <Dog className="w-8 h-8 text-primary" />
-            <span className="font-heading font-bold text-xl">WagWalk</span>
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+              <Dog className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <span className="font-heading text-xl font-bold hidden sm:inline">WagWalk</span>
           </Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full" data-testid="user-menu">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={user?.profile_image} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.full_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{user?.full_name}</DropdownMenuLabel>
-              <DropdownMenuLabel className="font-normal text-xs text-muted-foreground capitalize">
-                {user?.role}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} data-testid="logout-btn">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-card border-r border-border z-40 transform transition-transform duration-300 lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-border">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Dog className="w-6 h-6 text-primary" />
-              </div>
-              <span className="font-heading font-bold text-xl">WagWalk</span>
-            </Link>
-          </div>
-
-          <nav className="flex-1 p-4 space-y-2">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -139,58 +132,131 @@ const Layout = ({ children }) => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <Icon className="w-4 h-4" />
+                  {item.label}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="p-4 border-t border-border">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <Avatar>
-                <AvatarImage src={user?.profile_image} />
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {user?.full_name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{user?.full_name}</p>
-                <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleLogout}
-                className="shrink-0"
-                data-testid="sidebar-logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
-            </div>
+          {/* Right side - Message Icon & User Menu */}
+          <div className="flex items-center gap-2">
+            {/* Message Notification Icon */}
+            <Link
+              to={getMessagesPath()}
+              className={`relative p-2 rounded-lg transition-all ${
+                hasNewMessage 
+                  ? 'bg-primary text-primary-foreground animate-pulse' 
+                  : unreadCount > 0 
+                    ? 'bg-primary/10 text-primary' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+              data-testid="message-notification"
+            >
+              <MessageCircle className={`w-5 h-5 ${hasNewMessage ? 'animate-bounce' : ''}`} />
+              {unreadCount > 0 && (
+                <span className={`absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-xs font-bold flex items-center justify-center ${
+                  hasNewMessage 
+                    ? 'bg-white text-primary' 
+                    : 'bg-primary text-primary-foreground'
+                }`}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+
+            {/* User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.profile_image} alt={user?.full_name} />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {user?.full_name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{user?.full_name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Mobile Menu Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden rounded-lg hover:bg-muted"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              data-testid="mobile-menu-toggle"
+            >
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
           </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Overlay for mobile */}
+      {/* Mobile Sidebar */}
       {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+          <nav className="fixed top-16 left-0 bottom-0 w-64 bg-background border-r p-4 overflow-y-auto">
+            <div className="space-y-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                const isMessageItem = item.icon === MessageCircle;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-colors ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-muted'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-5 h-5" />
+                      {item.label}
+                    </div>
+                    {isMessageItem && unreadCount > 0 && (
+                      <span className={`min-w-[20px] h-[20px] rounded-full text-xs font-bold flex items-center justify-center ${
+                        isActive 
+                          ? 'bg-primary-foreground text-primary' 
+                          : 'bg-primary text-primary-foreground'
+                      }`}>
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        </div>
       )}
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-        <div className="p-4 lg:p-8">{children}</div>
+      <main className="container px-4 py-6">
+        {children}
       </main>
     </div>
   );
