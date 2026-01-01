@@ -10,18 +10,22 @@ import { Badge } from '../components/ui/badge';
 import { MessageCircle, Send, Users, Filter, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Memoized input component to prevent re-renders
-const MessageInput = memo(({ onSend, isMobile }) => {
+// Memoized input component - defined OUTSIDE parent to prevent recreation
+const MessageInput = memo(({ onSend, inputKey }) => {
   const [text, setText] = useState('');
   const inputRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     if (text.trim()) {
       onSend(text.trim());
       setText('');
     }
-  };
+  }, [text, onSend]);
+
+  const handleChange = useCallback((e) => {
+    setText(e.target.value);
+  }, []);
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
@@ -29,20 +33,21 @@ const MessageInput = memo(({ onSend, isMobile }) => {
         ref={inputRef}
         type="text"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={handleChange}
         placeholder="Type a message..."
         className="flex-1 h-10 px-4 rounded-full border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="sentences"
-        data-testid={`message-input-${isMobile ? 'mobile' : 'desktop'}`}
+        spellCheck="false"
+        data-testid={`message-input-${inputKey}`}
       />
       <Button 
         type="submit" 
         size="icon" 
         className="rounded-full shrink-0" 
         disabled={!text.trim()}
-        data-testid={`send-btn-${isMobile ? 'mobile' : 'desktop'}`}
+        data-testid={`send-btn-${inputKey}`}
       >
         <Send className="w-4 h-4" />
       </Button>
@@ -52,269 +57,45 @@ const MessageInput = memo(({ onSend, isMobile }) => {
 
 MessageInput.displayName = 'MessageInput';
 
-const MessagesPage = () => {
-  const { user, api, isAdmin, isWalker, isClient } = useAuth();
-  const [contacts, setContacts] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [selectedContact, setSelectedContact] = useState(null);
-  const [isGroupChat, setIsGroupChat] = useState(false);
-  const [contactFilter, setContactFilter] = useState('all');
-  const [loading, setLoading] = useState(true);
-  const [showChat, setShowChat] = useState(false);
-  const messagesEndRef = useRef(null);
-  const pollInterval = useRef(null);
-  const hasMarkedRead = useRef(false);
-
-  useEffect(() => {
-    fetchContacts();
-    return () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
-    };
-  }, [contactFilter]);
-
-  useEffect(() => {
-    if (selectedContact || isGroupChat) {
-      hasMarkedRead.current = false;
-      fetchMessages();
-      pollInterval.current = setInterval(fetchMessagesOnly, 5000);
-    }
-    return () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
-    };
-  }, [selectedContact, isGroupChat]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const fetchContacts = async () => {
-    try {
-      const response = await api.get(`/messages/contacts?contact_type=${contactFilter}`);
-      setContacts(response.data);
-    } catch (error) {
-      console.error('Failed to load contacts');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchMessages = async () => {
-    try {
-      let url = '/messages';
-      if (isGroupChat) {
-        url += '?group=true';
-        if (!hasMarkedRead.current) {
-          api.post('/messages/mark-read?mark_group=true').catch(() => {});
-          hasMarkedRead.current = true;
-        }
-      } else if (selectedContact) {
-        url += `?receiver_id=${selectedContact.id}`;
-        if (!hasMarkedRead.current) {
-          api.post(`/messages/mark-read?sender_id=${selectedContact.id}`).catch(() => {});
-          hasMarkedRead.current = true;
-        }
-      } else {
-        return;
-      }
-      const response = await api.get(url);
-      setMessages(response.data.reverse());
-    } catch (error) {
-      console.error('Failed to load messages');
-    }
-  };
-
-  const fetchMessagesOnly = async () => {
-    try {
-      let url = '/messages';
-      if (isGroupChat) {
-        url += '?group=true';
-      } else if (selectedContact) {
-        url += `?receiver_id=${selectedContact.id}`;
-      } else {
-        return;
-      }
-      const response = await api.get(url);
-      setMessages(response.data.reverse());
-    } catch (error) {
-      console.error('Failed to load messages');
-    }
-  };
-
-  const sendMessage = useCallback(async (content) => {
-    try {
-      await api.post('/messages', {
-        receiver_id: isGroupChat ? null : selectedContact?.id,
-        is_group_message: isGroupChat,
-        content: content,
-      });
-      fetchMessagesOnly();
-    } catch (error) {
-      toast.error('Failed to send message');
-    }
-  }, [api, isGroupChat, selectedContact]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    return date.toLocaleDateString();
-  };
-
-  const getContactTypeBadge = (type) => {
-    switch (type) {
-      case 'client':
-        return <Badge className="bg-blue-100 text-blue-800 rounded-full text-xs">Client</Badge>;
-      case 'walker':
-        return <Badge className="bg-green-100 text-green-800 rounded-full text-xs">Walker</Badge>;
-      case 'admin':
-        return <Badge className="bg-purple-100 text-purple-800 rounded-full text-xs">Admin</Badge>;
-      default:
-        return null;
-    }
-  };
-
-  const getFilterOptions = () => {
-    if (isClient) {
-      return [{ value: 'all', label: 'My Contacts' }];
-    }
-    return [
-      { value: 'all', label: 'All Contacts' },
-      { value: 'clients', label: 'My Clients' },
-      { value: 'team', label: 'Team' },
-    ];
-  };
-
-  const selectContact = (contact) => {
-    setSelectedContact(contact);
-    setIsGroupChat(false);
-    setShowChat(true);
-  };
-
-  const selectGroupChat = () => {
-    setSelectedContact(null);
-    setIsGroupChat(true);
-    setShowChat(true);
-  };
-
-  const goBackToContacts = () => {
-    setShowChat(false);
-    setSelectedContact(null);
-    setIsGroupChat(false);
-  };
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </Layout>
-    );
+// Helper function for contact type badge - moved outside
+const getContactTypeBadge = (type) => {
+  switch (type) {
+    case 'client':
+      return <Badge className="bg-blue-100 text-blue-800 rounded-full text-xs">Client</Badge>;
+    case 'walker':
+      return <Badge className="bg-green-100 text-green-800 rounded-full text-xs">Walker</Badge>;
+    case 'admin':
+      return <Badge className="bg-purple-100 text-purple-800 rounded-full text-xs">Admin</Badge>;
+    default:
+      return null;
   }
+};
 
-  const ContactsList = () => (
-    <Card className="h-full rounded-2xl shadow-sm flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Contacts</CardTitle>
-        </div>
-        {!isClient && (
-          <Select value={contactFilter} onValueChange={setContactFilter}>
-            <SelectTrigger className="mt-2" data-testid="contact-filter">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {getFilterOptions().map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </CardHeader>
-      <CardContent className="flex-1 overflow-auto p-2">
-        {(isAdmin || isWalker) && (
-          <button
-            onClick={selectGroupChat}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors mb-2 ${
-              isGroupChat ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
-            }`}
-            data-testid="group-chat-btn"
-          >
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              isGroupChat ? 'bg-primary-foreground/20' : 'bg-secondary/10'
-            }`}>
-              <Users className={`w-5 h-5 ${isGroupChat ? 'text-primary-foreground' : 'text-secondary'}`} />
-            </div>
-            <div className="text-left">
-              <p className="font-medium">All (Team Broadcast)</p>
-              <p className={`text-xs ${isGroupChat ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                Message entire backend team
-              </p>
-            </div>
-          </button>
-        )}
+// Helper functions for date formatting - moved outside
+const formatTime = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
 
-        {contacts.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-sm">
-              {contactFilter === 'clients' 
-                ? 'No clients on your schedule yet'
-                : 'No contacts available'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {contacts.map((contact) => (
-              <button
-                key={contact.id}
-                onClick={() => selectContact(contact)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                  selectedContact?.id === contact.id && !isGroupChat
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
-                }`}
-                data-testid={`contact-${contact.id}`}
-              >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={contact.profile_image} />
-                  <AvatarFallback>{contact.full_name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="text-left flex-1 min-w-0">
-                  <p className="font-medium truncate">{contact.full_name}</p>
-                  <div className={`text-xs ${
-                    selectedContact?.id === contact.id && !isGroupChat
-                      ? 'text-primary-foreground/70'
-                      : ''
-                  }`}>
-                    {selectedContact?.id === contact.id && !isGroupChat ? (
-                      <span className="capitalize">{contact.type}</span>
-                    ) : (
-                      getContactTypeBadge(contact.type)
-                    )}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) return 'Today';
+  return date.toLocaleDateString();
+};
 
-  const ChatArea = ({ isMobile }) => (
+// ChatArea component - defined OUTSIDE MessagesPage to prevent recreation on parent re-renders
+const ChatArea = memo(({ 
+  selectedContact, 
+  isGroupChat, 
+  messages, 
+  user, 
+  onSendMessage, 
+  onBack,
+  isMobile,
+  messagesEndRef 
+}) => {
+  return (
     <Card className="h-full rounded-2xl shadow-sm flex flex-col">
       {selectedContact || isGroupChat ? (
         <>
@@ -324,7 +105,7 @@ const MessagesPage = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={goBackToContacts}
+                  onClick={onBack}
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
@@ -408,7 +189,10 @@ const MessagesPage = () => {
           </ScrollArea>
 
           <div className="p-4 border-t border-border">
-            <MessageInput onSend={sendMessage} isMobile={isMobile} />
+            <MessageInput 
+              onSend={onSendMessage} 
+              inputKey={isMobile ? 'mobile' : 'desktop'} 
+            />
           </div>
         </>
       ) : (
@@ -422,6 +206,264 @@ const MessagesPage = () => {
       )}
     </Card>
   );
+});
+
+ChatArea.displayName = 'ChatArea';
+
+// ContactsList component - defined OUTSIDE MessagesPage
+const ContactsList = memo(({ 
+  contacts, 
+  selectedContact, 
+  isGroupChat, 
+  contactFilter, 
+  onFilterChange, 
+  onSelectContact, 
+  onSelectGroupChat,
+  isClient,
+  isAdmin,
+  isWalker
+}) => {
+  const getFilterOptions = () => {
+    if (isClient) {
+      return [{ value: 'all', label: 'My Contacts' }];
+    }
+    return [
+      { value: 'all', label: 'All Contacts' },
+      { value: 'clients', label: 'My Clients' },
+      { value: 'team', label: 'Team' },
+    ];
+  };
+
+  return (
+    <Card className="h-full rounded-2xl shadow-sm flex flex-col">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">Contacts</CardTitle>
+        </div>
+        {!isClient && (
+          <Select value={contactFilter} onValueChange={onFilterChange}>
+            <SelectTrigger className="mt-2" data-testid="contact-filter">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {getFilterOptions().map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </CardHeader>
+      <CardContent className="flex-1 overflow-auto p-2">
+        {(isAdmin || isWalker) && (
+          <button
+            onClick={onSelectGroupChat}
+            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors mb-2 ${
+              isGroupChat ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+            }`}
+            data-testid="group-chat-btn"
+          >
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              isGroupChat ? 'bg-primary-foreground/20' : 'bg-secondary/10'
+            }`}>
+              <Users className={`w-5 h-5 ${isGroupChat ? 'text-primary-foreground' : 'text-secondary'}`} />
+            </div>
+            <div className="text-left">
+              <p className="font-medium">All (Team Broadcast)</p>
+              <p className={`text-xs ${isGroupChat ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                Message entire backend team
+              </p>
+            </div>
+          </button>
+        )}
+
+        {contacts.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">
+              {contactFilter === 'clients' 
+                ? 'No clients on your schedule yet'
+                : 'No contacts available'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {contacts.map((contact) => (
+              <button
+                key={contact.id}
+                onClick={() => onSelectContact(contact)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                  selectedContact?.id === contact.id && !isGroupChat
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                }`}
+                data-testid={`contact-${contact.id}`}
+              >
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={contact.profile_image} />
+                  <AvatarFallback>{contact.full_name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="text-left flex-1 min-w-0">
+                  <p className="font-medium truncate">{contact.full_name}</p>
+                  <div className={`text-xs ${
+                    selectedContact?.id === contact.id && !isGroupChat
+                      ? 'text-primary-foreground/70'
+                      : ''
+                  }`}>
+                    {selectedContact?.id === contact.id && !isGroupChat ? (
+                      <span className="capitalize">{contact.type}</span>
+                    ) : (
+                      getContactTypeBadge(contact.type)
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+});
+
+ContactsList.displayName = 'ContactsList';
+
+// Main page component
+const MessagesPage = () => {
+  const { user, api, isAdmin, isWalker, isClient } = useAuth();
+  const [contacts, setContacts] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [isGroupChat, setIsGroupChat] = useState(false);
+  const [contactFilter, setContactFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [showChat, setShowChat] = useState(false);
+  const messagesEndRef = useRef(null);
+  const pollInterval = useRef(null);
+  const hasMarkedRead = useRef(false);
+
+  const fetchContacts = useCallback(async () => {
+    try {
+      const response = await api.get(`/messages/contacts?contact_type=${contactFilter}`);
+      setContacts(response.data);
+    } catch (error) {
+      console.error('Failed to load contacts');
+    } finally {
+      setLoading(false);
+    }
+  }, [api, contactFilter]);
+
+  const fetchMessagesOnly = useCallback(async () => {
+    try {
+      let url = '/messages';
+      if (isGroupChat) {
+        url += '?group=true';
+      } else if (selectedContact) {
+        url += `?receiver_id=${selectedContact.id}`;
+      } else {
+        return;
+      }
+      const response = await api.get(url);
+      setMessages(response.data.reverse());
+    } catch (error) {
+      console.error('Failed to load messages');
+    }
+  }, [api, isGroupChat, selectedContact]);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      let url = '/messages';
+      if (isGroupChat) {
+        url += '?group=true';
+        if (!hasMarkedRead.current) {
+          api.post('/messages/mark-read?mark_group=true').catch(() => {});
+          hasMarkedRead.current = true;
+        }
+      } else if (selectedContact) {
+        url += `?receiver_id=${selectedContact.id}`;
+        if (!hasMarkedRead.current) {
+          api.post(`/messages/mark-read?sender_id=${selectedContact.id}`).catch(() => {});
+          hasMarkedRead.current = true;
+        }
+      } else {
+        return;
+      }
+      const response = await api.get(url);
+      setMessages(response.data.reverse());
+    } catch (error) {
+      console.error('Failed to load messages');
+    }
+  }, [api, isGroupChat, selectedContact]);
+
+  useEffect(() => {
+    fetchContacts();
+    return () => {
+      if (pollInterval.current) clearInterval(pollInterval.current);
+    };
+  }, [fetchContacts]);
+
+  useEffect(() => {
+    if (selectedContact || isGroupChat) {
+      hasMarkedRead.current = false;
+      fetchMessages();
+      // Longer polling interval to reduce re-renders
+      pollInterval.current = setInterval(fetchMessagesOnly, 8000);
+    }
+    return () => {
+      if (pollInterval.current) clearInterval(pollInterval.current);
+    };
+  }, [selectedContact, isGroupChat, fetchMessages, fetchMessagesOnly]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = useCallback(async (content) => {
+    try {
+      await api.post('/messages', {
+        receiver_id: isGroupChat ? null : selectedContact?.id,
+        is_group_message: isGroupChat,
+        content: content,
+      });
+      fetchMessagesOnly();
+    } catch (error) {
+      toast.error('Failed to send message');
+    }
+  }, [api, isGroupChat, selectedContact, fetchMessagesOnly]);
+
+  const selectContact = useCallback((contact) => {
+    setSelectedContact(contact);
+    setIsGroupChat(false);
+    setShowChat(true);
+  }, []);
+
+  const selectGroupChat = useCallback(() => {
+    setSelectedContact(null);
+    setIsGroupChat(true);
+    setShowChat(true);
+  }, []);
+
+  const goBackToContacts = useCallback(() => {
+    setShowChat(false);
+    setSelectedContact(null);
+    setIsGroupChat(false);
+  }, []);
+
+  const handleFilterChange = useCallback((value) => {
+    setContactFilter(value);
+  }, []);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -436,10 +478,30 @@ const MessagesPage = () => {
         {/* Desktop Layout */}
         <div className="hidden md:flex flex-1 gap-6 min-h-0">
           <div className="w-80 shrink-0">
-            <ContactsList />
+            <ContactsList 
+              contacts={contacts}
+              selectedContact={selectedContact}
+              isGroupChat={isGroupChat}
+              contactFilter={contactFilter}
+              onFilterChange={handleFilterChange}
+              onSelectContact={selectContact}
+              onSelectGroupChat={selectGroupChat}
+              isClient={isClient}
+              isAdmin={isAdmin}
+              isWalker={isWalker}
+            />
           </div>
           <div className="flex-1 min-w-0">
-            <ChatArea isMobile={false} />
+            <ChatArea 
+              selectedContact={selectedContact}
+              isGroupChat={isGroupChat}
+              messages={messages}
+              user={user}
+              onSendMessage={sendMessage}
+              onBack={goBackToContacts}
+              isMobile={false}
+              messagesEndRef={messagesEndRef}
+            />
           </div>
         </div>
 
@@ -447,11 +509,31 @@ const MessagesPage = () => {
         <div className="flex md:hidden flex-1 min-h-0">
           {!showChat ? (
             <div className="w-full">
-              <ContactsList />
+              <ContactsList 
+                contacts={contacts}
+                selectedContact={selectedContact}
+                isGroupChat={isGroupChat}
+                contactFilter={contactFilter}
+                onFilterChange={handleFilterChange}
+                onSelectContact={selectContact}
+                onSelectGroupChat={selectGroupChat}
+                isClient={isClient}
+                isAdmin={isAdmin}
+                isWalker={isWalker}
+              />
             </div>
           ) : (
             <div className="w-full">
-              <ChatArea isMobile={true} />
+              <ChatArea 
+                selectedContact={selectedContact}
+                isGroupChat={isGroupChat}
+                messages={messages}
+                user={user}
+                onSendMessage={sendMessage}
+                onBack={goBackToContacts}
+                isMobile={true}
+                messagesEndRef={messagesEndRef}
+              />
             </div>
           )}
         </div>
