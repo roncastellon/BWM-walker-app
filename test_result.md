@@ -101,3 +101,171 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "WagWalk Pet Services App - Chat enhancement with dropdown filters (My Clients, Team, All broadcast), Calendar appointment click-to-detail modal, Invoice detail view with company branding, and SendGrid/Twilio integration for sending invoices via email/SMS"
+
+backend:
+  - task: "Chat contacts endpoint with team filter"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated /messages/contacts endpoint to support 'team' filter (renamed from 'staff'). Walkers can chat with My Clients, Team, All. Clients can see scheduled walker + admins."
+
+  - task: "Appointment detail endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /appointments/{appt_id}/detail endpoint that returns full appointment info including client, walker (with color), service details, and pet info"
+
+  - task: "Invoice detail endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /invoices/{invoice_id}/detail endpoint that returns full invoice with client info, appointment details with service/pet/walker info, and company branding"
+
+  - task: "Company info settings endpoints"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET/PUT /settings/company-info endpoints for company name, address, phone, email, logo URL, tax ID, website"
+
+  - task: "SendGrid email invoice endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /invoices/{invoice_id}/send-email endpoint using SendGrid. Requires SENDGRID_API_KEY and SENDER_EMAIL env vars. Returns error message if not configured."
+
+  - task: "Twilio SMS invoice endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /invoices/{invoice_id}/send-sms endpoint using Twilio. Requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER env vars. Returns error message if not configured."
+
+  - task: "Notification config status endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /settings/notification-config endpoint to check if SendGrid and Twilio are configured (checks env vars)"
+
+frontend:
+  - task: "Chat dropdown with My Clients, Team, All filters"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MessagesPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated filter dropdown options: All Contacts, My Clients, Team (renamed from Staff). Updated 'All (Team Broadcast)' button for group messaging entire backend team."
+
+  - task: "Calendar appointment click-to-detail modal"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/CalendarPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Dialog modal that opens when clicking any appointment on calendar. Shows full details: service name/price/status, client info, walker info (color-coded), pets list, notes, and duration if completed."
+
+  - task: "Invoice detail modal with company branding"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminInvoicesPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added View button on open invoices that opens detail modal. Shows company header (if configured), amount/status, bill to client info, due date, services table with service/pet/walker/date/amount, and Send Email/Send SMS buttons."
+
+  - task: "Company Info tab in Billing & Revenue"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminInvoicesPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Company Info tab with fields for company name, email, phone, website, address, tax ID, logo URL. Also shows SendGrid/Twilio configuration status."
+
+  - task: "Send invoice via Email/SMS buttons"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminInvoicesPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Send Email and Send SMS buttons in invoice detail modal. Buttons are disabled with visual indicator if SendGrid/Twilio not configured. Shows appropriate error messages."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Chat dropdown with My Clients, Team, All filters"
+    - "Calendar appointment click-to-detail modal"
+    - "Invoice detail modal with company branding"
+    - "Company Info tab in Billing & Revenue"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Implemented all requested features: 1) Chat enhancement with My Clients/Team/All dropdown and All broadcast button, 2) Calendar click-to-detail modal, 3) Invoice detail modal with company branding, 4) Company Info settings tab, 5) SendGrid email and Twilio SMS integration for invoices (ready but requires API keys). Please test all flows. Credentials: demo_admin/demo123, demo_walker/demo123, demo_client/demo123"
