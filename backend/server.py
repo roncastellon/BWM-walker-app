@@ -1692,6 +1692,62 @@ async def get_conversations(current_user: dict = Depends(get_current_user)):
     
     return conversations
 
+@api_router.get("/messages/unread-count")
+async def get_unread_message_count(current_user: dict = Depends(get_current_user)):
+    """Get count of unread messages for the current user"""
+    # Count direct messages sent to user that are unread
+    unread_direct = await db.messages.count_documents({
+        "receiver_id": current_user['id'],
+        "is_group_message": False,
+        "read": {"$ne": True}
+    })
+    
+    # For staff, also count unread group messages
+    unread_group = 0
+    if current_user['role'] in ['admin', 'walker']:
+        # Get IDs of group messages user has read (stored in user's read_group_messages array)
+        user_data = await db.users.find_one({"id": current_user['id']}, {"_id": 0, "read_group_messages": 1})
+        read_group_ids = user_data.get('read_group_messages', []) if user_data else []
+        
+        # Count group messages not in user's read list
+        unread_group = await db.messages.count_documents({
+            "is_group_message": True,
+            "sender_id": {"$ne": current_user['id']},  # Exclude own messages
+            "id": {"$nin": read_group_ids}
+        })
+    
+    total_unread = unread_direct + unread_group
+    
+    return {
+        "unread_count": total_unread,
+        "unread_direct": unread_direct,
+        "unread_group": unread_group
+    }
+
+@api_router.post("/messages/mark-read")
+async def mark_messages_read(sender_id: Optional[str] = None, mark_group: bool = False, current_user: dict = Depends(get_current_user)):
+    """Mark messages as read"""
+    if mark_group:
+        # Mark group messages as read by adding to user's read list
+        group_messages = await db.messages.find(
+            {"is_group_message": True, "sender_id": {"$ne": current_user['id']}},
+            {"_id": 0, "id": 1}
+        ).to_list(1000)
+        group_ids = [m['id'] for m in group_messages]
+        
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {"$addToSet": {"read_group_messages": {"$each": group_ids}}}
+        )
+    elif sender_id:
+        # Mark direct messages from sender as read
+        await db.messages.update_many(
+            {"sender_id": sender_id, "receiver_id": current_user['id'], "is_group_message": False},
+            {"$set": {"read": True}}
+        )
+    
+    return {"message": "Messages marked as read"}
+
 # Timesheet Routes
 @api_router.get("/timesheets")
 async def get_timesheets(current_user: dict = Depends(get_current_user)):
