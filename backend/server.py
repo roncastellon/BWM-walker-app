@@ -354,6 +354,50 @@ async def delete_pet(pet_id: str, current_user: dict = Depends(get_current_user)
     await db.pets.delete_one({"id": pet_id})
     return {"message": "Pet deleted successfully"}
 
+# Admin Pet Creation (for adding pets to customer accounts)
+class AdminPetCreate(BaseModel):
+    owner_id: str
+    name: str
+    species: str = "dog"
+    breed: Optional[str] = None
+    age: Optional[int] = None
+    weight: Optional[float] = None
+    notes: Optional[str] = None
+
+@api_router.post("/pets/admin", response_model=Pet)
+async def admin_create_pet(pet_data: AdminPetCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    pet = Pet(**pet_data.model_dump())
+    pet_dict = pet.model_dump()
+    pet_dict['created_at'] = pet_dict['created_at'].isoformat()
+    await db.pets.insert_one(pet_dict)
+    return pet
+
+# Custom Pricing for Clients
+@api_router.post("/users/{user_id}/custom-pricing")
+async def set_custom_pricing(user_id: str, pricing: Dict[str, float], current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    await db.custom_pricing.update_one(
+        {"user_id": user_id},
+        {"$set": {"user_id": user_id, "pricing": pricing}},
+        upsert=True
+    )
+    return {"message": "Custom pricing saved"}
+
+@api_router.get("/users/{user_id}/custom-pricing")
+async def get_custom_pricing(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin' and current_user['id'] != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    custom = await db.custom_pricing.find_one({"user_id": user_id}, {"_id": 0})
+    if custom:
+        return custom.get('pricing', {})
+    return {}
+
 # Service Pricing Routes
 @api_router.get("/services", response_model=List[ServicePricing])
 async def get_services():
