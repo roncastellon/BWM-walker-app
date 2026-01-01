@@ -9,9 +9,11 @@ import { Badge } from '../components/ui/badge';
 import { Textarea } from '../components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { 
   DollarSign, FileText, Clock, CheckCircle, AlertCircle, 
-  TrendingUp, Calendar, Users, Edit2, Save, RefreshCw, Settings, CreditCard
+  TrendingUp, Calendar, Users, Edit2, Save, RefreshCw, Settings, 
+  CreditCard, Building2, Mail, MessageSquare, Eye, Send, Phone, Image
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +34,31 @@ const AdminBillingPage = () => {
     instructions: 'Please include your invoice number in the payment memo.',
   });
   const [savingPaymentSettings, setSavingPaymentSettings] = useState(false);
+  
+  // Company info state
+  const [companyInfo, setCompanyInfo] = useState({
+    company_name: '',
+    address: '',
+    phone: '',
+    email: '',
+    logo_url: '',
+    tax_id: '',
+    website: ''
+  });
+  const [savingCompanyInfo, setSavingCompanyInfo] = useState(false);
+  
+  // Invoice detail modal
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceDetail, setInvoiceDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [sendingSms, setSendingSms] = useState(false);
+  
+  // Notification config
+  const [notificationConfig, setNotificationConfig] = useState({
+    sendgrid_configured: false,
+    twilio_configured: false
+  });
 
   useEffect(() => {
     fetchAllData();
@@ -40,13 +67,14 @@ const AdminBillingPage = () => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [servicesRes, clientsDueRes, openInvRes, revenueRes, clientsRes, paymentInfoRes] = await Promise.all([
+      const [servicesRes, clientsDueRes, openInvRes, revenueRes, clientsRes, paymentInfoRes, companyInfoRes] = await Promise.all([
         api.get('/services'),
         api.get('/billing/clients-due'),
         api.get('/invoices/open'),
         api.get('/revenue/summary'),
         api.get('/users/clients'),
         api.get('/settings/payment-info'),
+        api.get('/settings/company-info'),
       ]);
       setServices(servicesRes.data);
       setClientsDue(clientsDueRes.data);
@@ -55,6 +83,17 @@ const AdminBillingPage = () => {
       setClients(clientsRes.data);
       if (paymentInfoRes.data && Object.keys(paymentInfoRes.data).length > 0) {
         setPaymentSettings(paymentInfoRes.data);
+      }
+      if (companyInfoRes.data && Object.keys(companyInfoRes.data).length > 0) {
+        setCompanyInfo(companyInfoRes.data);
+      }
+      
+      // Check notification config
+      try {
+        const notifRes = await api.get('/settings/notification-config');
+        setNotificationConfig(notifRes.data);
+      } catch (e) {
+        // Notification config endpoint might fail if not configured
       }
     } catch (error) {
       toast.error('Failed to load billing data');
@@ -121,6 +160,18 @@ const AdminBillingPage = () => {
     }
   };
 
+  const saveCompanyInfo = async () => {
+    setSavingCompanyInfo(true);
+    try {
+      await api.put('/settings/company-info', companyInfo);
+      toast.success('Company info saved');
+    } catch (error) {
+      toast.error('Failed to save company info');
+    } finally {
+      setSavingCompanyInfo(false);
+    }
+  };
+
   const markInvoiceAsPaid = async (invoiceId, paymentMethod) => {
     try {
       await api.post(`/invoices/${invoiceId}/mark-paid?payment_method=${paymentMethod}`);
@@ -128,6 +179,49 @@ const AdminBillingPage = () => {
       fetchAllData();
     } catch (error) {
       toast.error('Failed to mark invoice as paid');
+    }
+  };
+
+  const openInvoiceDetail = async (invoice) => {
+    setSelectedInvoice(invoice);
+    setDetailLoading(true);
+    try {
+      const response = await api.get(`/invoices/${invoice.id}/detail`);
+      setInvoiceDetail(response.data);
+    } catch (error) {
+      toast.error('Failed to load invoice details');
+      setInvoiceDetail(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeInvoiceDetail = () => {
+    setSelectedInvoice(null);
+    setInvoiceDetail(null);
+  };
+
+  const sendInvoiceEmail = async (invoiceId) => {
+    setSendingEmail(true);
+    try {
+      await api.post(`/invoices/${invoiceId}/send-email`);
+      toast.success('Invoice email sent successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to send email');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const sendInvoiceSms = async (invoiceId) => {
+    setSendingSms(true);
+    try {
+      await api.post(`/invoices/${invoiceId}/send-sms`);
+      toast.success('Invoice SMS sent successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to send SMS');
+    } finally {
+      setSendingSms(false);
     }
   };
 
@@ -158,12 +252,13 @@ const AdminBillingPage = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="pricing" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="pricing" data-testid="tab-pricing">Set Up Pricing</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="pricing" data-testid="tab-pricing">Pricing</TabsTrigger>
             <TabsTrigger value="create" data-testid="tab-create">Create Invoices</TabsTrigger>
             <TabsTrigger value="open" data-testid="tab-open">Open Invoices</TabsTrigger>
             <TabsTrigger value="revenue" data-testid="tab-revenue">Revenue</TabsTrigger>
-            <TabsTrigger value="payment-settings" data-testid="tab-payment-settings">Payment Settings</TabsTrigger>
+            <TabsTrigger value="company" data-testid="tab-company">Company Info</TabsTrigger>
+            <TabsTrigger value="payment-settings" data-testid="tab-payment-settings">Payment</TabsTrigger>
           </TabsList>
 
           {/* Set Up Pricing Tab */}
@@ -389,7 +484,7 @@ const AdminBillingPage = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <Badge className={`rounded-full ${
                             invoice.status === 'overdue' 
                               ? 'bg-red-100 text-red-800' 
@@ -402,6 +497,18 @@ const AdminBillingPage = () => {
                             )}
                           </Badge>
                           <p className="text-2xl font-bold">${invoice.amount.toFixed(2)}</p>
+                          
+                          {/* Action Buttons */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => openInvoiceDetail(invoice)}
+                            data-testid={`view-invoice-${invoice.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-1" /> View
+                          </Button>
+                          
                           <Select onValueChange={(method) => markInvoiceAsPaid(invoice.id, method)}>
                             <SelectTrigger className="w-36" data-testid={`mark-paid-${invoice.id}`}>
                               <SelectValue placeholder="Mark as Paid" />
@@ -525,6 +632,150 @@ const AdminBillingPage = () => {
                     Last updated: {revenue.as_of ? new Date(revenue.as_of).toLocaleString() : 'N/A'}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Company Info Tab */}
+          <TabsContent value="company" className="space-y-6">
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-primary" />
+                  Company Information
+                </CardTitle>
+                <CardDescription>This information will appear on invoices sent to clients</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="company-name">Company Name</Label>
+                    <Input
+                      id="company-name"
+                      value={companyInfo.company_name}
+                      onChange={(e) => setCompanyInfo({ ...companyInfo, company_name: e.target.value })}
+                      placeholder="WagWalk Pet Services"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-email">Business Email</Label>
+                    <Input
+                      id="company-email"
+                      type="email"
+                      value={companyInfo.email}
+                      onChange={(e) => setCompanyInfo({ ...companyInfo, email: e.target.value })}
+                      placeholder="billing@wagwalk.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-phone">Business Phone</Label>
+                    <Input
+                      id="company-phone"
+                      value={companyInfo.phone}
+                      onChange={(e) => setCompanyInfo({ ...companyInfo, phone: e.target.value })}
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-website">Website</Label>
+                    <Input
+                      id="company-website"
+                      value={companyInfo.website}
+                      onChange={(e) => setCompanyInfo({ ...companyInfo, website: e.target.value })}
+                      placeholder="www.wagwalk.com"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="company-address">Business Address</Label>
+                    <Textarea
+                      id="company-address"
+                      value={companyInfo.address}
+                      onChange={(e) => setCompanyInfo({ ...companyInfo, address: e.target.value })}
+                      placeholder="123 Pet Lane, Suite 100&#10;Dogtown, CA 90210"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-tax-id">Tax ID / EIN (Optional)</Label>
+                    <Input
+                      id="company-tax-id"
+                      value={companyInfo.tax_id}
+                      onChange={(e) => setCompanyInfo({ ...companyInfo, tax_id: e.target.value })}
+                      placeholder="XX-XXXXXXX"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-logo">Logo URL (Optional)</Label>
+                    <Input
+                      id="company-logo"
+                      value={companyInfo.logo_url}
+                      onChange={(e) => setCompanyInfo({ ...companyInfo, logo_url: e.target.value })}
+                      placeholder="https://example.com/logo.png"
+                    />
+                  </div>
+                </div>
+
+                {companyInfo.logo_url && (
+                  <div className="p-4 rounded-xl bg-muted/50">
+                    <p className="text-sm font-medium mb-2">Logo Preview</p>
+                    <img 
+                      src={companyInfo.logo_url} 
+                      alt="Company Logo" 
+                      className="max-h-20 object-contain"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                  </div>
+                )}
+
+                <Button 
+                  onClick={saveCompanyInfo} 
+                  disabled={savingCompanyInfo}
+                  className="rounded-full"
+                  data-testid="save-company-info"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {savingCompanyInfo ? 'Saving...' : 'Save Company Info'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Email/SMS Configuration Status */}
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Send className="w-5 h-5 text-secondary" />
+                  Invoice Delivery Configuration
+                </CardTitle>
+                <CardDescription>Status of email and SMS invoice delivery</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className={`p-4 rounded-xl ${notificationConfig.sendgrid_configured ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                    <div className="flex items-center gap-3">
+                      <Mail className={`w-6 h-6 ${notificationConfig.sendgrid_configured ? 'text-green-600' : 'text-yellow-600'}`} />
+                      <div>
+                        <p className="font-medium">Email (SendGrid)</p>
+                        <p className="text-sm text-muted-foreground">
+                          {notificationConfig.sendgrid_configured ? 'Configured' : 'Not configured - Add SENDGRID_API_KEY to .env'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`p-4 rounded-xl ${notificationConfig.twilio_configured ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className={`w-6 h-6 ${notificationConfig.twilio_configured ? 'text-green-600' : 'text-yellow-600'}`} />
+                      <div>
+                        <p className="font-medium">SMS (Twilio)</p>
+                        <p className="text-sm text-muted-foreground">
+                          {notificationConfig.twilio_configured ? 'Configured' : 'Not configured - Add Twilio credentials to .env'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  To enable invoice delivery, add the following environment variables: SENDGRID_API_KEY, SENDER_EMAIL, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -661,6 +912,159 @@ const AdminBillingPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Invoice Detail Modal */}
+        <Dialog open={!!selectedInvoice} onOpenChange={closeInvoiceDetail}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                Invoice Details
+              </DialogTitle>
+              <DialogDescription>
+                Invoice #{selectedInvoice?.id?.slice(0, 8)}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {detailLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : invoiceDetail ? (
+              <div className="space-y-6">
+                {/* Company Header (if set) */}
+                {invoiceDetail.company_info?.company_name && (
+                  <div className="p-4 rounded-xl bg-primary/10 text-center">
+                    {invoiceDetail.company_info.logo_url && (
+                      <img 
+                        src={invoiceDetail.company_info.logo_url} 
+                        alt="Logo" 
+                        className="h-12 mx-auto mb-2 object-contain"
+                      />
+                    )}
+                    <h2 className="text-xl font-bold">{invoiceDetail.company_info.company_name}</h2>
+                    {invoiceDetail.company_info.address && (
+                      <p className="text-sm text-muted-foreground whitespace-pre-line">{invoiceDetail.company_info.address}</p>
+                    )}
+                    {(invoiceDetail.company_info.phone || invoiceDetail.company_info.email) && (
+                      <p className="text-sm text-muted-foreground">
+                        {invoiceDetail.company_info.phone} {invoiceDetail.company_info.phone && invoiceDetail.company_info.email && '|'} {invoiceDetail.company_info.email}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Invoice Summary */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-muted/50">
+                    <p className="text-sm text-muted-foreground">Amount Due</p>
+                    <p className="text-3xl font-bold text-primary">${invoiceDetail.amount?.toFixed(2)}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-muted/50">
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <Badge className={`mt-1 rounded-full ${
+                      invoiceDetail.status === 'paid' ? 'bg-green-100 text-green-800' :
+                      invoiceDetail.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {invoiceDetail.status?.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Client Info */}
+                {invoiceDetail.client && (
+                  <div className="p-4 rounded-xl bg-muted/30">
+                    <h4 className="font-medium mb-2">Bill To:</h4>
+                    <p className="font-medium">{invoiceDetail.client.full_name}</p>
+                    {invoiceDetail.client.email && (
+                      <p className="text-sm text-muted-foreground">{invoiceDetail.client.email}</p>
+                    )}
+                    {invoiceDetail.client.phone && (
+                      <p className="text-sm text-muted-foreground">{invoiceDetail.client.phone}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Due Date */}
+                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                  <span className="text-muted-foreground">Due Date:</span>
+                  <span className="font-medium">{invoiceDetail.due_date}</span>
+                </div>
+
+                {/* Services/Appointments */}
+                {invoiceDetail.appointments && invoiceDetail.appointments.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Services</h4>
+                    <div className="border rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-muted/50">
+                          <tr>
+                            <th className="text-left p-3 text-sm font-medium">Service</th>
+                            <th className="text-left p-3 text-sm font-medium">Date</th>
+                            <th className="text-right p-3 text-sm font-medium">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {invoiceDetail.appointments.map((appt, idx) => (
+                            <tr key={idx} className="border-t">
+                              <td className="p-3">
+                                <p className="font-medium">{appt.service_name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {appt.pet_names?.join(', ')} • Walker: {appt.walker_name}
+                                </p>
+                              </td>
+                              <td className="p-3 text-sm">
+                                {appt.scheduled_date} {appt.scheduled_time}
+                              </td>
+                              <td className="p-3 text-right font-medium">
+                                ${appt.service_price?.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="bg-muted/30">
+                          <tr>
+                            <td colSpan="2" className="p-3 text-right font-bold">Total:</td>
+                            <td className="p-3 text-right font-bold text-primary">${invoiceDetail.amount?.toFixed(2)}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Send Actions */}
+                {invoiceDetail.status !== 'paid' && (
+                  <div className="flex gap-3 pt-4 border-t">
+                    <Button
+                      onClick={() => sendInvoiceEmail(invoiceDetail.id)}
+                      disabled={sendingEmail || !notificationConfig.sendgrid_configured}
+                      className="rounded-full flex-1"
+                      variant={notificationConfig.sendgrid_configured ? "default" : "outline"}
+                      data-testid="send-invoice-email"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      {sendingEmail ? 'Sending...' : 'Send Email'}
+                    </Button>
+                    <Button
+                      onClick={() => sendInvoiceSms(invoiceDetail.id)}
+                      disabled={sendingSms || !notificationConfig.twilio_configured}
+                      className="rounded-full flex-1"
+                      variant={notificationConfig.twilio_configured ? "default" : "outline"}
+                      data-testid="send-invoice-sms"
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      {sendingSms ? 'Sending...' : 'Send SMS'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground">No details available</p>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
