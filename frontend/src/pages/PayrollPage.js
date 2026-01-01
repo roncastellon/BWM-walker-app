@@ -4,17 +4,14 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Calendar } from '../components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
-import { CalendarIcon, Clock, DollarSign, CheckCircle, Send } from 'lucide-react';
-import { format, startOfWeek, endOfWeek, addDays } from 'date-fns';
+import { Clock, DollarSign, CheckCircle, Send, PawPrint, Route, RefreshCw } from 'lucide-react';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 const PayrollPage = () => {
   const { api } = useAuth();
+  const [currentPayroll, setCurrentPayroll] = useState(null);
   const [timesheets, setTimesheets] = useState([]);
-  const [appointments, setAppointments] = useState([]);
-  const [selectedWeekStart, setSelectedWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -23,13 +20,14 @@ const PayrollPage = () => {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const [tsRes, apptsRes] = await Promise.all([
+      const [payrollRes, tsRes] = await Promise.all([
+        api.get('/payroll/current'),
         api.get('/timesheets'),
-        api.get('/appointments'),
       ]);
+      setCurrentPayroll(payrollRes.data);
       setTimesheets(tsRes.data);
-      setAppointments(apptsRes.data);
     } catch (error) {
       toast.error('Failed to load payroll data');
     } finally {
@@ -37,51 +35,41 @@ const PayrollPage = () => {
     }
   };
 
-  const weekEnd = endOfWeek(selectedWeekStart, { weekStartsOn: 1 });
-  const weekStartStr = format(selectedWeekStart, 'yyyy-MM-dd');
-  const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
-
-  const weekAppointments = appointments.filter(appt => {
-    return appt.status === 'completed' &&
-           appt.scheduled_date >= weekStartStr &&
-           appt.scheduled_date <= weekEndStr;
-  });
-
-  const totalMinutes = weekAppointments.reduce((sum, appt) => sum + (appt.actual_duration_minutes || 0), 0);
-  const totalHours = (totalMinutes / 60).toFixed(2);
-  const hourlyRate = 20; // Example rate
-  const weeklyEarnings = (parseFloat(totalHours) * hourlyRate).toFixed(2);
-
-  const existingTimesheet = timesheets.find(ts => ts.week_start === weekStartStr);
-
   const submitTimesheet = async () => {
-    if (weekAppointments.length === 0) {
-      toast.error('No completed walks for this week');
+    if (!currentPayroll || currentPayroll.total_walks === 0) {
+      toast.error('No walks to submit');
       return;
     }
 
     setSubmitting(true);
     try {
-      await api.post('/timesheets/submit', null, {
-        params: {
-          week_start: weekStartStr,
-          week_end: weekEndStr,
-        }
-      });
+      await api.post('/timesheets/submit');
       toast.success('Timesheet submitted successfully!');
-      fetchData();
+      fetchData(); // Refresh to show reset and new timesheet
     } catch (error) {
-      toast.error('Failed to submit timesheet');
+      toast.error(error.response?.data?.detail || 'Failed to submit timesheet');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Generate week days
-  const weekDays = [];
-  for (let i = 0; i < 7; i++) {
-    weekDays.push(addDays(selectedWeekStart, i));
-  }
+  const formatDistance = (meters) => {
+    if (!meters) return '0 m';
+    if (meters >= 1000) {
+      return `${(meters / 1000).toFixed(2)} km`;
+    }
+    return `${Math.round(meters)} m`;
+  };
+
+  const formatDuration = (minutes) => {
+    if (!minutes) return '0 min';
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hrs > 0) {
+      return `${hrs}h ${mins}m`;
+    }
+    return `${mins} min`;
+  };
 
   if (loading) {
     return (
@@ -95,38 +83,43 @@ const PayrollPage = () => {
 
   return (
     <Layout>
-      <div className="space-y-8" data-testid="payroll-page">
+      <div className="space-y-6" data-testid="payroll-page">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold">Payroll</h1>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold">Payroll</h1>
             <p className="text-muted-foreground">Track your hours and submit timesheets</p>
           </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="rounded-full" data-testid="select-week">
-                <CalendarIcon className="w-4 h-4 mr-2" />
-                Week of {format(selectedWeekStart, 'MMM d')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={selectedWeekStart}
-                onSelect={(date) => date && setSelectedWeekStart(startOfWeek(date, { weekStartsOn: 1 }))}
-              />
-            </PopoverContent>
-          </Popover>
+          <Button variant="outline" className="rounded-full" onClick={fetchData}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Pay Rates Info */}
+        <Card className="rounded-2xl shadow-sm bg-primary/5 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              <span className="font-medium">Pay Rates:</span>
+              <Badge className="bg-primary/10 text-primary rounded-full">30-min walk: $15.00</Badge>
+              <Badge className="bg-primary/10 text-primary rounded-full">60-min walk: $30.00</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Current Period Summary */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Hours</p>
-                  <p className="text-3xl font-bold mt-1">{totalHours}h</p>
+                  <p className="text-sm text-muted-foreground">Hours Walked</p>
+                  <p className="text-3xl font-bold mt-1">
+                    {currentPayroll?.total_hours || 0}h
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    ({currentPayroll?.total_minutes || 0} minutes)
+                  </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Clock className="w-6 h-6 text-primary" />
@@ -139,22 +132,26 @@ const PayrollPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Completed Walks</p>
-                  <p className="text-3xl font-bold mt-1">{weekAppointments.length}</p>
+                  <p className="text-sm text-muted-foreground">Walks Completed</p>
+                  <p className="text-3xl font-bold mt-1">
+                    {currentPayroll?.total_walks || 0}
+                  </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-secondary" />
+                  <PawPrint className="w-6 h-6 text-secondary" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl shadow-sm">
+          <Card className="rounded-2xl shadow-sm border-2 border-green-200 bg-green-50/50">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Est. Earnings</p>
-                  <p className="text-3xl font-bold mt-1">${weeklyEarnings}</p>
+                  <p className="text-sm text-muted-foreground">Amount Due</p>
+                  <p className="text-3xl font-bold mt-1 text-green-600">
+                    ${currentPayroll?.total_earnings?.toFixed(2) || '0.00'}
+                  </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-green-600" />
@@ -164,76 +161,92 @@ const PayrollPage = () => {
           </Card>
         </div>
 
-        {/* Weekly Breakdown */}
+        {/* Current Period Walks */}
         <Card className="rounded-2xl shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle>Weekly Breakdown</CardTitle>
+              <CardTitle>Pending Walks</CardTitle>
               <CardDescription>
-                {format(selectedWeekStart, 'MMMM d')} - {format(weekEnd, 'MMMM d, yyyy')}
+                Walks accumulated since last timesheet submission
               </CardDescription>
             </div>
-            {existingTimesheet ? (
-              <Badge className={`rounded-full ${existingTimesheet.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                {existingTimesheet.approved ? 'Approved' : 'Submitted'}
-              </Badge>
-            ) : (
-              <Button
-                onClick={submitTimesheet}
-                disabled={submitting || weekAppointments.length === 0}
-                className="rounded-full"
-                data-testid="submit-timesheet-btn"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                {submitting ? 'Submitting...' : 'Submit Timesheet'}
-              </Button>
-            )}
+            <Button
+              onClick={submitTimesheet}
+              disabled={submitting || !currentPayroll || currentPayroll.total_walks === 0}
+              className="rounded-full"
+              data-testid="submit-timesheet-btn"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {submitting ? 'Submitting...' : 'Submit Timesheet'}
+            </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {weekDays.map((day) => {
-                const dayStr = format(day, 'yyyy-MM-dd');
-                const dayAppointments = weekAppointments.filter(a => a.scheduled_date === dayStr);
-                const dayMinutes = dayAppointments.reduce((sum, a) => sum + (a.actual_duration_minutes || 0), 0);
-
-                return (
+            {!currentPayroll || currentPayroll.walks?.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <CheckCircle className="w-16 h-16 mx-auto mb-4 opacity-30 text-green-500" />
+                <p className="text-lg">All caught up!</p>
+                <p className="text-sm">Complete walks to add hours to your timesheet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {currentPayroll.walks.map((walk) => (
                   <div
-                    key={dayStr}
-                    className={`p-4 rounded-xl ${dayAppointments.length > 0 ? 'bg-muted/50' : 'bg-muted/20'}`}
+                    key={walk.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-muted/50 gap-3"
+                    data-testid={`walk-${walk.id}`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium">{format(day, 'EEEE')}</span>
-                        <span className="text-sm text-muted-foreground">{format(day, 'MMM d')}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <PawPrint className="w-5 h-5 text-primary" />
                       </div>
-                      <div className="text-right">
-                        <span className="font-medium">{(dayMinutes / 60).toFixed(1)}h</span>
-                        <span className="text-sm text-muted-foreground ml-2">
-                          ({dayAppointments.length} walks)
-                        </span>
+                      <div>
+                        <p className="font-medium">{walk.client_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {walk.pet_names?.join(', ')}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="rounded-full text-xs">
+                            {walk.date}
+                          </Badge>
+                          {walk.time && (
+                            <Badge variant="secondary" className="rounded-full text-xs">
+                              {walk.time}
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="rounded-full text-xs capitalize">
+                            {walk.service_type?.replace('_', ' ')}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                    {dayAppointments.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {dayAppointments.map((appt) => (
-                          <Badge key={appt.id} variant="secondary" className="rounded-full text-xs">
-                            {appt.scheduled_time} - {appt.actual_duration_minutes}min
-                          </Badge>
-                        ))}
+                    <div className="flex items-center gap-4 sm:gap-6">
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Duration</p>
+                        <p className="font-medium">{formatDuration(walk.duration_minutes)}</p>
                       </div>
-                    )}
+                      {walk.distance_meters > 0 && (
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground">Distance</p>
+                          <p className="font-medium">{formatDistance(walk.distance_meters)}</p>
+                        </div>
+                      )}
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Earned</p>
+                        <p className="font-bold text-green-600">${walk.earnings?.toFixed(2)}</p>
+                      </div>
+                    </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Previous Timesheets */}
         <Card className="rounded-2xl shadow-sm">
           <CardHeader>
-            <CardTitle>Previous Timesheets</CardTitle>
-            <CardDescription>Your submitted timesheets</CardDescription>
+            <CardTitle>Submitted Timesheets</CardTitle>
+            <CardDescription>Your payment history</CardDescription>
           </CardHeader>
           <CardContent>
             {timesheets.length === 0 ? (
@@ -246,19 +259,29 @@ const PayrollPage = () => {
                 {timesheets.map((ts) => (
                   <div
                     key={ts.id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-muted/30"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-muted/30 gap-3"
+                    data-testid={`timesheet-${ts.id}`}
                   >
                     <div>
                       <p className="font-medium">
-                        Week of {format(new Date(ts.week_start), 'MMM d, yyyy')}
+                        {ts.period_start} to {ts.period_end}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {ts.total_hours}h • {ts.total_walks} walks
                       </p>
                     </div>
-                    <Badge className={`rounded-full ${ts.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {ts.approved ? 'Approved' : 'Pending'}
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-lg">${ts.total_earnings?.toFixed(2)}</span>
+                      <Badge className={`rounded-full ${
+                        ts.paid 
+                          ? 'bg-green-100 text-green-800' 
+                          : ts.approved 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {ts.paid ? 'Paid' : ts.approved ? 'Approved' : 'Pending'}
+                      </Badge>
+                    </div>
                   </div>
                 ))}
               </div>
