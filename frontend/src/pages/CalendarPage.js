@@ -6,9 +6,11 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { 
   Clock, User, PawPrint, ChevronLeft, ChevronRight, 
-  CalendarDays, CalendarRange, Calendar as CalendarIcon 
+  CalendarDays, CalendarRange, Calendar as CalendarIcon,
+  MapPin, Phone, Mail, X
 } from 'lucide-react';
 import { 
   format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths,
@@ -25,6 +27,9 @@ const CalendarPage = () => {
   const [selectedWalker, setSelectedWalker] = useState('all');
   const [viewMode, setViewMode] = useState('week');
   const [loading, setLoading] = useState(true);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [appointmentDetail, setAppointmentDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -45,11 +50,35 @@ const CalendarPage = () => {
     }
   };
 
+  const openAppointmentDetail = async (appt) => {
+    setSelectedAppointment(appt);
+    setDetailLoading(true);
+    try {
+      const response = await api.get(`/appointments/${appt.id}/detail`);
+      setAppointmentDetail(response.data);
+    } catch (error) {
+      toast.error('Failed to load appointment details');
+      setAppointmentDetail(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeAppointmentDetail = () => {
+    setSelectedAppointment(null);
+    setAppointmentDetail(null);
+  };
+
   const assignWalker = async (apptId, walkerId) => {
     try {
       await api.put(`/appointments/${apptId}/assign?walker_id=${walkerId}`);
       toast.success('Walker assigned successfully');
       fetchData();
+      // Refresh detail if open
+      if (selectedAppointment?.id === apptId) {
+        const response = await api.get(`/appointments/${apptId}/detail`);
+        setAppointmentDetail(response.data);
+      }
     } catch (error) {
       toast.error('Failed to assign walker');
     }
@@ -140,9 +169,10 @@ const CalendarPage = () => {
   const renderAppointmentCard = (appt, compact = false) => (
     <div
       key={appt.id}
-      className={`p-2 rounded-lg ${compact ? 'text-xs' : ''}`}
+      className={`p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity ${compact ? 'text-xs' : ''}`}
       style={getAppointmentStyles(appt)}
       data-testid={`calendar-appt-${appt.id}`}
+      onClick={() => openAppointmentDetail(appt)}
     >
       <div className="flex items-center justify-between gap-1">
         <span className="font-medium">{appt.scheduled_time}</span>
@@ -167,9 +197,12 @@ const CalendarPage = () => {
       {!compact && isAdmin && (
         <Select
           value={appt.walker_id || ''}
-          onValueChange={(value) => assignWalker(appt.id, value)}
+          onValueChange={(value) => {
+            event.stopPropagation();
+            assignWalker(appt.id, value);
+          }}
         >
-          <SelectTrigger className="mt-2 h-7 text-xs">
+          <SelectTrigger className="mt-2 h-7 text-xs" onClick={(e) => e.stopPropagation()}>
             <SelectValue placeholder="Assign walker" />
           </SelectTrigger>
           <SelectContent>
@@ -389,9 +422,10 @@ const CalendarPage = () => {
                           {dayAppts.slice(0, 3).map((appt) => (
                             <div
                               key={appt.id}
-                              className="text-xs p-1 rounded truncate"
+                              className="text-xs p-1 rounded truncate cursor-pointer hover:opacity-80"
                               style={getAppointmentStyles(appt)}
                               title={`${appt.scheduled_time} - ${appt.client_name} (${getWalkerName(appt.walker_id)})`}
+                              onClick={() => openAppointmentDetail(appt)}
                             >
                               {appt.scheduled_time} {appt.service_type.replace('_', ' ')}
                             </div>
@@ -443,6 +477,162 @@ const CalendarPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Appointment Detail Modal */}
+        <Dialog open={!!selectedAppointment} onOpenChange={closeAppointmentDetail}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-primary" />
+                Appointment Details
+              </DialogTitle>
+              <DialogDescription>
+                {selectedAppointment?.scheduled_date} at {selectedAppointment?.scheduled_time}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {detailLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : appointmentDetail ? (
+              <div className="space-y-6">
+                {/* Service Info */}
+                <div className="p-4 rounded-xl bg-primary/10">
+                  <h3 className="font-semibold text-lg capitalize">
+                    {appointmentDetail.service?.name || appointmentDetail.service_type?.replace('_', ' ')}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {appointmentDetail.service?.description}
+                  </p>
+                  <div className="flex items-center gap-4 mt-2">
+                    <Badge className={`${getStatusBadgeColor(appointmentDetail.status)} rounded-full`}>
+                      {appointmentDetail.status}
+                    </Badge>
+                    {appointmentDetail.service?.price && (
+                      <span className="font-semibold text-primary">${appointmentDetail.service.price.toFixed(2)}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Client Info */}
+                {appointmentDetail.client && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <User className="w-4 h-4" /> Client
+                    </h4>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="font-medium">{appointmentDetail.client.full_name}</p>
+                      {appointmentDetail.client.email && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Mail className="w-3 h-3" /> {appointmentDetail.client.email}
+                        </p>
+                      )}
+                      {appointmentDetail.client.phone && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {appointmentDetail.client.phone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Walker Info */}
+                <div className="space-y-2">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <PawPrint className="w-4 h-4" /> Walker
+                  </h4>
+                  {appointmentDetail.walker ? (
+                    <div 
+                      className="p-3 rounded-lg"
+                      style={{ 
+                        backgroundColor: `${appointmentDetail.walker.walker_color}15`,
+                        borderLeft: `4px solid ${appointmentDetail.walker.walker_color}`
+                      }}
+                    >
+                      <p className="font-medium">{appointmentDetail.walker.full_name}</p>
+                      {appointmentDetail.walker.phone && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {appointmentDetail.walker.phone}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-lg bg-gray-100 text-gray-600">
+                      <p>No walker assigned</p>
+                      {isAdmin && (
+                        <Select onValueChange={(value) => assignWalker(appointmentDetail.id, value)}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Assign a walker" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {walkers.map((walker) => (
+                              <SelectItem key={walker.id} value={walker.id}>
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: walker.walker_color }}
+                                  />
+                                  {walker.full_name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Pets */}
+                {appointmentDetail.pets && appointmentDetail.pets.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <PawPrint className="w-4 h-4" /> Pet(s)
+                    </h4>
+                    <div className="grid gap-2">
+                      {appointmentDetail.pets.map((pet) => (
+                        <div key={pet.id} className="p-3 rounded-lg bg-muted/50 flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <PawPrint className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{pet.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {pet.breed || pet.species} {pet.age && `• ${pet.age} years`} {pet.weight && `• ${pet.weight} lbs`}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes */}
+                {appointmentDetail.notes && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Notes</h4>
+                    <p className="text-sm text-muted-foreground p-3 rounded-lg bg-muted/50">
+                      {appointmentDetail.notes}
+                    </p>
+                  </div>
+                )}
+
+                {/* Duration info if completed */}
+                {appointmentDetail.status === 'completed' && appointmentDetail.actual_duration_minutes && (
+                  <div className="p-3 rounded-lg bg-green-50 text-green-800">
+                    <p className="text-sm">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      Completed in {appointmentDetail.actual_duration_minutes} minutes
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground">No details available</p>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
