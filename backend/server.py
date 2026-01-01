@@ -1699,36 +1699,118 @@ async def get_timesheets(current_user: dict = Depends(get_current_user)):
     if current_user['role'] == 'walker':
         query['walker_id'] = current_user['id']
     
-    timesheets = await db.timesheets.find(query, {"_id": 0}).to_list(100)
+    timesheets = await db.timesheets.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     return timesheets
 
-@api_router.post("/timesheets/submit")
-async def submit_timesheet(week_start: str, week_end: str, current_user: dict = Depends(get_current_user)):
+@api_router.get("/payroll/current")
+async def get_current_payroll(current_user: dict = Depends(get_current_user)):
+    """Get current accumulated hours and earnings for the walker"""
     if current_user['role'] != 'walker':
         raise HTTPException(status_code=403, detail="Walkers only")
     
-    # Get completed appointments for the week
-    appointments = await db.appointments.find({
-        "walker_id": current_user['id'],
-        "status": "completed",
-        "scheduled_date": {"$gte": week_start, "$lte": week_end}
-    }, {"_id": 0}).to_list(500)
+    # Get IDs of walks already included in submitted timesheets
+    submitted_timesheets = await db.timesheets.find(
+        {"walker_id": current_user['id'], "submitted": True},
+        {"_id": 0, "appointment_ids": 1}
+    ).to_list(500)
     
-    total_minutes = sum(appt.get('actual_duration_minutes', 0) for appt in appointments)
+    submitted_appointment_ids = set()
+    for ts in submitted_timesheets:
+        submitted_appointment_ids.update(ts.get('appointment_ids', []))
+    
+    # Get completed appointments NOT yet submitted
+    all_appointments = await db.appointments.find({
+        "walker_id": current_user['id'],
+        "status": "completed"
+    }, {"_id": 0}).sort("scheduled_date", -1).to_list(500)
+    
+    # Filter out already submitted walks
+    pending_walks = [a for a in all_appointments if a['id'] not in submitted_appointment_ids]
+    
+    # Calculate totals
+    total_minutes = 0
+    total_earnings = 0.0
+    walk_details = []
+    
+    for walk in pending_walks:
+        duration = walk.get('actual_duration_minutes', 0)
+        service_type = walk.get('service_type', '')
+        earnings = calculate_walk_earnings(service_type, duration)
+        
+        total_minutes += duration
+        total_earnings += earnings
+        
+        # Get client and pet names
+        client = await db.users.find_one({"id": walk['client_id']}, {"_id": 0, "full_name": 1})
+        pet_names = []
+        for pet_id in walk.get('pet_ids', []):
+            pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+            if pet:
+                pet_names.append(pet['name'])
+        
+        walk_details.append({
+            "id": walk['id'],
+            "date": walk['scheduled_date'],
+            "time": walk.get('scheduled_time', ''),
+            "service_type": service_type,
+            "duration_minutes": duration,
+            "earnings": earnings,
+            "client_name": client.get('full_name') if client else "Unknown",
+            "pet_names": pet_names,
+            "distance_meters": walk.get('distance_meters', 0)
+        })
+    
+    return {
+        "total_hours": round(total_minutes / 60, 2),
+        "total_minutes": total_minutes,
+        "total_walks": len(pending_walks),
+        "total_earnings": round(total_earnings, 2),
+        "walks": walk_details,
+        "pay_rates": WALKER_PAY_RATES
+    }
+
+@api_router.post("/timesheets/submit")
+async def submit_timesheet(current_user: dict = Depends(get_current_user)):
+    """Submit accumulated walks as a timesheet"""
+    if current_user['role'] != 'walker':
+        raise HTTPException(status_code=403, detail="Walkers only")
+    
+    # Get current accumulated data
+    current_payroll = await get_current_payroll(current_user)
+    
+    if current_payroll['total_walks'] == 0:
+        raise HTTPException(status_code=400, detail="No walks to submit")
+    
+    walks = current_payroll['walks']
+    
+    # Determine period dates
+    dates = [w['date'] for w in walks]
+    period_start = min(dates) if dates else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    period_end = max(dates) if dates else datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     timesheet = Timesheet(
         walker_id=current_user['id'],
-        week_start=week_start,
-        week_end=week_end,
-        total_hours=round(total_minutes / 60, 2),
-        total_walks=len(appointments),
-        appointments=[appt['id'] for appt in appointments],
+        period_start=period_start,
+        period_end=period_end,
+        total_hours=current_payroll['total_hours'],
+        total_walks=current_payroll['total_walks'],
+        total_earnings=current_payroll['total_earnings'],
+        appointment_ids=[w['id'] for w in walks],
+        walk_details=walks,
         submitted=True
     )
+    
     ts_dict = timesheet.model_dump()
     ts_dict['created_at'] = ts_dict['created_at'].isoformat()
     await db.timesheets.insert_one(ts_dict)
-    return {"message": "Timesheet submitted", "timesheet": timesheet}
+    
+    return {
+        "message": "Timesheet submitted successfully",
+        "timesheet_id": timesheet.id,
+        "total_hours": timesheet.total_hours,
+        "total_earnings": timesheet.total_earnings,
+        "total_walks": timesheet.total_walks
+    }
 
 @api_router.put("/timesheets/{timesheet_id}/approve")
 async def approve_timesheet(timesheet_id: str, current_user: dict = Depends(get_current_user)):
@@ -1737,6 +1819,14 @@ async def approve_timesheet(timesheet_id: str, current_user: dict = Depends(get_
     
     await db.timesheets.update_one({"id": timesheet_id}, {"$set": {"approved": True}})
     return {"message": "Timesheet approved"}
+
+@api_router.put("/timesheets/{timesheet_id}/mark-paid")
+async def mark_timesheet_paid(timesheet_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    await db.timesheets.update_one({"id": timesheet_id}, {"$set": {"paid": True}})
+    return {"message": "Timesheet marked as paid"}
 
 # Revenue & Billing Routes
 @api_router.get("/revenue/summary")
