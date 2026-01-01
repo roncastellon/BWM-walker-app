@@ -157,6 +157,11 @@ class ServicePricing(BaseModel):
     duration_minutes: int
     is_active: bool = True
 
+class GPSCoordinate(BaseModel):
+    lat: float
+    lng: float
+    timestamp: str
+
 class Appointment(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -171,6 +176,10 @@ class Appointment(BaseModel):
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     actual_duration_minutes: Optional[int] = None
+    # GPS Tracking fields
+    gps_route: List[Dict] = Field(default_factory=list)  # List of {lat, lng, timestamp}
+    distance_meters: Optional[float] = None
+    is_tracking: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class AppointmentCreate(BaseModel):
