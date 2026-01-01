@@ -38,9 +38,14 @@ const Layout = ({ children }) => {
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const prevCountRef = useRef(0);
 
-  // Poll for unread messages
+  // Poll for unread messages (but not on messages page to avoid conflicts)
   useEffect(() => {
+    const isOnMessagesPage = location.pathname.includes('/messages') || 
+                              location.pathname.includes('/chat');
+    
     const fetchUnreadCount = async () => {
+      if (isOnMessagesPage) return; // Don't poll on messages page
+      
       try {
         const response = await api.get('/messages/unread-count');
         const newCount = response.data.unread_count;
@@ -60,10 +65,10 @@ const Layout = ({ children }) => {
     };
 
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 5000); // Poll every 5 seconds
+    const interval = setInterval(fetchUnreadCount, 10000); // Poll every 10 seconds (was 5)
     
     return () => clearInterval(interval);
-  }, [api]);
+  }, [api, location.pathname]);
 
   const handleLogout = () => {
     logout();
