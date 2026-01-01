@@ -61,8 +61,12 @@ const MessagesPage = () => {
       let url = '/messages';
       if (isGroupChat) {
         url += '?group=true';
+        // Mark group messages as read
+        await api.post('/messages/mark-read?mark_group=true');
       } else if (selectedContact) {
         url += `?receiver_id=${selectedContact.id}`;
+        // Mark direct messages from this contact as read
+        await api.post(`/messages/mark-read?sender_id=${selectedContact.id}`);
       } else {
         return;
       }
