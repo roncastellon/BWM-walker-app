@@ -387,14 +387,32 @@ class Timesheet(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     walker_id: str
-    week_start: str
-    week_end: str
+    period_start: str
+    period_end: str
     total_hours: float
     total_walks: int
-    appointments: List[str]
+    total_earnings: float
+    appointment_ids: List[str]
+    walk_details: List[Dict] = Field(default_factory=list)  # Details of each walk
     submitted: bool = False
     approved: bool = False
+    paid: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Walker pay rates
+WALKER_PAY_RATES = {
+    "walk_30": 15.00,  # 30-minute walk
+    "walk_60": 30.00,  # 60-minute walk
+}
+
+def calculate_walk_earnings(service_type: str, duration_minutes: int = None) -> float:
+    """Calculate walker earnings for a walk"""
+    if service_type in WALKER_PAY_RATES:
+        return WALKER_PAY_RATES[service_type]
+    # For other services, calculate based on duration at $30/hour
+    if duration_minutes:
+        return round((duration_minutes / 60) * 30, 2)
+    return 0.0
 
 class PaymentTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
