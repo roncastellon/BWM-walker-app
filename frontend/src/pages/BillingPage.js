@@ -5,19 +5,24 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { CreditCard, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { CreditCard, CheckCircle, Clock, AlertCircle, Loader2, Smartphone, DollarSign, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BillingPage = () => {
   const { api } = useAuth();
   const [searchParams] = useSearchParams();
   const [invoices, setInvoices] = useState([]);
+  const [paymentInfo, setPaymentInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [payingInvoice, setPayingInvoice] = useState(null);
   const [checkingPayment, setCheckingPayment] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   useEffect(() => {
-    fetchInvoices();
+    fetchData();
     
     // Check for payment return
     const sessionId = searchParams.get('session_id');
@@ -26,12 +31,16 @@ const BillingPage = () => {
     }
   }, [searchParams]);
 
-  const fetchInvoices = async () => {
+  const fetchData = async () => {
     try {
-      const response = await api.get('/invoices');
-      setInvoices(response.data);
+      const [invoicesRes, paymentInfoRes] = await Promise.all([
+        api.get('/invoices'),
+        api.get('/settings/payment-info'),
+      ]);
+      setInvoices(invoicesRes.data);
+      setPaymentInfo(paymentInfoRes.data);
     } catch (error) {
-      toast.error('Failed to load invoices');
+      toast.error('Failed to load billing data');
     } finally {
       setLoading(false);
     }
@@ -51,14 +60,12 @@ const BillingPage = () => {
       if (response.data.payment_status === 'paid') {
         toast.success('Payment successful! Thank you.');
         setCheckingPayment(false);
-        fetchInvoices();
-        // Clear the URL params
+        fetchData();
         window.history.replaceState({}, '', '/billing');
       } else if (response.data.status === 'expired') {
         toast.error('Payment session expired');
         setCheckingPayment(false);
       } else {
-        // Continue polling
         setTimeout(() => pollPaymentStatus(sessionId, attempts + 1), 2000);
       }
     } catch (error) {
@@ -67,7 +74,7 @@ const BillingPage = () => {
     }
   };
 
-  const handlePayment = async (invoiceId) => {
+  const handleCreditCardPayment = async (invoiceId) => {
     setPayingInvoice(invoiceId);
     try {
       const origin = window.location.origin;
@@ -79,6 +86,16 @@ const BillingPage = () => {
       toast.error('Failed to initiate payment');
       setPayingInvoice(null);
     }
+  };
+
+  const openPaymentOptions = (invoice) => {
+    setSelectedInvoice(invoice);
+    setPaymentDialogOpen(true);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
   };
 
   const getStatusBadge = (status) => {
@@ -94,7 +111,7 @@ const BillingPage = () => {
     }
   };
 
-  const pendingInvoices = invoices.filter(inv => inv.status === 'pending');
+  const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
   const paidInvoices = invoices.filter(inv => inv.status === 'paid');
   const totalPending = pendingInvoices.reduce((sum, inv) => sum + inv.amount, 0);
 
@@ -182,19 +199,11 @@ const BillingPage = () => {
                     <div className="flex items-center gap-3">
                       {getStatusBadge(invoice.status)}
                       <Button
-                        onClick={() => handlePayment(invoice.id)}
-                        disabled={payingInvoice === invoice.id}
+                        onClick={() => openPaymentOptions(invoice)}
                         className="rounded-full"
                         data-testid={`pay-btn-${invoice.id}`}
                       >
-                        {payingInvoice === invoice.id ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          'Pay Now'
-                        )}
+                        Pay Now
                       </Button>
                     </div>
                   </div>
@@ -229,7 +238,12 @@ const BillingPage = () => {
                       </div>
                       <div>
                         <p className="font-medium">${invoice.amount.toFixed(2)}</p>
-                        <p className="text-sm text-muted-foreground">Paid: {invoice.paid_date}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Paid: {invoice.paid_date}
+                          {invoice.payment_method && (
+                            <span className="ml-2 capitalize">via {invoice.payment_method}</span>
+                          )}
+                        </p>
                       </div>
                     </div>
                     {getStatusBadge(invoice.status)}
@@ -239,6 +253,221 @@ const BillingPage = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Payment Options Dialog */}
+        <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Choose Payment Method</DialogTitle>
+              <DialogDescription>
+                Pay ${selectedInvoice?.amount?.toFixed(2)} - Invoice #{selectedInvoice?.id?.slice(0, 8)}
+              </DialogDescription>
+            </DialogHeader>
+
+            <Tabs defaultValue="card" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="card" className="text-xs">Card</TabsTrigger>
+                <TabsTrigger value="zelle" className="text-xs">Zelle</TabsTrigger>
+                <TabsTrigger value="venmo" className="text-xs">Venmo</TabsTrigger>
+                <TabsTrigger value="cashapp" className="text-xs">CashApp</TabsTrigger>
+              </TabsList>
+
+              {/* Credit Card */}
+              <TabsContent value="card" className="mt-4">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto">
+                    <CreditCard className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">Pay with Credit Card</h3>
+                    <p className="text-sm text-muted-foreground">Secure payment via Stripe</p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setPaymentDialogOpen(false);
+                      handleCreditCardPayment(selectedInvoice?.id);
+                    }}
+                    disabled={payingInvoice === selectedInvoice?.id}
+                    className="w-full rounded-full"
+                    data-testid="pay-with-card"
+                  >
+                    {payingInvoice === selectedInvoice?.id ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Pay ${selectedInvoice?.amount?.toFixed(2)}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </TabsContent>
+
+              {/* Zelle */}
+              <TabsContent value="zelle" className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                      <span className="text-purple-600 font-bold text-lg">Z</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Pay with Zelle</h3>
+                      <p className="text-sm text-muted-foreground">Send from your banking app</p>
+                    </div>
+                  </div>
+
+                  {paymentInfo.zelle?.email || paymentInfo.zelle?.phone ? (
+                    <div className="space-y-3 p-4 rounded-xl bg-muted/50">
+                      {paymentInfo.zelle?.name && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Name</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{paymentInfo.zelle.name}</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.zelle.name)}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentInfo.zelle?.email && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Email</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{paymentInfo.zelle.email}</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.zelle.email)}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentInfo.zelle?.phone && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Phone</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{paymentInfo.zelle.phone}</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.zelle.phone)}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-muted-foreground">
+                          Include memo: <strong>Invoice #{selectedInvoice?.id?.slice(0, 8)}</strong>
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">Zelle payment info not configured</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Venmo */}
+              <TabsContent value="venmo" className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-500 font-bold text-lg">V</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Pay with Venmo</h3>
+                      <p className="text-sm text-muted-foreground">Send via Venmo app</p>
+                    </div>
+                  </div>
+
+                  {paymentInfo.venmo?.username ? (
+                    <div className="space-y-3 p-4 rounded-xl bg-muted/50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Username</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">@{paymentInfo.venmo.username}</span>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.venmo.username)}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-muted-foreground">
+                          Include note: <strong>Invoice #{selectedInvoice?.id?.slice(0, 8)}</strong>
+                        </p>
+                      </div>
+                      <a 
+                        href={`https://venmo.com/${paymentInfo.venmo.username}?txn=pay&amount=${selectedInvoice?.amount}&note=Invoice%20${selectedInvoice?.id?.slice(0, 8)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        <Button variant="outline" className="w-full rounded-full">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Open Venmo
+                        </Button>
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">Venmo payment info not configured</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* CashApp */}
+              <TabsContent value="cashapp" className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                      <DollarSign className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Pay with Cash App</h3>
+                      <p className="text-sm text-muted-foreground">Send via Cash App</p>
+                    </div>
+                  </div>
+
+                  {paymentInfo.cashapp?.cashtag ? (
+                    <div className="space-y-3 p-4 rounded-xl bg-muted/50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">$Cashtag</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">${paymentInfo.cashapp.cashtag}</span>
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(`$${paymentInfo.cashapp.cashtag}`)}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-muted-foreground">
+                          Include note: <strong>Invoice #{selectedInvoice?.id?.slice(0, 8)}</strong>
+                        </p>
+                      </div>
+                      <a 
+                        href={`https://cash.app/$${paymentInfo.cashapp.cashtag}/${selectedInvoice?.amount}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        <Button variant="outline" className="w-full rounded-full">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Open Cash App
+                        </Button>
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">Cash App payment info not configured</p>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {paymentInfo.instructions && (
+              <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t">
+                {paymentInfo.instructions}
+              </p>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
