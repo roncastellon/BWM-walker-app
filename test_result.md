@@ -312,15 +312,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Chat dropdown with My Clients, Team, All filters"
-    - "Calendar appointment click-to-detail modal"
-    - "Invoice detail modal with company branding"
-    - "Company Info tab in Billing & Revenue"
+    - "Mobile chat input focus retention"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
   backend_testing_complete: true
-  frontend_testing_complete: true
+  frontend_testing_complete: false
 
 agent_communication:
   - agent: "main"
@@ -329,3 +326,5 @@ agent_communication:
     message: "✅ BACKEND TESTING COMPLETE - All 7 backend tasks PASSED (100% success rate). Tested with demo credentials and new test users. All new endpoints working correctly: chat contacts with filters, appointment/invoice detail endpoints, company info settings, and email/SMS endpoints (properly returning errors when not configured). No critical issues found. Ready for frontend testing."
   - agent: "testing"
     message: "✅ FRONTEND TESTING COMPLETE - All 5 frontend tasks PASSED (100% success rate). Tested with demo_walker and demo_admin credentials. Key findings: 1) Messages page dropdown filters working for both Walker and Admin with all required options (All Contacts, My Clients, Team), 2) 'All (Team Broadcast)' button functional, 3) Calendar appointment detail modal opens and displays all required sections, 4) Invoice detail modal shows company branding, amount, services table, and Send Email/SMS buttons, 5) Company Info tab has all 7 required fields and saves successfully, 6) All 6 tabs present in Billing & Revenue, 7) SendGrid/Twilio status properly displayed. Minor issues: Some section headers not found but content is present. All core functionality working correctly."
+  - agent: "main"
+    message: "NEW FORK - Testing mobile chat input fix. Previous agent implemented: 1) Memoized MessageInput component in MessagesPage.js to isolate state, 2) Polling skip in Layout.js when on /messages or /chat paths. Initial manual test with Playwright in mobile viewport (375x812) shows 'Hello world test' was typed successfully without losing focus. Need thorough testing with testing agent to confirm fix across all scenarios."
