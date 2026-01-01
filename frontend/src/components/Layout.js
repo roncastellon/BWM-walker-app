@@ -45,7 +45,7 @@ const Layout = ({ children }) => {
         { path: '/admin/calendar', label: 'Calendar', icon: Calendar },
         { path: '/admin/clients', label: 'Clients', icon: Users },
         { path: '/admin/walkers', label: 'Walkers', icon: PawPrint },
-        { path: '/admin/invoices', label: 'Invoices', icon: FileText },
+        { path: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
         { path: '/admin/chat', label: 'Team Chat', icon: MessageCircle },
       ];
     }
