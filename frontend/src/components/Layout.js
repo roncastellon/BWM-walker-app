@@ -44,6 +44,7 @@ const Layout = ({ children }) => {
       return [
         { path: '/admin', label: 'Dashboard', icon: Home },
         { path: '/admin/calendar', label: 'Calendar', icon: Calendar },
+        { path: '/tracking', label: 'Live Tracking', icon: Navigation },
         { path: '/admin/clients', label: 'Clients', icon: Users },
         { path: '/admin/walkers', label: 'Walkers', icon: PawPrint },
         { path: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
@@ -54,6 +55,7 @@ const Layout = ({ children }) => {
       return [
         { path: '/walker', label: 'Dashboard', icon: Home },
         { path: '/walker/schedule', label: 'My Schedule', icon: Calendar },
+        { path: '/tracking', label: 'Walk Tracking', icon: Navigation },
         { path: '/walker/payroll', label: 'Payroll', icon: CreditCard },
         { path: '/walker/chat', label: 'Messages', icon: MessageCircle },
         { path: '/walker/profile', label: 'My Profile', icon: Settings },
@@ -62,6 +64,7 @@ const Layout = ({ children }) => {
     return [
       { path: '/dashboard', label: 'Dashboard', icon: Home },
       { path: '/schedule', label: 'Book Services', icon: Calendar },
+      { path: '/tracking', label: 'Track My Pet', icon: Navigation },
       { path: '/billing', label: 'Billing', icon: CreditCard },
       { path: '/messages', label: 'Messages', icon: MessageCircle },
       { path: '/pets', label: 'My Pets', icon: PawPrint },
