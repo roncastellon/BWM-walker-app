@@ -295,7 +295,27 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 @api_router.get("/users/walkers", response_model=List[UserResponse])
 async def get_walkers():
     walkers = await db.users.find({"role": "walker", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
+    
+    # Auto-assign colors to walkers who don't have one
+    default_colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
+    color_index = 0
+    
+    for walker in walkers:
+        if not walker.get('walker_color'):
+            walker['walker_color'] = default_colors[color_index % len(default_colors)]
+            # Save the color
+            await db.users.update_one({"id": walker['id']}, {"$set": {"walker_color": walker['walker_color']}})
+            color_index += 1
+    
     return [UserResponse(**w) for w in walkers]
+
+@api_router.put("/users/{user_id}/color")
+async def update_walker_color(user_id: str, color: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    await db.users.update_one({"id": user_id}, {"$set": {"walker_color": color}})
+    return {"message": "Walker color updated"}
 
 @api_router.get("/users/clients", response_model=List[UserResponse])
 async def get_clients(current_user: dict = Depends(get_current_user)):
