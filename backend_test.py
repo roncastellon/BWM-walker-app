@@ -602,6 +602,11 @@ def main():
     # Run all tests
     try:
         tester.test_root_endpoint()
+        
+        # Test demo user login first
+        tester.test_demo_user_login()
+        
+        # Original tests
         tester.test_user_registration()
         tester.test_user_login()
         tester.test_auth_me()
@@ -613,6 +618,20 @@ def main():
         tester.test_dashboard_stats()
         tester.test_messages()
         tester.test_invoices()
+        
+        # NEW FEATURE TESTS
+        print("\n" + "=" * 50)
+        print("🆕 TESTING NEW FEATURES")
+        print("=" * 50)
+        
+        tester.test_chat_contacts_endpoint()
+        tester.test_appointment_detail_endpoint()
+        tester.test_invoice_detail_endpoint()
+        tester.test_company_info_endpoints()
+        tester.test_notification_config_endpoint()
+        tester.test_send_invoice_email_sms()
+        
+        # Security tests
         tester.test_unauthorized_access()
         
     except KeyboardInterrupt:
