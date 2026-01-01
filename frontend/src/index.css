@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet CSS */
+@import 'leaflet/dist/leaflet.css';
+
 @import '@fontsource/nunito/400.css';
 @import '@fontsource/nunito/700.css';
 @import '@fontsource/manrope/400.css';
