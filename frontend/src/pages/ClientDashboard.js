@@ -24,6 +24,13 @@ const ClientDashboard = () => {
   const [pets, setPets] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Edit/Cancel appointment state
+  const [selectedAppt, setSelectedAppt] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ scheduled_date: '', scheduled_time: '', notes: '' });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchData();
