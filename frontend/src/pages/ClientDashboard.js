@@ -273,10 +273,10 @@ const ClientDashboard = () => {
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-3">
               <Link to="/billing">
-                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full border-sky-200 hover:border-sky-300">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Eye className="w-5 h-5 text-primary" />
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                      <Eye className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">View My Bills</p>
@@ -286,7 +286,7 @@ const ClientDashboard = () => {
                 </Card>
               </Link>
               <Link to="/billing">
-                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full border-orange-200 hover:border-orange-300">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
                       <DollarSign className="w-5 h-5 text-orange-600" />
@@ -304,10 +304,10 @@ const ClientDashboard = () => {
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-primary" />
+                  <CreditCard className="w-5 h-5 text-orange-500" />
                   Pending Bills
                   {pendingInvoices.length > 0 && (
-                    <Badge variant="destructive" className="rounded-full ml-2">
+                    <Badge className="bg-orange-500 text-white rounded-full ml-2">
                       {pendingInvoices.length}
                     </Badge>
                   )}
@@ -324,14 +324,14 @@ const ClientDashboard = () => {
                     {pendingInvoices.slice(0, 5).map((invoice) => (
                       <div
                         key={invoice.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                        className="flex items-center justify-between p-3 rounded-lg bg-orange-50/50 border border-orange-100"
                       >
                         <div>
-                          <p className="font-bold text-lg">${invoice.amount?.toFixed(2)}</p>
+                          <p className="font-bold text-lg text-orange-600">${invoice.amount?.toFixed(2)}</p>
                           <p className="text-xs text-muted-foreground">Due: {invoice.due_date}</p>
                         </div>
                         <Link to="/billing">
-                          <Button size="sm" className="rounded-full">
+                          <Button size="sm" className="rounded-full bg-orange-500 hover:bg-orange-600">
                             Pay Now
                           </Button>
                         </Link>
