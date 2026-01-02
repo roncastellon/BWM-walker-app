@@ -28,6 +28,7 @@ import {
   Navigation,
   Bell,
   Crown,
+  Bed,
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
