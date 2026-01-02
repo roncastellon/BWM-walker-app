@@ -228,8 +228,7 @@ const AuthPage = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="client">Pet Owner (Client)</SelectItem>
-                        <SelectItem value="walker">Dog Walker</SelectItem>
-                        <SelectItem value="sitter">Pet Sitter</SelectItem>
+                        <SelectItem value="walker">Walker & Sitter</SelectItem>
                         <SelectItem value="admin">Administrator</SelectItem>
                       </SelectContent>
                     </Select>
