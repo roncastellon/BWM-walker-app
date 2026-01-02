@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@capacitor/android": "5",
+    "@capacitor/cli": "5",
+    "@capacitor/core": "5",
+    "@capacitor/ios": "5",
+    "@capacitor/splash-screen": "5",
+    "@capacitor/status-bar": "5",
     "@fontsource/fredoka": "^5.2.10",
     "@fontsource/manrope": "^5.2.8",
     "@fontsource/nunito": "^5.2.7",
