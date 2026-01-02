@@ -831,6 +831,306 @@ class WagWalkAPITester:
                     description="Test accessing uploaded pet image"
                 )
 
+    def test_appointment_time_slot_limits(self):
+        """Test appointment creation with time slot limits (max 3 per slot)"""
+        print("\n🔍 Testing Appointment Time Slot Limits...")
+        
+        if not self.tokens.get('demo_client') or not self.pets.get('buddy'):
+            print("⚠️  Skipping time slot limit test - missing demo client token or pet")
+            return
+        
+        # Use tomorrow's date for testing
+        test_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        test_time = "14:00"  # 2 PM
+        
+        # Create 3 appointments at the same time slot (should succeed)
+        created_appointments = []
+        for i in range(3):
+            appt_data = {
+                "pet_ids": [self.pets['buddy']['id']],
+                "service_type": "walk_30",
+                "scheduled_date": test_date,
+                "scheduled_time": test_time,
+                "notes": f"Test appointment {i+1} for time slot limit"
+            }
+            success, response = self.run_test(
+                f"Create Appointment {i+1}/3", "POST", "appointments", 200,
+                data=appt_data, token=self.tokens['demo_client'],
+                description=f"Create appointment {i+1} at {test_time} (should succeed)"
+            )
+            if success:
+                created_appointments.append(response['id'])
+        
+        # Try to create a 4th appointment at the same time slot (should fail)
+        appt_data = {
+            "pet_ids": [self.pets['buddy']['id']],
+            "service_type": "walk_30",
+            "scheduled_date": test_date,
+            "scheduled_time": test_time,
+            "notes": "4th appointment - should fail due to time slot limit"
+        }
+        success, response = self.run_test(
+            "Create 4th Appointment (Should Fail)", "POST", "appointments", 400,
+            data=appt_data, token=self.tokens['demo_client'],
+            description="Try to create 4th appointment at same time slot (should fail with 'time slot is full' error)"
+        )
+        
+        # Store created appointments for cleanup
+        self.appointments['time_slot_test'] = created_appointments
+
+    def test_appointment_walker_conflicts(self):
+        """Test appointment creation with walker conflicts (1 walker per slot)"""
+        print("\n🔍 Testing Appointment Walker Conflicts...")
+        
+        if not self.tokens.get('demo_admin') or not self.pets.get('buddy'):
+            print("⚠️  Skipping walker conflict test - missing demo admin token or pet")
+            return
+        
+        # Get available walkers
+        success, walkers = self.run_test(
+            "Get Walkers for Conflict Test", "GET", "users/walkers", 200,
+            token=self.tokens['demo_admin'], description="Get available walkers"
+        )
+        
+        if not success or not walkers:
+            print("⚠️  No walkers available for conflict test")
+            return
+        
+        walker_id = walkers[0]['id']
+        test_date = (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d')
+        test_time = "15:00"  # 3 PM
+        
+        # Create first appointment with walker assigned
+        appt_data = {
+            "client_id": self.users['demo_client']['id'],
+            "pet_ids": [self.pets['buddy']['id']],
+            "service_type": "walk_30",
+            "scheduled_date": test_date,
+            "scheduled_time": test_time,
+            "walker_id": walker_id,
+            "notes": "First appointment with walker assigned"
+        }
+        success, response = self.run_test(
+            "Create Appointment with Walker", "POST", "appointments/admin", 200,
+            data=appt_data, token=self.tokens['demo_admin'],
+            description="Create appointment with walker assigned (should succeed)"
+        )
+        
+        if success:
+            first_appt_id = response['id']
+            
+            # Try to create second appointment with same walker at same time (should fail)
+            appt_data2 = {
+                "client_id": self.users['demo_client']['id'],
+                "pet_ids": [self.pets['buddy']['id']],
+                "service_type": "walk_60",
+                "scheduled_date": test_date,
+                "scheduled_time": test_time,
+                "walker_id": walker_id,
+                "notes": "Second appointment - should fail due to walker conflict"
+            }
+            success, response = self.run_test(
+                "Create Conflicting Appointment (Should Fail)", "POST", "appointments/admin", 400,
+                data=appt_data2, token=self.tokens['demo_admin'],
+                description="Try to assign same walker to same time slot (should fail with 'walker already booked' error)"
+            )
+            
+            # Store for cleanup
+            self.appointments['walker_conflict_test'] = first_appt_id
+
+    def test_admin_create_appointment(self):
+        """Test admin creating appointments for clients"""
+        print("\n🔍 Testing Admin Create Appointment...")
+        
+        if not self.tokens.get('demo_admin') or not self.pets.get('buddy'):
+            print("⚠️  Skipping admin create appointment test - missing demo admin token or pet")
+            return
+        
+        # Get available walkers
+        success, walkers = self.run_test(
+            "Get Walkers for Admin Test", "GET", "users/walkers", 200,
+            token=self.tokens['demo_admin'], description="Get available walkers"
+        )
+        
+        if not success or not walkers:
+            print("⚠️  No walkers available for admin appointment test")
+            return
+        
+        walker_id = walkers[0]['id']
+        test_date = (datetime.now() + timedelta(days=3)).strftime('%Y-%m-%d')
+        test_time = "16:00"  # 4 PM
+        
+        # Admin creates appointment for client
+        appt_data = {
+            "client_id": self.users['demo_client']['id'],
+            "pet_ids": [self.pets['buddy']['id']],
+            "service_type": "walk_60",
+            "scheduled_date": test_date,
+            "scheduled_time": test_time,
+            "walker_id": walker_id,
+            "notes": "Admin-created appointment for client"
+        }
+        success, response = self.run_test(
+            "Admin Create Appointment", "POST", "appointments/admin", 200,
+            data=appt_data, token=self.tokens['demo_admin'],
+            description="Admin creates appointment for client with walker assigned"
+        )
+        
+        if success:
+            # Verify the appointment was created with correct client_id
+            if response.get('client_id') == self.users['demo_client']['id']:
+                print("✅ Admin appointment creation verified - correct client_id")
+            else:
+                print("⚠️  Admin appointment creation failed - incorrect client_id")
+            
+            self.appointments['admin_created'] = response['id']
+
+    def test_admin_update_appointment(self):
+        """Test admin updating appointments"""
+        print("\n🔍 Testing Admin Update Appointment...")
+        
+        if not self.tokens.get('demo_admin'):
+            print("⚠️  Skipping admin update appointment test - missing demo admin token")
+            return
+        
+        # Use the admin-created appointment if available
+        appt_id = self.appointments.get('admin_created')
+        if not appt_id:
+            print("⚠️  No appointment available for admin update test")
+            return
+        
+        # Get available walkers for reassignment
+        success, walkers = self.run_test(
+            "Get Walkers for Update Test", "GET", "users/walkers", 200,
+            token=self.tokens['demo_admin'], description="Get available walkers for reassignment"
+        )
+        
+        if not success or len(walkers) < 2:
+            print("⚠️  Need at least 2 walkers for update test")
+            return
+        
+        new_walker_id = walkers[1]['id']  # Use second walker
+        new_date = (datetime.now() + timedelta(days=4)).strftime('%Y-%m-%d')
+        new_time = "17:00"  # 5 PM
+        
+        # Update appointment details
+        update_data = {
+            "walker_id": new_walker_id,
+            "scheduled_date": new_date,
+            "scheduled_time": new_time,
+            "status": "scheduled",
+            "notes": "Updated by admin - new walker and time"
+        }
+        success, response = self.run_test(
+            "Admin Update Appointment", "PUT", f"appointments/{appt_id}", 200,
+            data=update_data, token=self.tokens['demo_admin'],
+            description="Admin updates appointment walker, time, and notes"
+        )
+        
+        if success:
+            # Verify the updates
+            if response.get('walker_id') == new_walker_id:
+                print("✅ Appointment update verified - walker_id updated correctly")
+            else:
+                print("⚠️  Appointment update failed - walker_id not updated")
+            
+            if response.get('scheduled_time') == new_time:
+                print("✅ Appointment update verified - scheduled_time updated correctly")
+            else:
+                print("⚠️  Appointment update failed - scheduled_time not updated")
+
+    def test_available_slots_endpoint(self):
+        """Test available time slots endpoint"""
+        print("\n🔍 Testing Available Slots Endpoint...")
+        
+        if not self.tokens.get('demo_client'):
+            print("⚠️  Skipping available slots test - missing demo client token")
+            return
+        
+        # Test getting available slots for a future date
+        test_date = "2026-01-02"  # Use the date from the review request
+        
+        success, response = self.run_test(
+            "Get Available Slots", "GET", f"appointments/available-slots?date={test_date}", 200,
+            token=self.tokens['demo_client'],
+            description=f"Get available time slots and walker availability for {test_date}"
+        )
+        
+        if success:
+            # Verify response structure
+            if 'date' in response and 'slots' in response:
+                print("✅ Available slots response has correct structure")
+                
+                # Check if slots have required fields
+                slots = response.get('slots', [])
+                if slots:
+                    first_slot = slots[0]
+                    required_fields = ['time', 'booked_count', 'is_full', 'available_walkers']
+                    missing_fields = [field for field in required_fields if field not in first_slot]
+                    if missing_fields:
+                        print(f"⚠️  Missing fields in slot data: {missing_fields}")
+                    else:
+                        print("✅ Slot data contains all required fields")
+                        print(f"   Example slot: {first_slot['time']} - Booked: {first_slot['booked_count']}, Available walkers: {len(first_slot['available_walkers'])}")
+                else:
+                    print("⚠️  No slots returned in response")
+            else:
+                print("⚠️  Available slots response missing required fields")
+
+    def test_services_list_pet_sitting(self):
+        """Test services list includes pet sitting service"""
+        print("\n🔍 Testing Services List for Pet Sitting...")
+        
+        success, response = self.run_test(
+            "Get Services List", "GET", "services", 200,
+            description="Get services list and verify pet sitting service is included"
+        )
+        
+        if success:
+            services = response if isinstance(response, list) else []
+            
+            # Look for pet sitting service at our location (boarding)
+            pet_sitting_service = None
+            for service in services:
+                if service.get('service_type') == 'petsit_our_location':
+                    pet_sitting_service = service
+                    break
+            
+            if pet_sitting_service:
+                print("✅ Pet Sitting - Our Location (Boarding) service found")
+                
+                # Verify price is $50.00
+                if pet_sitting_service.get('price') == 50.00:
+                    print("✅ Pet sitting service price verified - $50.00")
+                else:
+                    print(f"⚠️  Pet sitting service price incorrect - Expected $50.00, got ${pet_sitting_service.get('price', 'N/A')}")
+                
+                # Verify name contains expected text
+                service_name = pet_sitting_service.get('name', '')
+                if 'Pet Sitting - Our Location' in service_name and 'Boarding' in service_name:
+                    print("✅ Pet sitting service name verified")
+                else:
+                    print(f"⚠️  Pet sitting service name unexpected: {service_name}")
+            else:
+                print("❌ Pet Sitting - Our Location (Boarding) service not found in services list")
+                print("   Available services:")
+                for service in services:
+                    print(f"   - {service.get('name', 'Unknown')} ({service.get('service_type', 'Unknown')}): ${service.get('price', 'N/A')}")
+
+    def test_appointment_scheduling_functionality(self):
+        """Test all appointment/scheduling functionality requested in review"""
+        print("\n" + "=" * 70)
+        print("🗓️  TESTING APPOINTMENT/SCHEDULING FUNCTIONALITY")
+        print("=" * 70)
+        
+        # Run all appointment scheduling tests
+        self.test_appointment_time_slot_limits()
+        self.test_appointment_walker_conflicts()
+        self.test_admin_create_appointment()
+        self.test_admin_update_appointment()
+        self.test_available_slots_endpoint()
+        self.test_services_list_pet_sitting()
+
     def test_client_profile_and_pet_management_features(self):
         """Test all new client profile and pet management features"""
         print("\n" + "=" * 60)
