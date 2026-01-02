@@ -73,7 +73,7 @@ const AdminBillingPage = () => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [servicesRes, clientsDueRes, openInvRes, revenueRes, clientsRes, paymentInfoRes, companyInfoRes] = await Promise.all([
+      const [servicesRes, clientsDueRes, openInvRes, revenueRes, clientsRes, paymentInfoRes, companyInfoRes, pendingRes] = await Promise.all([
         api.get('/services'),
         api.get('/billing/clients-due'),
         api.get('/invoices/open'),
@@ -81,12 +81,14 @@ const AdminBillingPage = () => {
         api.get('/users/clients'),
         api.get('/settings/payment-info'),
         api.get('/settings/company-info'),
+        api.get('/invoices/pending-review').catch(() => ({ data: [] })),
       ]);
       setServices(servicesRes.data);
       setClientsDue(clientsDueRes.data);
       setOpenInvoices(openInvRes.data);
       setRevenue(revenueRes.data);
       setClients(clientsRes.data);
+      setPendingReviewInvoices(pendingRes.data || []);
       if (paymentInfoRes.data && Object.keys(paymentInfoRes.data).length > 0) {
         setPaymentSettings(paymentInfoRes.data);
       }
