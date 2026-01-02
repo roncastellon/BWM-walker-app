@@ -2,6 +2,7 @@ import "@/index.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Toaster } from "./components/ui/sonner";
+import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
 
 // Pages
 import AuthPage from "./pages/AuthPage";
@@ -260,6 +261,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <LocationPermissionPrompt />
         <AppRoutes />
         <Toaster richColors position="top-right" />
       </AuthProvider>
