@@ -395,15 +395,18 @@ backend:
 
   - task: "Walker trade requests"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added POST /trades, GET /trades, POST /trades/{id}/accept, POST /trades/{id}/reject endpoints. Walkers can request trade, both must approve. Creates trade_requests collection."
+      - working: false
+        agent: "testing"
+        comment: "❌ FAILED - Walker trade requests partially working. Issue found: POST /trades endpoint returns 400 error 'Can only trade scheduled appointments' even when trying to trade scheduled appointments. The validation logic appears too strict. GET /trades endpoint works correctly. Need to investigate appointment status validation in trade creation logic."
 
   - task: "Walker time-off requests"
     implemented: true
