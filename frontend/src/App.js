@@ -204,6 +204,48 @@ function AppRoutes() {
         }
       />
 
+      {/* Sitter Routes */}
+      <Route
+        path="/sitter"
+        element={
+          <ProtectedRoute allowedRoles={['sitter']}>
+            <SitterDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sitter/schedule"
+        element={
+          <ProtectedRoute allowedRoles={['sitter']}>
+            <CalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sitter/payroll"
+        element={
+          <ProtectedRoute allowedRoles={['sitter']}>
+            <PayrollPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sitter/chat"
+        element={
+          <ProtectedRoute allowedRoles={['sitter']}>
+            <MessagesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sitter/profile"
+        element={
+          <ProtectedRoute allowedRoles={['sitter']}>
+            <SitterProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Admin Routes */}
       <Route
         path="/admin"
