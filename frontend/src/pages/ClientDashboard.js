@@ -7,10 +7,13 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { 
   Calendar, CreditCard, PawPrint, Clock, ArrowRight, MessageCircle, 
   User, Plus, DollarSign, CalendarPlus, ShoppingBag, Eye, Send,
-  Dog, Cat, Bird, CheckCircle
+  Dog, Cat, Bird, CheckCircle, Edit2, X, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
