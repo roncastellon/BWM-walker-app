@@ -121,7 +121,7 @@ const SitterDashboard = () => {
     <Layout>
       <div className="space-y-6" data-testid="sitter-dashboard">
         {/* Welcome Header */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/90 to-purple-600 p-6 text-white">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-orange-500 p-6 text-white">
           <div className="relative z-10">
             <h1 className="text-2xl lg:text-3xl font-heading font-bold mb-1">
               Welcome, {user?.full_name?.split(' ')[0]}!
