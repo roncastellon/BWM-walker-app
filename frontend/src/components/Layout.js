@@ -87,6 +87,7 @@ const Layout = ({ children }) => {
         { path: '/admin/walkers', label: 'Walkers', icon: PawPrint },
         { path: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
         { path: '/admin/chat', label: 'Team Chat', icon: MessageCircle },
+        { path: '/admin/profile', label: 'My Profile', icon: Settings },
       ];
     }
     if (isWalker) {
