@@ -705,19 +705,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Client appointment edit/cancel"
     - "Walker trade requests"
     - "Walker time-off requests"
     - "Auto-invoice generation"
-    - "Walker cancel appointment"
-    - "Client edit/cancel appointments UI"
-    - "Walker trade and cancel UI"
-    - "Walker time-off request UI"
-    - "Auto-invoice admin UI"
-  stuck_tasks: []
+    - "Appointment time slot limits (max 3 per slot)"
+  stuck_tasks:
+    - "Appointment time slot limits (max 3 per slot)"
   test_all: false
   test_priority: "high_first"
-  backend_testing_complete: false
+  backend_testing_complete: true
   frontend_testing_complete: false
 
 agent_communication:
