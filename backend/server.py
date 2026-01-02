@@ -1005,7 +1005,7 @@ async def calculate_petsit_price_endpoint(
     current_user: dict = Depends(get_current_user)
 ):
     """Calculate pet sitting price with multi-dog discount and holiday surcharge"""
-    if service_type not in ["petsit_your_location_3", "petsit_your_location_4", "petsit_our_location"]:
+    if service_type not in ["petsit_our_location"]:
         raise HTTPException(status_code=400, detail="Invalid pet sitting service type")
     
     result = calculate_petsit_price(service_type, num_dogs, start_date, end_date)
