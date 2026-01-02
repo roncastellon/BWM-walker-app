@@ -65,7 +65,6 @@ const AdminBillingPage = () => {
   const [pendingReviewInvoices, setPendingReviewInvoices] = useState([]);
   const [generatingInvoices, setGeneratingInvoices] = useState(false);
   const [sendingAllInvoices, setSendingAllInvoices] = useState(false);
-  });
 
   useEffect(() => {
     fetchAllData();
