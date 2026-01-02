@@ -496,158 +496,121 @@ const AdminBillingPage = () => {
 
           {/* SETTINGS TAB */}
           <TabsContent value="settings" className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="rounded-2xl shadow-sm">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Daily</p>
-                      <p className="text-3xl font-bold mt-1">${revenue.daily?.toFixed(2) || '0.00'}</p>
-                      <p className="text-xs text-muted-foreground">Today</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl shadow-sm">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Weekly</p>
-                      <p className="text-3xl font-bold mt-1">${revenue.weekly?.toFixed(2) || '0.00'}</p>
-                      <p className="text-xs text-muted-foreground">This week</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl shadow-sm">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Month to Date</p>
-                      <p className="text-3xl font-bold mt-1">${revenue.month_to_date?.toFixed(2) || '0.00'}</p>
-                      <p className="text-xs text-muted-foreground">This month</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl shadow-sm">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Year to Date</p>
-                      <p className="text-3xl font-bold mt-1">${revenue.year_to_date?.toFixed(2) || '0.00'}</p>
-                      <p className="text-xs text-muted-foreground">This year</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <DollarSign className="w-6 h-6 text-primary" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Revenue Details */}
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
-                  Revenue Overview
+            {/* Company Info */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-primary" />
+                  Company Information
                 </CardTitle>
-                <CardDescription>
-                  {revenue.total_paid_invoices || 0} paid invoices total
-                </CardDescription>
+                <CardDescription>This information will appear on invoices</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="company-name">Company Name</Label>
+                    <Input id="company-name" value={companyInfo.company_name} onChange={(e) => setCompanyInfo({ ...companyInfo, company_name: e.target.value })} placeholder="WagWalk Pet Services" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-email">Business Email</Label>
+                    <Input id="company-email" type="email" value={companyInfo.email} onChange={(e) => setCompanyInfo({ ...companyInfo, email: e.target.value })} placeholder="billing@wagwalk.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-phone">Business Phone</Label>
+                    <Input id="company-phone" value={companyInfo.phone} onChange={(e) => setCompanyInfo({ ...companyInfo, phone: e.target.value })} placeholder="(555) 123-4567" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-website">Website</Label>
+                    <Input id="company-website" value={companyInfo.website} onChange={(e) => setCompanyInfo({ ...companyInfo, website: e.target.value })} placeholder="www.wagwalk.com" />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="company-address">Business Address</Label>
+                    <Textarea id="company-address" value={companyInfo.address} onChange={(e) => setCompanyInfo({ ...companyInfo, address: e.target.value })} placeholder="123 Pet Lane, Dogtown, CA 90210" rows={2} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-tax-id">Tax ID / EIN</Label>
+                    <Input id="company-tax-id" value={companyInfo.tax_id} onChange={(e) => setCompanyInfo({ ...companyInfo, tax_id: e.target.value })} placeholder="XX-XXXXXXX" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company-logo">Logo URL</Label>
+                    <Input id="company-logo" value={companyInfo.logo_url} onChange={(e) => setCompanyInfo({ ...companyInfo, logo_url: e.target.value })} placeholder="https://example.com/logo.png" />
+                  </div>
+                </div>
+                {companyInfo.logo_url && (
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-xs font-medium mb-2">Logo Preview</p>
+                    <img src={companyInfo.logo_url} alt="Logo" className="max-h-16 object-contain" onError={(e) => e.target.style.display = 'none'} />
+                  </div>
+                )}
+                <Button onClick={saveCompanyInfo} disabled={savingCompanyInfo} className="rounded-full" data-testid="save-company-info">
+                  <Save className="w-4 h-4 mr-2" />{savingCompanyInfo ? 'Saving...' : 'Save Company Info'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Invoice Delivery Config */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Send className="w-5 h-5 text-secondary" />
+                  Invoice Delivery
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-xl bg-blue-50 text-center">
-                      <p className="text-sm text-blue-600 font-medium">Daily</p>
-                      <p className="text-2xl font-bold text-blue-800">${revenue.daily?.toFixed(2) || '0.00'}</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-green-50 text-center">
-                      <p className="text-sm text-green-600 font-medium">Weekly</p>
-                      <p className="text-2xl font-bold text-green-800">${revenue.weekly?.toFixed(2) || '0.00'}</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-purple-50 text-center">
-                      <p className="text-sm text-purple-600 font-medium">Month to Date</p>
-                      <p className="text-2xl font-bold text-purple-800">${revenue.month_to_date?.toFixed(2) || '0.00'}</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-orange-50 text-center">
-                      <p className="text-sm text-orange-600 font-medium">Year to Date</p>
-                      <p className="text-2xl font-bold text-orange-800">${revenue.year_to_date?.toFixed(2) || '0.00'}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className={`p-3 rounded-lg ${notificationConfig.sendgrid_configured ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                    <div className="flex items-center gap-3">
+                      <Mail className={`w-5 h-5 ${notificationConfig.sendgrid_configured ? 'text-green-600' : 'text-yellow-600'}`} />
+                      <div>
+                        <p className="font-medium text-sm">Email (SendGrid)</p>
+                        <p className="text-xs text-muted-foreground">{notificationConfig.sendgrid_configured ? 'Configured' : 'Not configured'}</p>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="text-center text-sm text-muted-foreground pt-4 border-t">
-                    Last updated: {revenue.as_of ? new Date(revenue.as_of).toLocaleString() : 'N/A'}
+                  <div className={`p-3 rounded-lg ${notificationConfig.twilio_configured ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className={`w-5 h-5 ${notificationConfig.twilio_configured ? 'text-green-600' : 'text-yellow-600'}`} />
+                      <div>
+                        <p className="font-medium text-sm">SMS (Twilio)</p>
+                        <p className="text-xs text-muted-foreground">{notificationConfig.twilio_configured ? 'Configured' : 'Not configured'}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Company Info Tab */}
-          <TabsContent value="company" className="space-y-6">
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-primary" />
-                  Company Information
+            {/* Payment Settings */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  Payment Methods
                 </CardTitle>
-                <CardDescription>This information will appear on invoices sent to clients</CardDescription>
+                <CardDescription>Configure payment options for clients</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="company-name">Company Name</Label>
-                    <Input
-                      id="company-name"
-                      value={companyInfo.company_name}
-                      onChange={(e) => setCompanyInfo({ ...companyInfo, company_name: e.target.value })}
-                      placeholder="WagWalk Pet Services"
-                    />
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <p className="font-medium text-sm">Zelle</p>
+                    <Input placeholder="Email or Phone" value={paymentSettings.zelle?.email || ''} onChange={(e) => setPaymentSettings({...paymentSettings, zelle: {...paymentSettings.zelle, email: e.target.value}})} />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company-email">Business Email</Label>
-                    <Input
-                      id="company-email"
-                      type="email"
-                      value={companyInfo.email}
-                      onChange={(e) => setCompanyInfo({ ...companyInfo, email: e.target.value })}
-                      placeholder="billing@wagwalk.com"
-                    />
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <p className="font-medium text-sm">Venmo</p>
+                    <Input placeholder="@username" value={paymentSettings.venmo?.username || ''} onChange={(e) => setPaymentSettings({...paymentSettings, venmo: {...paymentSettings.venmo, username: e.target.value}})} />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company-phone">Business Phone</Label>
-                    <Input
-                      id="company-phone"
-                      value={companyInfo.phone}
-                      onChange={(e) => setCompanyInfo({ ...companyInfo, phone: e.target.value })}
-                      placeholder="(555) 123-4567"
-                    />
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <p className="font-medium text-sm">Cash App</p>
+                    <Input placeholder="$cashtag" value={paymentSettings.cashapp?.cashtag || ''} onChange={(e) => setPaymentSettings({...paymentSettings, cashapp: {...paymentSettings.cashapp, cashtag: e.target.value}})} />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company-website">Website</Label>
-                    <Input
-                      id="company-website"
-                      value={companyInfo.website}
-                      onChange={(e) => setCompanyInfo({ ...companyInfo, website: e.target.value })}
-                      placeholder="www.wagwalk.com"
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
+                </div>
+                <Button onClick={savePaymentSettings} disabled={savingPaymentSettings} className="rounded-full">
+                  <Save className="w-4 h-4 mr-2" />{savingPaymentSettings ? 'Saving...' : 'Save Payment Settings'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
                     <Label htmlFor="company-address">Business Address</Label>
                     <Textarea
                       id="company-address"
