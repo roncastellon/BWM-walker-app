@@ -363,12 +363,18 @@ const MessagesPage = () => {
       const contactsList = response.data;
       setContacts(contactsList);
       
-      // Auto-select first contact with unread messages on initial load only
+      // Auto-select first active chat (contact with messages) on initial load
       if (!initialLoadDone.current && contactsList.length > 0) {
         initialLoadDone.current = true;
+        
+        // Priority: 1) Contact with unread messages, 2) Contact with any messages (active chat), 3) None
         const contactWithUnread = contactsList.find(c => c.unread_count > 0);
-        if (contactWithUnread) {
-          setSelectedContact(contactWithUnread);
+        const contactWithMessages = contactsList.find(c => c.has_messages);
+        
+        const contactToSelect = contactWithUnread || contactWithMessages;
+        
+        if (contactToSelect) {
+          setSelectedContact(contactToSelect);
           setShowChat(true);
         }
       }
