@@ -27,6 +27,7 @@ import {
   FileText,
   Navigation,
   Bell,
+  Crown,
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
