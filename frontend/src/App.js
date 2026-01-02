@@ -91,6 +91,9 @@ function AppRoutes() {
       {/* Home redirect */}
       <Route path="/" element={<HomeRedirect />} />
 
+      {/* Setup - First time admin registration */}
+      <Route path="/setup" element={<SetupPage />} />
+
       {/* Auth */}
       <Route
         path="/auth"
