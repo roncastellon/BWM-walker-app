@@ -830,6 +830,50 @@ async def get_holiday_dates_endpoint(year: int):
     holidays = get_holiday_dates(year)
     return {"year": year, "holiday_dates": sorted(holidays)}
 
+# Helper function to get time slots within buffer range (15 min before and after)
+def get_buffer_time_slots(time_str: str, buffer_minutes: int = 15) -> list:
+    """Get list of time slots within buffer range of given time"""
+    try:
+        hour, minute = map(int, time_str.split(':'))
+        base_minutes = hour * 60 + minute
+        
+        slots = []
+        # Check slots from (time - buffer) to (time + buffer)
+        for offset in range(-buffer_minutes, buffer_minutes + 1, 15):
+            total_minutes = base_minutes + offset
+            if 0 <= total_minutes < 24 * 60:
+                h = total_minutes // 60
+                m = total_minutes % 60
+                slots.append(f"{h:02d}:{m:02d}")
+        return slots
+    except:
+        return [time_str]
+
+async def check_walker_availability(walker_id: str, scheduled_date: str, scheduled_time: str, exclude_appt_id: str = None) -> dict:
+    """Check if walker is available at the given time, considering 15-minute buffer"""
+    buffer_slots = get_buffer_time_slots(scheduled_time, buffer_minutes=15)
+    
+    query = {
+        "walker_id": walker_id,
+        "scheduled_date": scheduled_date,
+        "scheduled_time": {"$in": buffer_slots},
+        "status": {"$nin": ["cancelled", "completed"]}
+    }
+    
+    if exclude_appt_id:
+        query["id"] = {"$ne": exclude_appt_id}
+    
+    conflicting_appt = await db.appointments.find_one(query, {"_id": 0})
+    
+    if conflicting_appt:
+        return {
+            "available": False,
+            "conflict_time": conflicting_appt.get("scheduled_time"),
+            "message": f"Walker has an appointment at {conflicting_appt.get('scheduled_time')} (15-minute buffer required between walks)"
+        }
+    
+    return {"available": True}
+
 # Appointment Routes
 @api_router.post("/appointments", response_model=Appointment)
 async def create_appointment(appt_data: AppointmentCreate, current_user: dict = Depends(get_current_user)):
@@ -843,16 +887,15 @@ async def create_appointment(appt_data: AppointmentCreate, current_user: dict = 
         if existing_at_time >= 3:
             raise HTTPException(status_code=400, detail="This time slot is full (maximum 3 appointments). Please select another time.")
     
-    # If walker is specified, check they don't already have an appointment at this time
+    # If walker is specified, check availability with 15-minute buffer
     if appt_data.walker_id:
-        walker_busy = await db.appointments.find_one({
-            "walker_id": appt_data.walker_id,
-            "scheduled_date": appt_data.scheduled_date,
-            "scheduled_time": appt_data.scheduled_time,
-            "status": {"$nin": ["cancelled"]}
-        })
-        if walker_busy:
-            raise HTTPException(status_code=400, detail="This walker is already booked at this time. Please select another walker or time.")
+        availability = await check_walker_availability(
+            appt_data.walker_id, 
+            appt_data.scheduled_date, 
+            appt_data.scheduled_time
+        )
+        if not availability["available"]:
+            raise HTTPException(status_code=400, detail=availability["message"])
     
     appointment = Appointment(
         client_id=current_user['id'],
