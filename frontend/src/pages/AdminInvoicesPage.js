@@ -251,18 +251,28 @@ const AdminBillingPage = () => {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="pricing" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="pricing" data-testid="tab-pricing">Pricing</TabsTrigger>
-            <TabsTrigger value="create" data-testid="tab-create">Create Invoices</TabsTrigger>
-            <TabsTrigger value="open" data-testid="tab-open">Open Invoices</TabsTrigger>
-            <TabsTrigger value="revenue" data-testid="tab-revenue">Revenue</TabsTrigger>
-            <TabsTrigger value="company" data-testid="tab-company">Company Info</TabsTrigger>
-            <TabsTrigger value="payment-settings" data-testid="tab-payment-settings">Payment</TabsTrigger>
+        <Tabs defaultValue="revenue" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+            <TabsTrigger value="revenue" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-revenue">
+              <TrendingUp className="w-5 h-5" />
+              <span className="text-xs">Revenue</span>
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-invoices">
+              <FileText className="w-5 h-5" />
+              <span className="text-xs">Invoices</span>
+            </TabsTrigger>
+            <TabsTrigger value="pricing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-pricing">
+              <DollarSign className="w-5 h-5" />
+              <span className="text-xs">Pricing</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-settings">
+              <Settings className="w-5 h-5" />
+              <span className="text-xs">Settings</span>
+            </TabsTrigger>
           </TabsList>
 
-          {/* Set Up Pricing Tab */}
-          <TabsContent value="pricing" className="space-y-6">
+          {/* REVENUE TAB */}
+          <TabsContent value="revenue" className="space-y-4">
             <Card className="rounded-2xl shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
