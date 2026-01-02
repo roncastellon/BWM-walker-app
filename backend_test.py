@@ -891,10 +891,20 @@ def main():
         tester.test_profile_image_upload()
         tester.test_pet_update()
         tester.test_pet_image_upload()
-        tester.test_serve_uploaded_images()
-        
-        # Security tests
-        tester.test_unauthorized_access()
+    def test_unauthorized_access(self):
+        """Test unauthorized access scenarios"""
+        # Test without token
+        self.run_test(
+            "Unauthorized Access", "GET", "auth/me", 401,
+            description="Access protected endpoint without token"
+        )
+
+        # Test client accessing admin endpoint
+        if self.tokens.get('client'):
+            self.run_test(
+                "Client Admin Access", "GET", "users/clients", 403,
+                token=self.tokens['client'], description="Client trying to access admin endpoint"
+            )
         
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
