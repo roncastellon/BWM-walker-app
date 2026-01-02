@@ -277,19 +277,19 @@ const AdminBillingPage = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <Card className="rounded-xl">
                 <CardContent className="p-4 text-center">
-                  <p className="text-2xl font-bold text-blue-600">${revenue.daily?.toFixed(0) || '0'}</p>
+                  <p className="text-2xl font-bold text-sky-600">${revenue.daily?.toFixed(0) || '0'}</p>
                   <p className="text-xs text-muted-foreground">Today</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
                 <CardContent className="p-4 text-center">
-                  <p className="text-2xl font-bold text-green-600">${revenue.weekly?.toFixed(0) || '0'}</p>
+                  <p className="text-2xl font-bold text-orange-600">${revenue.weekly?.toFixed(0) || '0'}</p>
                   <p className="text-xs text-muted-foreground">This Week</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
                 <CardContent className="p-4 text-center">
-                  <p className="text-2xl font-bold text-purple-600">${revenue.month_to_date?.toFixed(0) || '0'}</p>
+                  <p className="text-2xl font-bold text-sky-700">${revenue.month_to_date?.toFixed(0) || '0'}</p>
                   <p className="text-xs text-muted-foreground">Month to Date</p>
                 </CardContent>
               </Card>
@@ -305,24 +305,24 @@ const AdminBillingPage = () => {
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  <TrendingUp className="w-5 h-5 text-orange-600" />
                   Revenue Overview
                 </CardTitle>
                 <CardDescription>{revenue.total_paid_invoices || 0} paid invoices total</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="p-3 rounded-lg bg-blue-50 text-center">
-                    <p className="text-xs text-blue-600 font-medium">Daily</p>
-                    <p className="text-lg font-bold text-blue-800">${revenue.daily?.toFixed(2) || '0.00'}</p>
+                  <div className="p-3 rounded-lg bg-sky-50 text-center">
+                    <p className="text-xs text-sky-600 font-medium">Daily</p>
+                    <p className="text-lg font-bold text-sky-800">${revenue.daily?.toFixed(2) || '0.00'}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-green-50 text-center">
-                    <p className="text-xs text-green-600 font-medium">Weekly</p>
-                    <p className="text-lg font-bold text-green-800">${revenue.weekly?.toFixed(2) || '0.00'}</p>
+                  <div className="p-3 rounded-lg bg-orange-50 text-center">
+                    <p className="text-xs text-orange-600 font-medium">Weekly</p>
+                    <p className="text-lg font-bold text-orange-800">${revenue.weekly?.toFixed(2) || '0.00'}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-purple-50 text-center">
-                    <p className="text-xs text-purple-600 font-medium">MTD</p>
-                    <p className="text-lg font-bold text-purple-800">${revenue.month_to_date?.toFixed(2) || '0.00'}</p>
+                  <div className="p-3 rounded-lg bg-sky-100 text-center">
+                    <p className="text-xs text-sky-600 font-medium">MTD</p>
+                    <p className="text-lg font-bold text-sky-800">${revenue.month_to_date?.toFixed(2) || '0.00'}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-orange-50 text-center">
                     <p className="text-xs text-orange-600 font-medium">YTD</p>
@@ -350,7 +350,7 @@ const AdminBillingPage = () => {
               <CardContent>
                 {clientsDue.length === 0 ? (
                   <div className="text-center py-6 text-muted-foreground">
-                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500 opacity-70" />
+                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-sky-500 opacity-70" />
                     <p className="text-sm">All clients are up to date!</p>
                   </div>
                 ) : (
@@ -385,7 +385,7 @@ const AdminBillingPage = () => {
               <CardContent>
                 {openInvoices.length === 0 ? (
                   <div className="text-center py-6 text-muted-foreground">
-                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500 opacity-70" />
+                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-sky-500 opacity-70" />
                     <p className="text-sm">No open invoices</p>
                   </div>
                 ) : (
@@ -558,18 +558,18 @@ const AdminBillingPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className={`p-3 rounded-lg ${notificationConfig.sendgrid_configured ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                  <div className={`p-3 rounded-lg ${notificationConfig.sendgrid_configured ? 'bg-sky-50' : 'bg-yellow-50'}`}>
                     <div className="flex items-center gap-3">
-                      <Mail className={`w-5 h-5 ${notificationConfig.sendgrid_configured ? 'text-green-600' : 'text-yellow-600'}`} />
+                      <Mail className={`w-5 h-5 ${notificationConfig.sendgrid_configured ? 'text-sky-600' : 'text-yellow-600'}`} />
                       <div>
                         <p className="font-medium text-sm">Email (SendGrid)</p>
                         <p className="text-xs text-muted-foreground">{notificationConfig.sendgrid_configured ? 'Configured' : 'Not configured'}</p>
                       </div>
                     </div>
                   </div>
-                  <div className={`p-3 rounded-lg ${notificationConfig.twilio_configured ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                  <div className={`p-3 rounded-lg ${notificationConfig.twilio_configured ? 'bg-sky-50' : 'bg-yellow-50'}`}>
                     <div className="flex items-center gap-3">
-                      <MessageSquare className={`w-5 h-5 ${notificationConfig.twilio_configured ? 'text-green-600' : 'text-yellow-600'}`} />
+                      <MessageSquare className={`w-5 h-5 ${notificationConfig.twilio_configured ? 'text-sky-600' : 'text-yellow-600'}`} />
                       <div>
                         <p className="font-medium text-sm">SMS (Twilio)</p>
                         <p className="text-xs text-muted-foreground">{notificationConfig.twilio_configured ? 'Configured' : 'Not configured'}</p>
@@ -662,7 +662,7 @@ const AdminBillingPage = () => {
                   <div className="p-4 rounded-xl bg-muted/50">
                     <p className="text-sm text-muted-foreground">Status</p>
                     <Badge className={`mt-1 rounded-full ${
-                      invoiceDetail.status === 'paid' ? 'bg-green-100 text-green-800' :
+                      invoiceDetail.status === 'paid' ? 'bg-sky-100 text-sky-800' :
                       invoiceDetail.status === 'overdue' ? 'bg-red-100 text-red-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
