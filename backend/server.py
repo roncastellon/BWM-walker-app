@@ -1819,7 +1819,11 @@ async def get_company_info():
     """Get company branding info for invoices"""
     settings = await db.settings.find_one({"type": "company_info"}, {"_id": 0})
     if settings:
-        return settings.get('data', {})
+        data = settings.get('data', {})
+        # Ensure invoice_delivery_preference has a default value
+        if 'invoice_delivery_preference' not in data:
+            data['invoice_delivery_preference'] = 'both'
+        return data
     return {
         "company_name": "",
         "address": "",
@@ -1827,7 +1831,8 @@ async def get_company_info():
         "email": "",
         "logo_url": "",
         "tax_id": "",
-        "website": ""
+        "website": "",
+        "invoice_delivery_preference": "both"  # Options: email, text, both
     }
 
 @api_router.put("/settings/company-info")
