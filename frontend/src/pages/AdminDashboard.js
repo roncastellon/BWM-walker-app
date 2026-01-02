@@ -140,9 +140,9 @@ const AdminDashboard = () => {
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <User className="w-5 h-5" />
-              <span className="text-xs">Profile</span>
+            <TabsTrigger value="profiles" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Users className="w-5 h-5" />
+              <span className="text-xs">Profiles</span>
             </TabsTrigger>
           </TabsList>
 
@@ -381,72 +381,144 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          {/* PROFILE TAB */}
-          <TabsContent value="profile" className="space-y-4">
-            {/* Me */}
-            <Link to="/admin/profile">
-              <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <Avatar className="w-14 h-14">
-                    <AvatarImage src={user?.profile_image} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                      {user?.full_name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium">{user?.full_name}</p>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+          {/* PROFILES TAB */}
+          <TabsContent value="profiles" className="space-y-4">
+            {/* Clients Section */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Clients
+                  <Badge variant="secondary" className="rounded-full ml-1">{clients.length}</Badge>
+                </CardTitle>
+                <Link to="/admin/clients">
+                  <Button size="sm" className="rounded-full">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add New
+                  </Button>
+                </Link>
+              </CardHeader>
+              <CardContent>
+                {clients.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No clients yet</p>
+                ) : (
+                  <div className="space-y-2">
+                    {clients.slice(0, 4).map((client) => (
+                      <Link to="/admin/clients" key={client.id}>
+                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={client.profile_image} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {client.full_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{client.full_name}</p>
+                            <p className="text-xs text-muted-foreground">{client.email}</p>
+                          </div>
+                          <Button size="sm" variant="ghost" className="rounded-full">
+                            Edit
+                          </Button>
+                        </div>
+                      </Link>
+                    ))}
+                    {clients.length > 4 && (
+                      <Link to="/admin/clients">
+                        <Button variant="ghost" size="sm" className="w-full rounded-full">
+                          View all {clients.length} clients
+                        </Button>
+                      </Link>
+                    )}
                   </div>
-                  <Badge className="bg-primary/10 text-primary rounded-full">Admin</Badge>
-                </CardContent>
-              </Card>
-            </Link>
+                )}
+              </CardContent>
+            </Card>
 
-            {/* Company Info */}
-            <Link to="/admin/billing">
-              <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-secondary" />
+            {/* Walkers Section */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <PawPrint className="w-5 h-5 text-secondary" />
+                  Walkers
+                  <Badge variant="secondary" className="rounded-full ml-1">{walkers.length}</Badge>
+                </CardTitle>
+                <Link to="/admin/walkers">
+                  <Button size="sm" variant="secondary" className="rounded-full">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add New
+                  </Button>
+                </Link>
+              </CardHeader>
+              <CardContent>
+                {walkers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No walkers yet</p>
+                ) : (
+                  <div className="space-y-2">
+                    {walkers.slice(0, 4).map((walker) => (
+                      <Link to="/admin/walkers" key={walker.id}>
+                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={walker.profile_image} />
+                            <AvatarFallback style={{ backgroundColor: walker.color ? `${walker.color}20` : 'rgb(var(--secondary) / 0.1)', color: walker.color || 'rgb(var(--secondary))' }}>
+                              {walker.full_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{walker.full_name}</p>
+                            <p className="text-xs text-muted-foreground">{walker.email}</p>
+                          </div>
+                          <Button size="sm" variant="ghost" className="rounded-full">
+                            Edit
+                          </Button>
+                        </div>
+                      </Link>
+                    ))}
+                    {walkers.length > 4 && (
+                      <Link to="/admin/walkers">
+                        <Button variant="ghost" size="sm" className="w-full rounded-full">
+                          View all {walkers.length} walkers
+                        </Button>
+                      </Link>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Company Info</p>
-                    <p className="text-sm text-muted-foreground">Logo, contact details</p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </Link>
+                )}
+              </CardContent>
+            </Card>
 
-            {/* Manage Team */}
+            {/* Admin Profile */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary" />
-                  Manage Team
+                  <User className="w-5 h-5 text-primary" />
+                  Admin Profile
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Link to="/admin/clients">
-                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-primary" />
-                    </div>
+              <CardContent className="space-y-3">
+                <Link to="/admin/profile">
+                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={user?.profile_image} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-lg">
+                        {user?.full_name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1">
-                      <p className="font-medium text-sm">Clients</p>
-                      <p className="text-xs text-muted-foreground">{clients.length} registered</p>
+                      <p className="font-medium">{user?.full_name}</p>
+                      <p className="text-sm text-muted-foreground">{user?.email}</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    <Button size="sm" variant="outline" className="rounded-full">
+                      Edit Profile
+                    </Button>
                   </div>
                 </Link>
-                <Link to="/admin/walkers">
-                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <PawPrint className="w-5 h-5 text-secondary" />
+                <Link to="/admin/billing">
+                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
+                      <Building2 className="w-6 h-6 text-secondary" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-sm">Walkers</p>
-                      <p className="text-xs text-muted-foreground">{walkers.length} on team</p>
+                      <p className="font-medium">Company Info</p>
+                      <p className="text-sm text-muted-foreground">Logo, contact details</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-muted-foreground" />
                   </div>
