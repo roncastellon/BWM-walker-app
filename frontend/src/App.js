@@ -269,6 +269,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/subscription"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <SubscriptionPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
