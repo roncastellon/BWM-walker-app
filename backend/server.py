@@ -683,6 +683,25 @@ async def delete_pet(pet_id: str, current_user: dict = Depends(get_current_user)
     await db.pets.delete_one({"id": pet_id})
     return {"message": "Pet deleted successfully"}
 
+@api_router.put("/pets/{pet_id}")
+async def update_pet(pet_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    """Update pet information"""
+    pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
+    if not pet:
+        raise HTTPException(status_code=404, detail="Pet not found")
+    
+    if current_user['role'] == 'client' and pet['owner_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    allowed_fields = ['name', 'species', 'breed', 'age', 'weight', 'notes', 'photo_url']
+    update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
+    
+    await db.pets.update_one({"id": pet_id}, {"$set": update_dict})
+    
+    # Return updated pet
+    updated_pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
+    return updated_pet
+
 # Admin Pet Creation (for adding pets to customer accounts)
 class AdminPetCreate(BaseModel):
     owner_id: str
