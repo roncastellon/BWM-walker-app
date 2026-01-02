@@ -76,13 +76,17 @@ const WalkerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, apptsRes, contactsRes] = await Promise.all([
+      const [statsRes, apptsRes, contactsRes, walkersRes, tradesRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/appointments'),
         api.get('/messages/contacts'),
+        api.get('/walkers').catch(() => ({ data: [] })),
+        api.get('/trades').catch(() => ({ data: [] })),
       ]);
       setStats(statsRes.data);
       setContacts(contactsRes.data || []);
+      setWalkers(walkersRes.data || []);
+      setTradeRequests(tradesRes.data || []);
       
       const today = new Date().toISOString().split('T')[0];
       const now = new Date();
@@ -108,6 +112,90 @@ const WalkerDashboard = () => {
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Trade request functions
+  const openTradeModal = (appt) => {
+    setSelectedApptForTrade(appt);
+    setSelectedTargetWalker('');
+    setTradeModalOpen(true);
+  };
+
+  const handleTradeRequest = async () => {
+    if (!selectedApptForTrade || !selectedTargetWalker) return;
+    setSaving(true);
+    try {
+      await api.post('/trades', {
+        appointment_id: selectedApptForTrade.id,
+        target_walker_id: selectedTargetWalker
+      });
+      toast.success('Trade request sent!');
+      setTradeModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to send trade request');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTradeResponse = async (tradeId, accept) => {
+    setSaving(true);
+    try {
+      await api.post(`/trades/${tradeId}/${accept ? 'accept' : 'reject'}`);
+      toast.success(accept ? 'Trade accepted!' : 'Trade rejected');
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to process trade');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Cancel appointment
+  const openCancelModal = (appt) => {
+    setSelectedApptForCancel(appt);
+    setCancelReason('');
+    setCancelModalOpen(true);
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!selectedApptForCancel || !cancelReason.trim()) {
+      toast.error('Please provide a reason for cancellation');
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.post(`/appointments/${selectedApptForCancel.id}/walker-cancel`, {
+        reason: cancelReason
+      });
+      toast.success('Appointment cancelled and admin notified');
+      setCancelModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to cancel appointment');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Time-off request
+  const handleTimeOffRequest = async () => {
+    if (!timeOffForm.start_date || !timeOffForm.end_date) {
+      toast.error('Please select start and end dates');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await api.post('/time-off', timeOffForm);
+      toast.success(`Time-off requested! ${res.data.affected_appointments} appointment(s) flagged for reassignment.`);
+      setTimeOffModalOpen(false);
+      setTimeOffForm({ start_date: '', end_date: '', reason: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to request time off');
+    } finally {
+      setSaving(false);
     }
   };
 
