@@ -1497,6 +1497,9 @@ def main():
         # APPOINTMENT/SCHEDULING FUNCTIONALITY TESTS
         tester.test_appointment_scheduling_functionality()
         
+        # NEW BOWWOWMEOW FEATURES TESTS
+        tester.test_bowwowmeow_new_features()
+        
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
     except Exception as e:
