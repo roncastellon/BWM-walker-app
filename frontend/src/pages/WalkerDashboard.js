@@ -37,6 +37,19 @@ const WalkerDashboard = () => {
   const [gpsDialogOpen, setGpsDialogOpen] = useState(false);
   const [gpsStatus, setGpsStatus] = useState('checking');
   const [pendingWalkId, setPendingWalkId] = useState(null);
+  
+  // Trade and Time-off State
+  const [walkers, setWalkers] = useState([]);
+  const [tradeRequests, setTradeRequests] = useState([]);
+  const [tradeModalOpen, setTradeModalOpen] = useState(false);
+  const [selectedApptForTrade, setSelectedApptForTrade] = useState(null);
+  const [selectedTargetWalker, setSelectedTargetWalker] = useState('');
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [selectedApptForCancel, setSelectedApptForCancel] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [timeOffModalOpen, setTimeOffModalOpen] = useState(false);
+  const [timeOffForm, setTimeOffForm] = useState({ start_date: '', end_date: '', reason: '' });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchData();
