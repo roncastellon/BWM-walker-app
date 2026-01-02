@@ -102,6 +102,15 @@ const Layout = ({ children }) => {
         { path: '/walker/profile', label: 'My Profile', icon: Settings },
       ];
     }
+    if (user?.role === 'sitter') {
+      return [
+        { path: '/sitter', label: 'Dashboard', icon: Home },
+        { path: '/sitter/schedule', label: 'My Schedule', icon: Calendar },
+        { path: '/sitter/payroll', label: 'Completed Stays', icon: CreditCard },
+        { path: '/sitter/chat', label: 'Messages', icon: MessageCircle },
+        { path: '/sitter/profile', label: 'My Profile', icon: Settings },
+      ];
+    }
     return [
       { path: '/dashboard', label: 'Dashboard', icon: Home },
       { path: '/schedule', label: 'Book Services', icon: Calendar },
