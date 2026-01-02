@@ -849,28 +849,99 @@ def get_buffer_time_slots(time_str: str, buffer_minutes: int = 15) -> list:
     except:
         return [time_str]
 
-async def check_walker_availability(walker_id: str, scheduled_date: str, scheduled_time: str, exclude_appt_id: str = None) -> dict:
-    """Check if walker is available at the given time, considering 15-minute buffer"""
-    buffer_slots = get_buffer_time_slots(scheduled_time, buffer_minutes=15)
+def time_to_minutes(time_str: str) -> int:
+    """Convert HH:MM to minutes since midnight"""
+    try:
+        hour, minute = map(int, time_str.split(':'))
+        return hour * 60 + minute
+    except:
+        return 0
+
+def minutes_to_time(minutes: int) -> str:
+    """Convert minutes since midnight to HH:MM"""
+    h = (minutes // 60) % 24
+    m = minutes % 60
+    return f"{h:02d}:{m:02d}"
+
+def get_walk_duration(service_type: str) -> int:
+    """Get walk duration in minutes based on service type"""
+    durations = {
+        'walk_30': 30,
+        'walk_60': 60,
+        'walk_15': 15,
+        'walk_45': 45,
+        'pet_sitting': 60,
+        'pet_sitting_overnight': 60,
+        'transport': 30,
+        'concierge': 30,
+    }
+    return durations.get(service_type, 30)  # Default to 30 minutes
+
+async def check_walker_availability(walker_id: str, scheduled_date: str, scheduled_time: str, exclude_appt_id: str = None, service_type: str = 'walk_30') -> dict:
+    """
+    Check if walker is available at the given time.
     
+    Rules:
+    - Walker can't have overlapping walks
+    - 15-minute buffer required AFTER a walk ends before the next can start
+    
+    Example: If walker has a 30-min walk at 10:00 (ends 10:30),
+    next walk can start at 10:45 (10:30 + 15 min buffer)
+    """
+    new_walk_start = time_to_minutes(scheduled_time)
+    new_walk_duration = get_walk_duration(service_type)
+    new_walk_end = new_walk_start + new_walk_duration
+    
+    # Get all walker's appointments for that day
     query = {
         "walker_id": walker_id,
         "scheduled_date": scheduled_date,
-        "scheduled_time": {"$in": buffer_slots},
         "status": {"$nin": ["cancelled", "completed"]}
     }
     
     if exclude_appt_id:
         query["id"] = {"$ne": exclude_appt_id}
     
-    conflicting_appt = await db.appointments.find_one(query, {"_id": 0})
+    existing_appointments = await db.appointments.find(query, {"_id": 0}).to_list(50)
     
-    if conflicting_appt:
-        return {
-            "available": False,
-            "conflict_time": conflicting_appt.get("scheduled_time"),
-            "message": f"Walker has an appointment at {conflicting_appt.get('scheduled_time')} (15-minute buffer required between walks)"
-        }
+    buffer_minutes = 15
+    
+    for appt in existing_appointments:
+        existing_start = time_to_minutes(appt.get("scheduled_time", "00:00"))
+        existing_duration = get_walk_duration(appt.get("service_type", "walk_30"))
+        existing_end = existing_start + existing_duration
+        
+        # Check for overlap or buffer violation
+        # New walk must start at least 15 min after existing walk ends
+        # OR new walk must end at least 15 min before existing walk starts
+        
+        # Case 1: New walk starts during or too soon after existing walk
+        # existing: 10:00-10:30, buffer ends at 10:45
+        # new walk at 10:15 or 10:30 or 10:40 would conflict
+        if new_walk_start < existing_end + buffer_minutes and new_walk_start >= existing_start:
+            return {
+                "available": False,
+                "conflict_time": appt.get("scheduled_time"),
+                "message": f"Walker has a walk at {appt.get('scheduled_time')} that ends at {minutes_to_time(existing_end)}. Next walk can start at {minutes_to_time(existing_end + buffer_minutes)} (15-min buffer after walk ends)."
+            }
+        
+        # Case 2: New walk would end during or too close to existing walk start
+        # existing: 11:00-11:30
+        # new walk 10:30-11:00 would need to end by 10:45 (15 min before 11:00)
+        if new_walk_end > existing_start - buffer_minutes and new_walk_end <= existing_end:
+            return {
+                "available": False,
+                "conflict_time": appt.get("scheduled_time"),
+                "message": f"Walker has a walk starting at {appt.get('scheduled_time')}. Your walk would end too close to it (15-min buffer required)."
+            }
+        
+        # Case 3: New walk completely overlaps existing walk
+        if new_walk_start <= existing_start and new_walk_end >= existing_end:
+            return {
+                "available": False,
+                "conflict_time": appt.get("scheduled_time"),
+                "message": f"Walker already has a walk scheduled at {appt.get('scheduled_time')}."
+            }
     
     return {"available": True}
 
