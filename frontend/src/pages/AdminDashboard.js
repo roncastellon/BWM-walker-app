@@ -21,6 +21,7 @@ const AdminDashboard = () => {
   const [invoices, setInvoices] = useState([]);
   const [clients, setClients] = useState([]);
   const [walkers, setWalkers] = useState([]);
+  const [sitters, setSitters] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,12 +31,13 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, contactsRes] = await Promise.all([
+      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/appointments/calendar'),
         api.get('/invoices'),
         api.get('/users/clients'),
         api.get('/users/walkers'),
+        api.get('/sitters').catch(() => ({ data: [] })),
         api.get('/messages/contacts'),
       ]);
       setStats(statsRes.data);
@@ -43,6 +45,7 @@ const AdminDashboard = () => {
       setInvoices(invoicesRes.data);
       setClients(clientsRes.data || []);
       setWalkers(walkersRes.data || []);
+      setSitters(sittersRes.data || []);
       setContacts(contactsRes.data || []);
     } catch (error) {
       toast.error('Failed to load dashboard data');
