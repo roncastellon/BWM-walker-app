@@ -1910,7 +1910,7 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
             ).to_list(500)
             contacts = [{"type": u['role'], **u} for u in all_users]
     
-    # Add unread count for each contact
+    # Add unread count and last message info for each contact
     for contact in contacts:
         unread_count = await db.messages.count_documents({
             "sender_id": contact['id'],
@@ -1919,11 +1919,56 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
             "read": False
         })
         contact['unread_count'] = unread_count
+        
+        # Find the most recent message with this contact (either direction)
+        last_message = await db.messages.find_one(
+            {
+                "$or": [
+                    {"sender_id": contact['id'], "receiver_id": current_user['id']},
+                    {"sender_id": current_user['id'], "receiver_id": contact['id']}
+                ],
+                "is_group_message": False
+            },
+            {"_id": 0},
+            sort=[("created_at", -1)]
+        )
+        
+        if last_message:
+            contact['has_messages'] = True
+            contact['last_message_at'] = last_message.get('created_at', '')
+            contact['last_message_preview'] = last_message.get('content', '')[:50]
+        else:
+            contact['has_messages'] = False
+            contact['last_message_at'] = ''
+            contact['last_message_preview'] = ''
     
-    # Sort contacts: those with unread messages first, then alphabetically
-    contacts.sort(key=lambda c: (-c.get('unread_count', 0), c.get('full_name', '').lower()))
+    # Sort contacts: active chats first (by last message), then unread, then alphabetically
+    def sort_key(c):
+        has_msgs = 1 if c.get('has_messages') else 0
+        unread = c.get('unread_count', 0)
+        last_msg = c.get('last_message_at', '')
+        name = c.get('full_name', '').lower()
+        # Priority: has_messages DESC, last_message_at DESC, unread DESC, name ASC
+        return (-has_msgs, -unread if not last_msg else 0, last_msg if last_msg else 'zzz', name)
     
-    return contacts
+    # Sort: contacts with messages first (most recent first), then by unread count, then alphabetically
+    contacts.sort(key=lambda c: (
+        -1 if c.get('has_messages') else 0,  # Has messages first
+        c.get('last_message_at', '') if c.get('has_messages') else '',  # Sort by last message time (descending)
+        -c.get('unread_count', 0),  # Then by unread count
+        c.get('full_name', '').lower()  # Then alphabetically
+    ), reverse=False)
+    
+    # Re-sort properly: active chats first (most recent), then others
+    active_chats = [c for c in contacts if c.get('has_messages')]
+    inactive_contacts = [c for c in contacts if not c.get('has_messages')]
+    
+    # Sort active chats by last_message_at descending (most recent first)
+    active_chats.sort(key=lambda c: c.get('last_message_at', ''), reverse=True)
+    # Sort inactive by unread then name
+    inactive_contacts.sort(key=lambda c: (-c.get('unread_count', 0), c.get('full_name', '').lower()))
+    
+    return active_chats + inactive_contacts
 
 @api_router.post("/messages", response_model=Message)
 async def send_message(msg_data: MessageCreate, current_user: dict = Depends(get_current_user)):
