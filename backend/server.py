@@ -3446,24 +3446,6 @@ async def auto_generate_invoices(
         "invoices": invoices_created
     }
 
-@api_router.get("/invoices/pending-review")
-async def get_invoices_pending_review(current_user: dict = Depends(get_current_user)):
-    """Get auto-generated invoices pending admin review"""
-    if current_user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-    
-    invoices = await db.invoices.find(
-        {"review_status": "pending"},
-        {"_id": 0}
-    ).to_list(1000)
-    
-    # Enrich with client info
-    for inv in invoices:
-        client = await db.users.find_one({"id": inv["client_id"]}, {"_id": 0, "password_hash": 0})
-        inv["client"] = client
-    
-    return invoices
-
 @api_router.post("/invoices/{invoice_id}/approve-review")
 async def approve_invoice_for_sending(
     invoice_id: str,
