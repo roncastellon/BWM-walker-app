@@ -91,6 +91,12 @@ const PetsPage = () => {
       age: pet.age?.toString() || '',
       weight: pet.weight?.toString() || '',
       notes: pet.notes || '',
+      vet_name: pet.vet_name || '',
+      vet_phone: pet.vet_phone || '',
+      emergency_contact_name: pet.emergency_contact_name || '',
+      emergency_contact_phone: pet.emergency_contact_phone || '',
+      prescriptions: pet.prescriptions || '',
+      things_to_know: pet.things_to_know || '',
     });
     setDialogOpen(true);
   };
