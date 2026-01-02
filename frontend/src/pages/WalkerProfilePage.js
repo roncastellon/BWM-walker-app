@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,11 +8,11 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
-import { User, Mail, Phone, PawPrint, Save } from 'lucide-react';
+import { User, Mail, Phone, PawPrint, Save, Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const WalkerProfilePage = () => {
-  const { user, api } = useAuth();
+  const { user, api, refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -20,7 +20,9 @@ const WalkerProfilePage = () => {
     profile_image: '',
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [stats, setStats] = useState({});
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (user) {
@@ -48,11 +50,49 @@ const WalkerProfilePage = () => {
     setSaving(true);
     try {
       await api.put(`/users/${user.id}`, formData);
+      if (refreshUser) {
+        await refreshUser();
+      }
       toast.success('Profile updated successfully!');
     } catch (error) {
       toast.error('Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+
+    try {
+      const response = await api.post('/upload/profile', uploadFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      // Update local state with new image URL
+      setFormData(prev => ({ ...prev, profile_image: response.data.url }));
+      
+      if (refreshUser) {
+        await refreshUser();
+      }
+      toast.success('Profile picture updated!');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
     }
   };
 
