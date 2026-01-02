@@ -398,7 +398,7 @@ const AdminBillingPage = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <p className="font-bold">${invoice.amount?.toFixed(2)}</p>
-                          <Button size="sm" variant="outline" onClick={() => viewInvoiceDetail(invoice.id)} className="rounded-full">
+                          <Button size="sm" variant="outline" onClick={() => openInvoiceDetail(invoice)} className="rounded-full">
                             <Eye className="w-3 h-3 mr-1" /> View
                           </Button>
                         </div>
