@@ -1,18 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Users, Calendar, CreditCard, PawPrint, TrendingUp, DollarSign, Clock, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { 
+  Calendar, CreditCard, PawPrint, Clock, ArrowRight, MessageCircle, 
+  User, Plus, DollarSign, CalendarPlus, Users, Eye, Send,
+  TrendingUp, FileText, CheckCircle, Building2, UserPlus
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 const AdminDashboard = () => {
   const { user, api } = useAuth();
   const [stats, setStats] = useState({});
-  const [recentAppointments, setRecentAppointments] = useState([]);
-  const [pendingInvoices, setPendingInvoices] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [walkers, setWalkers] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,14 +30,20 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, apptsRes, invoicesRes] = await Promise.all([
+      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, contactsRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/appointments/calendar'),
         api.get('/invoices'),
+        api.get('/users/clients'),
+        api.get('/users/walkers'),
+        api.get('/messages/contacts'),
       ]);
       setStats(statsRes.data);
-      setRecentAppointments(apptsRes.data.slice(0, 5));
-      setPendingInvoices(invoicesRes.data.filter(inv => inv.status === 'pending').slice(0, 5));
+      setAppointments(apptsRes.data);
+      setInvoices(invoicesRes.data);
+      setClients(clientsRes.data || []);
+      setWalkers(walkersRes.data || []);
+      setContacts(contactsRes.data || []);
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {
@@ -46,6 +61,14 @@ const AdminDashboard = () => {
     }
   };
 
+  const todayAppts = appointments.filter(a => {
+    const today = new Date().toISOString().split('T')[0];
+    return a.scheduled_date === today;
+  });
+  const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
+  const walkerContacts = contacts.filter(c => c.role === 'walker');
+  const clientContacts = contacts.filter(c => c.role === 'client');
+
   if (loading) {
     return (
       <Layout>
@@ -58,225 +81,380 @@ const AdminDashboard = () => {
 
   return (
     <Layout>
-      <div className="space-y-8" data-testid="admin-dashboard">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-heading font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage your pet care business</p>
+      <div className="space-y-6" data-testid="admin-dashboard">
+        {/* Welcome Header */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-secondary p-6 text-primary-foreground">
+          <div className="relative z-10">
+            <h1 className="text-2xl lg:text-3xl font-heading font-bold mb-1">
+              Admin Dashboard
+            </h1>
+            <p className="text-primary-foreground/80">
+              Manage your pet care business
+            </p>
           </div>
-          <Badge className="bg-primary text-primary-foreground w-fit rounded-full px-4 py-2">
+          <Badge className="absolute top-4 right-4 bg-white/20 text-white rounded-full">
             Administrator
           </Badge>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Clients</p>
-                  <p className="text-3xl font-bold mt-1">{stats.total_clients || 0}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-              </div>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-4 gap-3">
+          <Card className="rounded-xl">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-primary">{stats.total_clients || 0}</p>
+              <p className="text-xs text-muted-foreground">Clients</p>
             </CardContent>
           </Card>
-
-          <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Walkers</p>
-                  <p className="text-3xl font-bold mt-1">{stats.total_walkers || 0}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-                  <PawPrint className="w-6 h-6 text-secondary" />
-                </div>
-              </div>
+          <Card className="rounded-xl">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-secondary">{stats.total_walkers || 0}</p>
+              <p className="text-xs text-muted-foreground">Walkers</p>
             </CardContent>
           </Card>
-
-          <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Appointments</p>
-                  <p className="text-3xl font-bold mt-1">{stats.total_appointments || 0}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-accent" />
-                </div>
-              </div>
+          <Card className="rounded-xl">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-accent">{todayAppts.length}</p>
+              <p className="text-xs text-muted-foreground">Today</p>
             </CardContent>
           </Card>
-
-          <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Revenue</p>
-                  <p className="text-3xl font-bold mt-1">${(stats.total_revenue || 0).toFixed(0)}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
+          <Card className="rounded-xl">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-green-600">${(stats.total_revenue || 0).toFixed(0)}</p>
+              <p className="text-xs text-muted-foreground">Revenue</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Appointments */}
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">Recent Appointments</CardTitle>
-                <CardDescription>Latest scheduled services</CardDescription>
-              </div>
+        {/* Main Tabs */}
+        <Tabs defaultValue="schedule" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Calendar className="w-5 h-5" />
+              <span className="text-xs">Schedule</span>
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <CreditCard className="w-5 h-5" />
+              <span className="text-xs">Billing</span>
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-xs">Chat</span>
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <User className="w-5 h-5" />
+              <span className="text-xs">Profile</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* SCHEDULE TAB */}
+          <TabsContent value="schedule" className="space-y-4">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-3">
               <Link to="/admin/calendar">
-                <Button variant="outline" size="sm" className="rounded-full" data-testid="view-calendar">
-                  View Calendar
-                </Button>
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">View Calendar</p>
+                      <p className="text-xs text-muted-foreground">Team schedule</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
-            </CardHeader>
-            <CardContent>
-              {recentAppointments.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No appointments yet</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {recentAppointments.map((appt) => (
-                    <div
-                      key={appt.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <Clock className="w-5 h-5 text-primary" />
+              <Link to="/admin/calendar">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                      <CalendarPlus className="w-5 h-5 text-secondary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Add Appointment</p>
+                      <p className="text-xs text-muted-foreground">Schedule new</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+
+            {/* Today's Appointments */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-primary" />
+                  Today's Schedule
+                  <Badge variant="secondary" className="rounded-full ml-2">{todayAppts.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {todayAppts.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No appointments today</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {todayAppts.slice(0, 5).map((appt) => (
+                      <div
+                        key={appt.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-10 h-10 rounded-lg flex items-center justify-center"
+                            style={{ backgroundColor: appt.walker_color ? `${appt.walker_color}20` : 'rgb(var(--primary) / 0.1)' }}
+                          >
+                            <PawPrint className="w-5 h-5" style={{ color: appt.walker_color || 'rgb(var(--primary))' }} />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {appt.scheduled_time} • {appt.client_name}
+                            </p>
+                          </div>
                         </div>
+                        <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
+                          {appt.status}
+                        </Badge>
+                      </div>
+                    ))}
+                    {todayAppts.length > 5 && (
+                      <Link to="/admin/calendar">
+                        <Button variant="ghost" size="sm" className="w-full rounded-full">
+                          View all {todayAppts.length} appointments
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* BILLING TAB */}
+          <TabsContent value="billing" className="space-y-4">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-3">
+              <Link to="/admin/billing">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Manage Invoices</p>
+                      <p className="text-xs text-muted-foreground">Create & send</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/admin/billing">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Revenue</p>
+                      <p className="text-xs text-muted-foreground">View reports</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+
+            {/* Pending Invoices */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  Open Invoices
+                  {pendingInvoices.length > 0 && (
+                    <Badge variant="destructive" className="rounded-full ml-2">
+                      {pendingInvoices.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingInvoices.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500 opacity-70" />
+                    <p className="text-sm">All invoices paid!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingInvoices.slice(0, 5).map((invoice) => (
+                      <div
+                        key={invoice.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
                         <div>
-                          <p className="font-medium capitalize">{appt.service_type.replace('_', ' ')}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {appt.client_name} • {appt.scheduled_date}
-                          </p>
+                          <p className="font-medium text-sm">{invoice.client_name}</p>
+                          <p className="text-xs text-muted-foreground">Due: {invoice.due_date}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">${invoice.amount?.toFixed(2)}</p>
+                          <Badge className={`${invoice.status === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'} rounded-full text-xs`}>
+                            {invoice.status}
+                          </Badge>
                         </div>
                       </div>
-                      <Badge className={`${getStatusColor(appt.status)} rounded-full`}>
-                        {appt.status}
-                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* CHAT TAB */}
+          <TabsContent value="chat" className="space-y-4">
+            {/* Walkers */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <PawPrint className="w-5 h-5 text-secondary" />
+                  Walkers
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {walkerContacts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No walkers</p>
+                ) : (
+                  <div className="space-y-2">
+                    {walkerContacts.slice(0, 5).map((contact) => (
+                      <Link to="/admin/chat" key={contact.id}>
+                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={contact.profile_image} />
+                            <AvatarFallback style={{ backgroundColor: contact.color ? `${contact.color}20` : 'rgb(var(--secondary) / 0.1)', color: contact.color || 'rgb(var(--secondary))' }}>
+                              {contact.full_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{contact.full_name}</p>
+                            <p className="text-xs text-muted-foreground">Walker</p>
+                          </div>
+                          <Send className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Clients */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Clients
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {clientContacts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No clients</p>
+                ) : (
+                  <div className="space-y-2">
+                    {clientContacts.slice(0, 5).map((contact) => (
+                      <Link to="/admin/chat" key={contact.id}>
+                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={contact.profile_image} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {contact.full_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{contact.full_name}</p>
+                            <p className="text-xs text-muted-foreground">Client</p>
+                          </div>
+                          <Send className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* PROFILE TAB */}
+          <TabsContent value="profile" className="space-y-4">
+            {/* Me */}
+            <Link to="/admin/profile">
+              <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <Avatar className="w-14 h-14">
+                    <AvatarImage src={user?.profile_image} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                      {user?.full_name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium">{user?.full_name}</p>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <Badge className="bg-primary/10 text-primary rounded-full">Admin</Badge>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Company Info */}
+            <Link to="/admin/billing">
+              <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-secondary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">Company Info</p>
+                    <p className="text-sm text-muted-foreground">Logo, contact details</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Manage Team */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Manage Team
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link to="/admin/clients">
+                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-primary" />
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Pending Invoices */}
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">Pending Invoices</CardTitle>
-                <CardDescription>{stats.pending_invoices || 0} awaiting payment</CardDescription>
-              </div>
-              <Link to="/admin/invoices">
-                <Button variant="outline" size="sm" className="rounded-full" data-testid="view-invoices">
-                  View All
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              {pendingInvoices.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CheckCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>All invoices paid!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {pendingInvoices.map((invoice) => (
-                    <div
-                      key={invoice.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
-                    >
-                      <div>
-                        <p className="font-medium">${invoice.amount.toFixed(2)}</p>
-                        <p className="text-sm text-muted-foreground">Due: {invoice.due_date}</p>
-                      </div>
-                      <Badge className="bg-yellow-100 text-yellow-800 rounded-full">
-                        Pending
-                      </Badge>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Clients</p>
+                      <p className="text-xs text-muted-foreground">{clients.length} registered</p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Link to="/admin/clients">
-            <Card className="rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer group h-full" data-testid="manage-clients">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">Manage Clients</p>
-                  <p className="text-sm text-muted-foreground">View & edit clients</p>
-                </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </Link>
+                <Link to="/admin/walkers">
+                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                      <PawPrint className="w-5 h-5 text-secondary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Walkers</p>
+                      <p className="text-xs text-muted-foreground">{walkers.length} on team</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </Link>
               </CardContent>
             </Card>
-          </Link>
-
-          <Link to="/admin/walkers">
-            <Card className="rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer group h-full" data-testid="manage-walkers">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-secondary/10 group-hover:bg-secondary/20 transition-colors flex items-center justify-center">
-                  <PawPrint className="w-6 h-6 text-secondary" />
-                </div>
-                <div>
-                  <p className="font-medium">Manage Walkers</p>
-                  <p className="text-sm text-muted-foreground">Walker profiles</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to="/admin/calendar">
-            <Card className="rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer group h-full" data-testid="view-schedule">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 group-hover:bg-accent/20 transition-colors flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-accent" />
-                </div>
-                <div>
-                  <p className="font-medium">Team Calendar</p>
-                  <p className="text-sm text-muted-foreground">View schedule</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to="/admin/chat">
-            <Card className="rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer group h-full" data-testid="team-chat">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-100 group-hover:bg-purple-200 transition-colors flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Team Chat</p>
-                  <p className="text-sm text-muted-foreground">Communication</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
