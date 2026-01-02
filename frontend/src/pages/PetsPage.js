@@ -296,8 +296,95 @@ const PetsPage = () => {
                   />
                 </div>
 
-                <Button type="submit" className="w-full rounded-full" data-testid="submit-pet-btn">
+                {/* Veterinarian Info */}
+                <div className="pt-4 border-t">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 text-orange-500" />
+                    Veterinarian
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="vet-name">Vet Name</Label>
+                      <Input
+                        id="vet-name"
+                        placeholder="Dr. Smith"
+                        value={formData.vet_name}
+                        onChange={(e) => setFormData({ ...formData, vet_name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="vet-phone">Vet Phone</Label>
+                      <Input
+                        id="vet-phone"
+                        placeholder="(555) 123-4567"
+                        value={formData.vet_phone}
+                        onChange={(e) => setFormData({ ...formData, vet_phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Emergency Contact */}
+                <div className="pt-4 border-t">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-orange-500" />
+                    Emergency Contact
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency-name">Contact Name</Label>
+                      <Input
+                        id="emergency-name"
+                        placeholder="Jane Doe"
+                        value={formData.emergency_contact_name}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency-phone">Contact Phone</Label>
+                      <Input
+                        id="emergency-phone"
+                        placeholder="(555) 987-6543"
+                        value={formData.emergency_contact_phone}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Prescriptions */}
+                <div className="pt-4 border-t">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Pill className="w-4 h-4 text-orange-500" />
+                    Prescriptions
+                  </h4>
+                  <Textarea
+                    id="prescriptions"
+                    placeholder="List any medications and dosages..."
+                    value={formData.prescriptions}
+                    onChange={(e) => setFormData({ ...formData, prescriptions: e.target.value })}
+                    rows={2}
+                  />
+                </div>
+
+                {/* Things to Know */}
+                <div className="pt-4 border-t">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Info className="w-4 h-4 text-orange-500" />
+                    Things to Know
+                  </h4>
+                  <Textarea
+                    id="things-to-know"
+                    placeholder="Feeding schedule, favorite toys, behavioral notes..."
+                    value={formData.things_to_know}
+                    onChange={(e) => setFormData({ ...formData, things_to_know: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                <Button type="submit" className="w-full rounded-full bg-orange-500 hover:bg-orange-600" data-testid="submit-pet-btn">
                   {editingPet ? 'Save Changes' : 'Add Pet'}
+                </Button>
                 </Button>
               </form>
             </DialogContent>
