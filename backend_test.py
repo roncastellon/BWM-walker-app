@@ -1131,6 +1131,307 @@ class WagWalkAPITester:
         self.test_available_slots_endpoint()
         self.test_services_list_pet_sitting()
 
+    def test_client_appointment_edit_cancel(self):
+        """Test client appointment edit and cancel functionality"""
+        print("\n🔍 Testing Client Appointment Edit/Cancel...")
+        
+        if not self.tokens.get('demo_client'):
+            print("⚠️  Skipping client appointment edit/cancel test - no demo client token")
+            return
+        
+        # First create an appointment to edit/cancel
+        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        appt_data = {
+            "pet_ids": [self.pets.get('buddy', {}).get('id', 'test-pet-id')],
+            "service_type": "walk_30",
+            "scheduled_date": tomorrow,
+            "scheduled_time": "11:00",
+            "notes": "Test appointment for edit/cancel"
+        }
+        
+        success, response = self.run_test(
+            "Create Appointment for Edit Test", "POST", "appointments", 200,
+            data=appt_data, token=self.tokens['demo_client'],
+            description="Create appointment to test edit/cancel functionality"
+        )
+        
+        if not success:
+            print("⚠️  Could not create appointment for edit/cancel test")
+            return
+        
+        appt_id = response['id']
+        
+        # Test client edit appointment
+        edit_data = {
+            "scheduled_date": tomorrow,
+            "scheduled_time": "12:00",
+            "notes": "Updated appointment time and notes"
+        }
+        
+        success, edit_response = self.run_test(
+            "Client Edit Appointment", "PUT", f"appointments/{appt_id}/client-edit", 200,
+            data=edit_data, token=self.tokens['demo_client'],
+            description="Client edits appointment date, time, and notes"
+        )
+        
+        if success:
+            print("✅ Client appointment edit successful")
+        
+        # Test client cancel appointment
+        success, cancel_response = self.run_test(
+            "Client Cancel Appointment", "POST", f"appointments/{appt_id}/client-cancel", 200,
+            token=self.tokens['demo_client'],
+            description="Client cancels appointment (no charge)"
+        )
+        
+        if success:
+            print("✅ Client appointment cancel successful")
+
+    def test_walker_trade_requests(self):
+        """Test walker trade request functionality"""
+        print("\n🔍 Testing Walker Trade Requests...")
+        
+        if not self.tokens.get('demo_walker'):
+            print("⚠️  Skipping walker trade test - no demo walker token")
+            return
+        
+        # Get walkers to find target walker
+        success, walkers = self.run_test(
+            "Get Walkers for Trade Test", "GET", "users/walkers", 200,
+            token=self.tokens['demo_walker'], description="Get available walkers for trade"
+        )
+        
+        if not success or len(walkers) < 2:
+            print("⚠️  Need at least 2 walkers for trade test")
+            return
+        
+        # Find a different walker for trade
+        target_walker_id = None
+        for walker in walkers:
+            if walker['id'] != self.users.get('demo_walker', {}).get('id'):
+                target_walker_id = walker['id']
+                break
+        
+        if not target_walker_id:
+            print("⚠️  Could not find target walker for trade")
+            return
+        
+        # Get walker's appointments to find one to trade
+        success, appointments = self.run_test(
+            "Get Walker Appointments", "GET", "appointments", 200,
+            token=self.tokens['demo_walker'], description="Get walker appointments for trade"
+        )
+        
+        if not success or not appointments:
+            print("⚠️  No appointments available for trade test")
+            return
+        
+        appointment_id = appointments[0]['id']
+        
+        # Test create trade request
+        trade_data = {
+            "appointment_id": appointment_id,
+            "target_walker_id": target_walker_id
+        }
+        
+        success, trade_response = self.run_test(
+            "Create Trade Request", "POST", "trades", 200,
+            data=trade_data, token=self.tokens['demo_walker'],
+            description="Walker creates trade request with target walker"
+        )
+        
+        if success:
+            trade_id = trade_response.get('id')
+            print("✅ Trade request created successfully")
+            
+            # Test get trade requests
+            success, trades = self.run_test(
+                "Get Trade Requests", "GET", "trades", 200,
+                token=self.tokens['demo_walker'],
+                description="Get pending trade requests"
+            )
+            
+            if success:
+                print("✅ Get trade requests successful")
+            
+            # Test reject trade (as requesting walker)
+            if trade_id:
+                success, reject_response = self.run_test(
+                    "Reject Trade Request", "POST", f"trades/{trade_id}/reject", 200,
+                    token=self.tokens['demo_walker'],
+                    description="Reject trade request"
+                )
+                
+                if success:
+                    print("✅ Trade request rejection successful")
+
+    def test_walker_time_off_requests(self):
+        """Test walker time-off request functionality"""
+        print("\n🔍 Testing Walker Time-Off Requests...")
+        
+        if not self.tokens.get('demo_walker'):
+            print("⚠️  Skipping time-off test - no demo walker token")
+            return
+        
+        # Test create time-off request
+        start_date = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
+        end_date = (datetime.now() + timedelta(days=9)).strftime('%Y-%m-%d')
+        
+        time_off_data = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "reason": "Personal vacation time"
+        }
+        
+        success, time_off_response = self.run_test(
+            "Create Time-Off Request", "POST", "time-off", 200,
+            data=time_off_data, token=self.tokens['demo_walker'],
+            description="Walker requests time off with date range and reason"
+        )
+        
+        if success:
+            print("✅ Time-off request created successfully")
+        
+        # Test get time-off requests
+        success, time_off_list = self.run_test(
+            "Get Time-Off Requests", "GET", "time-off", 200,
+            token=self.tokens['demo_walker'],
+            description="Get walker's time-off requests"
+        )
+        
+        if success:
+            print("✅ Get time-off requests successful")
+        
+        # Test get appointments needing reassignment (admin endpoint)
+        if self.tokens.get('demo_admin'):
+            success, flagged_appointments = self.run_test(
+                "Get Appointments Needing Reassignment", "GET", "appointments/needs-reassignment", 200,
+                token=self.tokens['demo_admin'],
+                description="Get appointments flagged for reassignment due to time-off"
+            )
+            
+            if success:
+                print("✅ Get flagged appointments successful")
+
+    def test_walker_cancel_appointment(self):
+        """Test walker cancel appointment functionality"""
+        print("\n🔍 Testing Walker Cancel Appointment...")
+        
+        if not self.tokens.get('demo_walker'):
+            print("⚠️  Skipping walker cancel test - no demo walker token")
+            return
+        
+        # Get walker's appointments
+        success, appointments = self.run_test(
+            "Get Walker Appointments for Cancel", "GET", "appointments", 200,
+            token=self.tokens['demo_walker'], description="Get walker appointments for cancel test"
+        )
+        
+        if not success or not appointments:
+            print("⚠️  No appointments available for walker cancel test")
+            return
+        
+        # Find a scheduled appointment
+        scheduled_appt = None
+        for appt in appointments:
+            if appt.get('status') == 'scheduled':
+                scheduled_appt = appt
+                break
+        
+        if not scheduled_appt:
+            print("⚠️  No scheduled appointments available for cancel test")
+            return
+        
+        appt_id = scheduled_appt['id']
+        
+        # Test walker cancel with mandatory reason
+        cancel_data = {
+            "reason": "Emergency - unable to complete walk due to illness"
+        }
+        
+        success, cancel_response = self.run_test(
+            "Walker Cancel Appointment", "POST", f"appointments/{appt_id}/walker-cancel", 200,
+            data=cancel_data, token=self.tokens['demo_walker'],
+            description="Walker cancels appointment with mandatory reason"
+        )
+        
+        if success:
+            print("✅ Walker appointment cancellation successful")
+
+    def test_auto_invoice_generation(self):
+        """Test auto-invoice generation functionality"""
+        print("\n🔍 Testing Auto-Invoice Generation...")
+        
+        if not self.tokens.get('demo_admin'):
+            print("⚠️  Skipping auto-invoice test - no demo admin token")
+            return
+        
+        # Test weekly invoice generation
+        success, weekly_response = self.run_test(
+            "Generate Weekly Invoices", "POST", "invoices/auto-generate?cycle=weekly", 200,
+            token=self.tokens['demo_admin'],
+            description="Generate weekly invoices for all clients"
+        )
+        
+        if success:
+            print("✅ Weekly invoice generation successful")
+        
+        # Test monthly invoice generation
+        success, monthly_response = self.run_test(
+            "Generate Monthly Invoices", "POST", "invoices/auto-generate?cycle=monthly", 200,
+            token=self.tokens['demo_admin'],
+            description="Generate monthly invoices for all clients"
+        )
+        
+        if success:
+            print("✅ Monthly invoice generation successful")
+        
+        # Test get pending review invoices
+        success, pending_invoices = self.run_test(
+            "Get Pending Review Invoices", "GET", "invoices/pending-review", 200,
+            token=self.tokens['demo_admin'],
+            description="Get invoices pending admin review"
+        )
+        
+        if success:
+            print("✅ Get pending review invoices successful")
+            
+            # If there are pending invoices, test approval
+            if pending_invoices:
+                invoice_id = pending_invoices[0]['id']
+                
+                success, approve_response = self.run_test(
+                    "Approve Invoice Review", "POST", f"invoices/{invoice_id}/approve-review", 200,
+                    token=self.tokens['demo_admin'],
+                    description="Approve invoice for sending"
+                )
+                
+                if success:
+                    print("✅ Invoice approval successful")
+        
+        # Test mass send invoices
+        success, mass_send_response = self.run_test(
+            "Mass Send Invoices", "POST", "invoices/mass-send", 200,
+            token=self.tokens['demo_admin'],
+            description="Send all approved invoices to clients"
+        )
+        
+        if success:
+            print("✅ Mass send invoices successful")
+
+    def test_bowwowmeow_new_features(self):
+        """Test all new BowWowMeow features"""
+        print("\n" + "=" * 70)
+        print("🆕 TESTING NEW BOWWOWMEOW FEATURES")
+        print("=" * 70)
+        
+        # Run all new feature tests
+        self.test_client_appointment_edit_cancel()
+        self.test_walker_trade_requests()
+        self.test_walker_time_off_requests()
+        self.test_walker_cancel_appointment()
+        self.test_auto_invoice_generation()
+
     def test_client_profile_and_pet_management_features(self):
         """Test all new client profile and pet management features"""
         print("\n" + "=" * 60)
