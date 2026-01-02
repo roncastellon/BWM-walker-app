@@ -111,7 +111,7 @@ const LocationPermissionPrompt = ({ onComplete }) => {
             Enable Location Services
           </DialogTitle>
           <DialogDescription className="text-base">
-            WagWalk uses your location to provide the best experience
+            BowWowMeow uses your location to provide the best experience
           </DialogDescription>
         </DialogHeader>
         
