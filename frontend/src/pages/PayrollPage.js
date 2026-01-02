@@ -87,7 +87,7 @@ const PayrollPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-heading font-bold">Payroll</h1>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold">Time Sheets & Payroll</h1>
             <p className="text-muted-foreground">Track your hours and submit timesheets</p>
           </div>
           <Button variant="outline" className="rounded-full" onClick={fetchData}>
