@@ -2498,6 +2498,15 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         stats['total_revenue'] = 0
         paid_invoices = await db.invoices.find({"status": "paid"}, {"_id": 0, "amount": 1}).to_list(1000)
         stats['total_revenue'] = sum(inv['amount'] for inv in paid_invoices)
+        
+        # Month-to-date revenue
+        now = datetime.now(timezone.utc)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+        month_invoices = await db.invoices.find({
+            "status": "paid",
+            "paid_at": {"$gte": month_start}
+        }, {"_id": 0, "amount": 1}).to_list(1000)
+        stats['month_revenue'] = sum(inv['amount'] for inv in month_invoices)
     elif current_user['role'] == 'walker':
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         stats['todays_appointments'] = await db.appointments.count_documents({
