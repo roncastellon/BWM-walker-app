@@ -286,6 +286,36 @@ backend:
         comment: "✅ PASSED - Image serving endpoints working correctly. Successfully served uploaded profile and pet images. Returns proper 404 for non-existent files. File access and serving functionality working as expected."
 
 frontend:
+  - task: "Client profile editing with image upload"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ClientProfilePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created ClientProfilePage.js with profile picture upload and personal info form (name, email, phone, address, bio), added /profile route for clients, added 'My Profile' to client navigation."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Client profile page working correctly. All required form fields present (Full Name, Email, Phone Number, Address, Bio). Profile picture section visible with upload capability. Profile editing and saving works successfully with proper success toast. Profile image upload area is clickable with file input present. Navigation to 'My Profile' works correctly."
+
+  - task: "Pet management with edit and image upload"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/PetsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated PetsPage.js with edit button and pet photo upload capability. Added edit dialog with pre-filled pet information, pet image upload on avatar click, and proper CRUD operations."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Pet management working correctly. Add Pet functionality works (dialog opens, form submission, new pet appears in list). Edit Pet functionality works (edit dialog opens with pre-filled data, updates save successfully). Delete Pet functionality works (confirmation dialog, pet removed from list, success toast). Pet image upload areas are clickable with file input present. All CRUD operations functional."
+
   - task: "Chat dropdown with My Clients, Team, All filters"
     implemented: true
     working: true
