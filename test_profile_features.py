@@ -9,7 +9,7 @@ import io
 from datetime import datetime
 
 class ProfileFeatureTester:
-    def __init__(self, base_url="https://petbuddy-15.preview.emergentagent.com"):
+    def __init__(self, base_url="https://wagwalk.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
