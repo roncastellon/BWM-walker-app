@@ -89,66 +89,109 @@ const WalkerDashboard = () => {
   };
 
   const startWalk = async (apptId) => {
-    setStartingWalk(true);
-    try {
-      // Check if geolocation is available
-      if (!navigator.geolocation) {
-        // Start without GPS tracking
-        const response = await api.post(`/appointments/${apptId}/start`);
-        toast.success('Walk started!');
-        setActiveWalk({
-          ...todayAppointments.find(a => a.id === apptId),
-          start_time: response.data.start_time,
-          status: 'in_progress'
-        });
-        setNextWalk(null);
-        fetchData();
-        return;
+    // Show GPS permission dialog first
+    setPendingWalkId(apptId);
+    setGpsStatus('checking');
+    setGpsDialogOpen(true);
+    
+    // Check GPS availability and permission
+    if (!navigator.geolocation) {
+      setGpsStatus('unavailable');
+      return;
+    }
+    
+    // Check current permission status if available
+    if (navigator.permissions) {
+      try {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        if (permission.state === 'granted') {
+          setGpsStatus('granted');
+        } else if (permission.state === 'denied') {
+          setGpsStatus('denied');
+        } else {
+          setGpsStatus('prompt');
+        }
+      } catch {
+        setGpsStatus('prompt');
       }
+    } else {
+      setGpsStatus('prompt');
+    }
+  };
 
-      // Get current position and start with GPS tracking
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            await api.post(`/appointments/${apptId}/start-tracking`, null, {
-              params: {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-              }
-            });
-            toast.success('Walk started with GPS tracking!');
-            navigate('/tracking');
-          } catch (error) {
-            // Fallback to regular start
-            const response = await api.post(`/appointments/${apptId}/start`);
-            toast.success('Walk started!');
-            setActiveWalk({
-              ...todayAppointments.find(a => a.id === apptId),
-              start_time: response.data.start_time,
-              status: 'in_progress'
-            });
-            setNextWalk(null);
-          }
-          fetchData();
-        },
-        async (error) => {
-          // Fallback to regular start if geolocation fails
-          const response = await api.post(`/appointments/${apptId}/start`);
-          toast.success('Walk started!');
-          setActiveWalk({
-            ...todayAppointments.find(a => a.id === apptId),
-            start_time: response.data.start_time,
-            status: 'in_progress'
-          });
-          setNextWalk(null);
-          fetchData();
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
+  const requestGpsPermission = () => {
+    setGpsStatus('requesting');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setGpsStatus('granted');
+        toast.success('GPS tracking enabled!');
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setGpsStatus('denied');
+        } else {
+          setGpsStatus('error');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const confirmStartWalk = async (withGps = true) => {
+    if (!pendingWalkId) return;
+    
+    setStartingWalk(true);
+    setGpsDialogOpen(false);
+    
+    try {
+      if (withGps && navigator.geolocation && gpsStatus === 'granted') {
+        // Start with GPS tracking
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              await api.post(`/appointments/${pendingWalkId}/start-tracking`, null, {
+                params: {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude
+                }
+              });
+              toast.success('Walk started with GPS tracking!');
+              navigate('/tracking');
+            } catch (error) {
+              // Fallback to regular start
+              await startWalkWithoutGps();
+            }
+            fetchData();
+          },
+          async () => {
+            await startWalkWithoutGps();
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      } else {
+        await startWalkWithoutGps();
+      }
     } catch (error) {
       toast.error('Failed to start walk');
     } finally {
       setStartingWalk(false);
+      setPendingWalkId(null);
+    }
+  };
+
+  const startWalkWithoutGps = async () => {
+    try {
+      const response = await api.post(`/appointments/${pendingWalkId}/start`);
+      toast.success('Walk started!');
+      setActiveWalk({
+        ...todayAppointments.find(a => a.id === pendingWalkId),
+        start_time: response.data.start_time,
+        status: 'in_progress'
+      });
+      setNextWalk(null);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to start walk');
     }
   };
 
