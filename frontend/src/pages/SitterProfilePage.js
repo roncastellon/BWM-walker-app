@@ -8,10 +8,10 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
-import { User, Mail, Phone, PawPrint, Save, Camera, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Bed, Save, Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const WalkerProfilePage = () => {
+const SitterProfilePage = () => {
   const { user, api, refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     full_name: '',
@@ -98,7 +98,7 @@ const WalkerProfilePage = () => {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto space-y-8" data-testid="walker-profile-page">
+      <div className="max-w-4xl mx-auto space-y-8" data-testid="sitter-profile-page">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-heading font-bold">My Profile</h1>
@@ -148,8 +148,8 @@ const WalkerProfilePage = () => {
                   <p className="text-xs text-muted-foreground mt-2">Click on profile picture to upload a new photo</p>
                 </div>
                 <Badge className="bg-secondary text-secondary-foreground w-fit rounded-full px-4 py-2">
-                  <PawPrint className="w-4 h-4 mr-2" />
-                  Dog Walker
+                  <Bed className="w-4 h-4 mr-2" />
+                  Pet Sitter
                 </Badge>
               </div>
             </div>
@@ -248,8 +248,8 @@ const WalkerProfilePage = () => {
                 <h3 className="text-xl font-bold">{formData.full_name || 'Your Name'}</h3>
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <PawPrint className="w-4 h-4" />
-                    Professional Walker
+                    <Bed className="w-4 h-4" />
+                    Professional Sitter
                   </span>
                   {formData.phone && (
                     <span className="flex items-center gap-1">
@@ -270,4 +270,4 @@ const WalkerProfilePage = () => {
   );
 };
 
-export default WalkerProfilePage;
+export default SitterProfilePage;
