@@ -518,12 +518,16 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Global location permission prompt on app load"
+    - "Walker profile picture upload"
+    - "Admin profile picture upload"
+    - "Company Info tab accessibility"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   backend_testing_complete: true
-  frontend_testing_complete: true
+  frontend_testing_complete: false
 
 agent_communication:
   - agent: "main"
@@ -550,3 +554,5 @@ agent_communication:
     message: "NEW TESTING REQUEST: Test the updated appointment/scheduling functionality for the WagWalk app. Focus on: 1) Appointment Creation with Time Slot Limit (max 3 per slot), 2) Appointment Creation with Walker Conflict (1 walker per slot), 3) Admin Create Appointment, 4) Admin Update Appointment, 5) Available Slots Endpoint, 6) Services List (Pet Sitting - Our Location at $50.00). Use demo credentials: demo_admin/demo123, demo_walker/demo123, demo_client/demo123."
   - agent: "testing"
     message: "✅ APPOINTMENT/SCHEDULING FUNCTIONALITY TESTING COMPLETE - All 6 appointment scheduling features PASSED (100% success rate). Comprehensive testing completed: 1) Time Slot Limits - Successfully enforced max 3 appointments per time slot, 4th appointment correctly rejected with 'time slot is full' error, 2) Walker Conflicts - Successfully detected and rejected when same walker assigned to same time slot with 'walker already booked' error, 3) Admin Create Appointment - Admin successfully created appointments for clients with correct client_id assignment, 4) Admin Update Appointment - Admin successfully updated appointment walker, time, and notes with proper validation, 5) Available Slots Endpoint - Working correctly, returns proper structure with date, slots array containing time, booked_count, is_full, and available_walkers for each time slot, 6) Services List - Pet Sitting - Our Location (Boarding) service found at correct $50.00 price. Fixed routing issue with available-slots endpoint (moved before parameterized route). All appointment scheduling constraints and business rules working correctly. No critical issues found."
+  - agent: "main"
+    message: "NEW FEATURE IMPLEMENTATION (Fork #2): Implemented 3 user-requested features: 1) Global Location Permission Prompt - Added LocationPermissionPrompt component to App.js, prompts users on first app load to enable location services for walk tracking, 2) Walker/Admin Profile Picture Upload - Updated WalkerProfilePage.js and created AdminProfilePage.js with clickable avatar for direct image upload (same functionality as ClientProfilePage), 3) Admin Profile Route - Added /admin/profile route and navigation link for admins. Company Info tab was already implemented in /admin/billing under 'Company Info' tab. Please test: Global location prompt on first load, walker profile picture upload at /walker/profile, admin profile picture upload at /admin/profile, Company Info tab accessibility at /admin/billing. Credentials: demo_admin/demo123, demo_walker/demo123, demo_client/demo123"
