@@ -948,13 +948,13 @@ async def check_walker_availability(walker_id: str, scheduled_date: str, schedul
 # Appointment Routes
 @api_router.post("/appointments", response_model=Appointment)
 async def create_appointment(appt_data: AppointmentCreate, current_user: dict = Depends(get_current_user)):
-    # If walker is specified, check availability with 15-minute buffer
-    # (1 walk per time slot per walker, with 15-min buffer between walks)
+    # If walker is specified, check availability with 15-minute buffer after walk ends
     if appt_data.walker_id:
         availability = await check_walker_availability(
             appt_data.walker_id, 
             appt_data.scheduled_date, 
-            appt_data.scheduled_time
+            appt_data.scheduled_time,
+            service_type=appt_data.service_type
         )
         if not availability["available"]:
             raise HTTPException(status_code=400, detail=availability["message"])
