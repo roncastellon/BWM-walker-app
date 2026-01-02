@@ -5,7 +5,8 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Calendar, Clock, Play, Square, PawPrint, Users, CheckCircle, Navigation, MapPin } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Calendar, Clock, Play, Square, PawPrint, Users, CheckCircle, Navigation, MapPin, Smartphone, AlertTriangle, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 const WalkerDashboard = () => {
@@ -19,6 +20,11 @@ const WalkerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [startingWalk, setStartingWalk] = useState(false);
   const timerRef = useRef(null);
+  
+  // GPS Permission Dialog State
+  const [gpsDialogOpen, setGpsDialogOpen] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState('checking'); // checking, granted, denied, unavailable
+  const [pendingWalkId, setPendingWalkId] = useState(null);
 
   useEffect(() => {
     fetchData();
