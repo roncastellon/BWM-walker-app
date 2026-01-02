@@ -218,9 +218,9 @@ const WalkerDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
+      case 'scheduled': return 'bg-sky-100 text-sky-800';
+      case 'in_progress': return 'bg-orange-100 text-orange-800';
+      case 'completed': return 'bg-sky-50 text-sky-700';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -267,7 +267,7 @@ const WalkerDashboard = () => {
                     <Navigation className="w-6 h-6 text-primary-foreground animate-pulse" />
                   </div>
                   <div>
-                    <Badge className="bg-green-500 text-white rounded-full mb-1">In Progress</Badge>
+                    <Badge className="bg-orange-500 text-white rounded-full mb-1">In Progress</Badge>
                     <p className="font-medium capitalize">{activeWalk.service_type?.replace('_', ' ')}</p>
                   </div>
                 </div>
@@ -293,7 +293,7 @@ const WalkerDashboard = () => {
                     <PawPrint className="w-6 h-6 text-secondary-foreground" />
                   </div>
                   <div>
-                    <Badge className="bg-blue-100 text-blue-800 rounded-full mb-1">Up Next</Badge>
+                    <Badge className="bg-sky-100 text-sky-800 rounded-full mb-1">Up Next</Badge>
                     <p className="font-medium capitalize">{nextWalk.service_type?.replace('_', ' ')}</p>
                     <p className="text-xs text-muted-foreground">{nextWalk.scheduled_time} • {nextWalk.client_name}</p>
                   </div>
@@ -314,7 +314,7 @@ const WalkerDashboard = () => {
         {/* Main Tabs */}
         <Tabs defaultValue="schedule" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 h-auto p-1">
-            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
