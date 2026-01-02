@@ -746,6 +746,41 @@ async def get_custom_pricing(user_id: str, current_user: dict = Depends(get_curr
         return custom.get('pricing', {})
     return {}
 
+# Walking Schedule for Clients
+@api_router.post("/users/{user_id}/walking-schedule")
+async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict = Depends(get_current_user)):
+    """Save walking schedule for a client"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    schedule_data = {
+        "user_id": user_id,
+        "walks_per_day": schedule.get('walks_per_day', 1),
+        "days": schedule.get('days', []),
+        "preferred_times": schedule.get('preferred_times', []),
+        "preferred_walker_id": schedule.get('preferred_walker_id', ''),
+        "notes": schedule.get('notes', ''),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.walking_schedules.update_one(
+        {"user_id": user_id},
+        {"$set": schedule_data},
+        upsert=True
+    )
+    return {"message": "Walking schedule saved"}
+
+@api_router.get("/users/{user_id}/walking-schedule")
+async def get_walking_schedule(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get walking schedule for a client"""
+    if current_user['role'] not in ['admin', 'walker'] and current_user['id'] != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    schedule = await db.walking_schedules.find_one({"user_id": user_id}, {"_id": 0})
+    if schedule:
+        return schedule
+    return None
+
 # Service Pricing Routes
 @api_router.get("/services", response_model=List[ServicePricing])
 async def get_services():
