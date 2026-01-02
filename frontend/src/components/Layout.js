@@ -87,7 +87,7 @@ const Layout = ({ children }) => {
         { path: '/tracking', label: 'Live Tracking', icon: Navigation },
         { path: '/admin/clients', label: 'Clients', icon: Users },
         { path: '/admin/walkers', label: 'Walkers', icon: PawPrint },
-        { path: '/admin/sitters', label: 'Sitters', icon: Home },
+        { path: '/admin/sitters', label: 'Sitters', icon: Bed },
         { path: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
         { path: '/admin/chat', label: 'Team Chat', icon: MessageCircle },
         { path: '/subscription', label: 'Subscription', icon: Crown },
