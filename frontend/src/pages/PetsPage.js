@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,7 +8,8 @@ import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
-import { PawPrint, Plus, Trash2, Dog, Cat, Bird } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { PawPrint, Plus, Trash2, Dog, Cat, Bird, Edit, Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PetsPage = () => {
@@ -16,14 +17,21 @@ const PetsPage = () => {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [editingPet, setEditingPet] = useState(null);
+  const [uploading, setUploading] = useState(null); // Track which pet is uploading
+  const fileInputRef = useRef(null);
+  const [selectedPetForUpload, setSelectedPetForUpload] = useState(null);
+  
+  const emptyForm = {
     name: '',
     species: 'dog',
     breed: '',
     age: '',
     weight: '',
     notes: '',
-  });
+  };
+  
+  const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
     fetchPets();
@@ -43,25 +51,42 @@ const PetsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/pets', {
+      const petData = {
         ...formData,
         age: formData.age ? parseInt(formData.age) : null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
-      });
-      toast.success('Pet added successfully!');
+      };
+
+      if (editingPet) {
+        // Update existing pet
+        await api.put(`/pets/${editingPet.id}`, petData);
+        toast.success('Pet updated successfully!');
+      } else {
+        // Create new pet
+        await api.post('/pets', petData);
+        toast.success('Pet added successfully!');
+      }
+      
       setDialogOpen(false);
-      setFormData({
-        name: '',
-        species: 'dog',
-        breed: '',
-        age: '',
-        weight: '',
-        notes: '',
-      });
+      setEditingPet(null);
+      setFormData(emptyForm);
       fetchPets();
     } catch (error) {
-      toast.error('Failed to add pet');
+      toast.error(editingPet ? 'Failed to update pet' : 'Failed to add pet');
     }
+  };
+
+  const handleEdit = (pet) => {
+    setEditingPet(pet);
+    setFormData({
+      name: pet.name || '',
+      species: pet.species || 'dog',
+      breed: pet.breed || '',
+      age: pet.age?.toString() || '',
+      weight: pet.weight?.toString() || '',
+      notes: pet.notes || '',
+    });
+    setDialogOpen(true);
   };
 
   const handleDelete = async (petId) => {
@@ -73,6 +98,52 @@ const PetsPage = () => {
     } catch (error) {
       toast.error('Failed to remove pet');
     }
+  };
+
+  const handleImageClick = (pet) => {
+    setSelectedPetForUpload(pet);
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedPetForUpload) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setUploading(selectedPetForUpload.id);
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+
+    try {
+      await api.post(`/upload/pet/${selectedPetForUpload.id}`, uploadFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      toast.success(`Photo updated for ${selectedPetForUpload.name}!`);
+      fetchPets();
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(null);
+      setSelectedPetForUpload(null);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const openAddDialog = () => {
+    setEditingPet(null);
+    setFormData(emptyForm);
+    setDialogOpen(true);
   };
 
   const getSpeciesIcon = (species) => {
@@ -99,6 +170,16 @@ const PetsPage = () => {
   return (
     <Layout>
       <div className="space-y-8" data-testid="pets-page">
+        {/* Hidden file input for image uploads */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+          data-testid="pet-image-input"
+        />
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -107,15 +188,17 @@ const PetsPage = () => {
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-full" data-testid="add-pet-btn">
+              <Button className="rounded-full" onClick={openAddDialog} data-testid="add-pet-btn">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Pet
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Add New Pet</DialogTitle>
-                <DialogDescription>Tell us about your pet</DialogDescription>
+                <DialogTitle>{editingPet ? 'Edit Pet' : 'Add New Pet'}</DialogTitle>
+                <DialogDescription>
+                  {editingPet ? 'Update your pet\'s information' : 'Tell us about your pet'}
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -202,7 +285,7 @@ const PetsPage = () => {
                 </div>
 
                 <Button type="submit" className="w-full rounded-full" data-testid="submit-pet-btn">
-                  Add Pet
+                  {editingPet ? 'Save Changes' : 'Add Pet'}
                 </Button>
               </form>
             </DialogContent>
@@ -218,7 +301,7 @@ const PetsPage = () => {
               </div>
               <h2 className="text-2xl font-heading font-bold mb-2">No Pets Yet</h2>
               <p className="text-muted-foreground mb-6">Add your first pet to start booking services</p>
-              <Button onClick={() => setDialogOpen(true)} className="rounded-full" data-testid="add-first-pet-btn">
+              <Button onClick={openAddDialog} className="rounded-full" data-testid="add-first-pet-btn">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Your First Pet
               </Button>
@@ -230,23 +313,54 @@ const PetsPage = () => {
               <Card key={pet.id} className="rounded-2xl shadow-sm hover:shadow-md transition-shadow" data-testid={`pet-card-${pet.id}`}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                      {getSpeciesIcon(pet.species)}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(pet.id)}
-                      data-testid={`delete-pet-${pet.id}`}
+                    {/* Pet Avatar with upload capability */}
+                    <div 
+                      className="relative cursor-pointer group"
+                      onClick={() => handleImageClick(pet)}
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                      <Avatar className="w-16 h-16">
+                        <AvatarImage src={pet.photo_url} alt={pet.name} />
+                        <AvatarFallback className="bg-primary/10">
+                          {getSpeciesIcon(pet.species)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        {uploading === pet.id ? (
+                          <Loader2 className="w-5 h-5 text-white animate-spin" />
+                        ) : (
+                          <Camera className="w-5 h-5 text-white" />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Action buttons */}
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary"
+                        onClick={() => handleEdit(pet)}
+                        data-testid={`edit-pet-${pet.id}`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDelete(pet.id)}
+                        data-testid={`delete-pet-${pet.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
+                  
                   <h3 className="text-xl font-bold mb-1">{pet.name}</h3>
                   <p className="text-muted-foreground capitalize mb-4">
                     {pet.breed || pet.species}
                   </p>
+                  
                   <div className="space-y-2 text-sm">
                     {pet.age && (
                       <div className="flex justify-between">
