@@ -767,15 +767,15 @@ const AdminBillingPage = () => {
                     <div className="flex flex-col items-center gap-2">
                       {/* Blue Dog & Orange Cat Icons */}
                       <svg viewBox="0 0 85 55" className="w-36 h-24">
-                        {/* Blue Dog - with floppy thin ears */}
+                        {/* Blue Dog - with floppy angled ears higher on head */}
                         {/* Body */}
                         <ellipse cx="25" cy="32" rx="20" ry="16" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         {/* Head */}
                         <circle cx="18" cy="18" r="14" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Left floppy ear - thinner */}
-                        <ellipse cx="4" cy="22" rx="3" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Right floppy ear - thinner */}
-                        <ellipse cx="32" cy="22" rx="3" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Left floppy ear - higher and angled */}
+                        <ellipse cx="5" cy="14" rx="3" ry="9" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2" transform="rotate(20, 5, 14)"/>
+                        {/* Right floppy ear - higher and angled */}
+                        <ellipse cx="31" cy="14" rx="3" ry="9" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2" transform="rotate(-20, 31, 14)"/>
                         {/* Eyes */}
                         <circle cx="13" cy="14" r="2.5" fill="#1e3a5f"/>
                         <circle cx="23" cy="14" r="2.5" fill="#1e3a5f"/>
@@ -787,16 +787,16 @@ const AdminBillingPage = () => {
                         <ellipse cx="15" cy="46" rx="5" ry="4" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         <ellipse cx="30" cy="46" rx="5" ry="4" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         
-                        {/* Orange Cat - Smaller */}
+                        {/* Orange Cat - Smaller with oval head */}
                         {/* Tail wrapping around body */}
                         <path d="M 50 38 Q 44 44 47 48 Q 50 50 55 46" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2" strokeLinecap="round"/>
                         {/* Body - smaller */}
                         <ellipse cx="60" cy="34" rx="12" ry="10" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Head - smaller */}
-                        <circle cx="64" cy="22" r="9" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Ears - smaller to fit head */}
-                        <polygon points="57,16 59,9 63,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="1.5"/>
-                        <polygon points="66,14 70,7 73,14" fill="#fb923c" stroke="#1e3a5f" strokeWidth="1.5"/>
+                        {/* Head - oval shape */}
+                        <ellipse cx="64" cy="22" rx="8" ry="10" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Ears - smaller to fit oval head */}
+                        <polygon points="57,14 59,7 62,14" fill="#fb923c" stroke="#1e3a5f" strokeWidth="1.5"/>
+                        <polygon points="67,14 69,8 71,14" fill="#fb923c" stroke="#1e3a5f" strokeWidth="1.5"/>
                         {/* Eyes */}
                         <circle cx="60" cy="20" r="2" fill="#1e3a5f"/>
                         <circle cx="68" cy="20" r="2" fill="#1e3a5f"/>
@@ -804,6 +804,14 @@ const AdminBillingPage = () => {
                         <ellipse cx="64" cy="25" rx="1.5" ry="1" fill="#1e3a5f"/>
                         {/* Mouth */}
                         <path d="M 62 28 Q 64 30 66 28" fill="none" stroke="#1e3a5f" strokeWidth="1.5" strokeLinecap="round"/>
+                        {/* Whiskers - left side */}
+                        <line x1="56" y1="23" x2="50" y2="21" stroke="#1e3a5f" strokeWidth="1"/>
+                        <line x1="56" y1="25" x2="50" y2="25" stroke="#1e3a5f" strokeWidth="1"/>
+                        <line x1="56" y1="27" x2="50" y2="29" stroke="#1e3a5f" strokeWidth="1"/>
+                        {/* Whiskers - right side */}
+                        <line x1="72" y1="23" x2="78" y2="21" stroke="#1e3a5f" strokeWidth="1"/>
+                        <line x1="72" y1="25" x2="78" y2="25" stroke="#1e3a5f" strokeWidth="1"/>
+                        <line x1="72" y1="27" x2="78" y2="29" stroke="#1e3a5f" strokeWidth="1"/>
                         {/* Front paws */}
                         <ellipse cx="54" cy="42" rx="3.5" ry="2.5" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
                         <ellipse cx="63" cy="42" rx="3.5" ry="2.5" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
