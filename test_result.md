@@ -756,25 +756,31 @@ agent_communication:
 
   - task: "Invoice delivery preference setting"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/AdminInvoicesPage.js, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added invoice_delivery_preference field to company settings. Frontend has dropdown selector with options: Email Only, Text (SMS) Only, Both Email & Text. Backend stores/retrieves this setting as part of company-info. Default is 'both'."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Invoice delivery preference setting working correctly. Comprehensive testing completed: 1) GET /api/settings/company-info returns invoice_delivery_preference field with default value 'both' ✅, 2) PUT /api/settings/company-info successfully updates invoice_delivery_preference to 'email', 'text', and 'both' ✅, 3) Setting persists after update - verified by retrieving updated data ✅. All required functionality working as expected."
 
   - task: "Walker trade self-validation bug fix"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Fixed bug where walker could trade appointment with themselves. Added validation in POST /trades endpoint to check if target_walker_id equals current_user_id and reject with 400 error 'You cannot trade an appointment with yourself'."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Walker trade self-validation bug fix working correctly. Comprehensive testing completed: 1) Logged in as demo_walker and got walker's user ID ✅, 2) Found scheduled appointment for the walker ✅, 3) Attempted to create trade request with walker's own ID as target_walker_id - correctly returned 400 error with exact message 'You cannot trade an appointment with yourself' ✅, 4) Verified trading with different valid walker still works - successfully created trade request with different walker ✅. Bug fix implemented correctly and validation working as expected."
 
