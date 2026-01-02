@@ -764,32 +764,29 @@ const AdminBillingPage = () => {
                 {/* Invoice Header - Matches Business Card Design */}
                 <div className="bg-white p-6 border-b-4 border-orange-500">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-center gap-2">
                       {/* Blue Dog & Orange Cat Icons */}
-                      <div className="flex items-center">
-                        <svg viewBox="0 0 60 50" className="w-16 h-14">
-                          {/* Blue Dog */}
-                          <ellipse cx="18" cy="30" rx="12" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                          <circle cx="12" cy="22" r="8" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                          <ellipse cx="8" cy="14" rx="4" ry="6" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                          <ellipse cx="16" cy="14" rx="4" ry="6" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                          <circle cx="10" cy="21" r="1.5" fill="#1e3a5f"/>
-                          <circle cx="14" cy="21" r="1.5" fill="#1e3a5f"/>
-                          <ellipse cx="12" cy="25" rx="2" ry="1" fill="#1e3a5f"/>
-                          {/* Orange Cat */}
-                          <ellipse cx="42" cy="30" rx="10" ry="8" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                          <circle cx="46" cy="22" r="7" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                          <polygon points="40,16 42,8 46,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                          <polygon points="48,16 52,8 54,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                          <circle cx="44" cy="21" r="1.5" fill="#1e3a5f"/>
-                          <circle cx="48" cy="21" r="1.5" fill="#1e3a5f"/>
-                          <ellipse cx="46" cy="25" rx="1.5" ry="1" fill="#1e3a5f"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Lace</p>
-                        <p className="text-xs text-gray-500">Dog Walking & Pet Sitting</p>
-                      </div>
+                      <svg viewBox="0 0 100 55" className="w-28 h-16">
+                        {/* Blue Dog - Bigger with ears more to the side */}
+                        <ellipse cx="28" cy="35" rx="18" ry="14" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                        <circle cx="20" cy="24" r="12" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Left ear - more to the side */}
+                        <ellipse cx="6" cy="16" rx="6" ry="9" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Right ear - more to the side */}
+                        <ellipse cx="34" cy="16" rx="6" ry="9" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                        <circle cx="16" cy="22" r="2" fill="#1e3a5f"/>
+                        <circle cx="24" cy="22" r="2" fill="#1e3a5f"/>
+                        <ellipse cx="20" cy="28" rx="3" ry="2" fill="#1e3a5f"/>
+                        {/* Orange Cat */}
+                        <ellipse cx="72" cy="35" rx="14" ry="11" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        <circle cx="78" cy="24" r="10" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        <polygon points="70,16 73,6 78,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        <polygon points="82,16 87,6 90,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        <circle cx="75" cy="23" r="2" fill="#1e3a5f"/>
+                        <circle cx="81" cy="23" r="2" fill="#1e3a5f"/>
+                        <ellipse cx="78" cy="28" rx="2" ry="1.5" fill="#1e3a5f"/>
+                      </svg>
+                      <p className="text-sm font-medium text-gray-600">Dog Walking & Pet Sitting</p>
                     </div>
                     <div className="text-right">
                       <h1 className="text-2xl font-bold text-gray-800">INVOICE</h1>
