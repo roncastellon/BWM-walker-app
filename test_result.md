@@ -210,6 +210,81 @@ backend:
         agent: "testing"
         comment: "✅ PASSED - Notification config endpoint working correctly. Returns sendgrid_configured: false and twilio_configured: false (correct since API keys not set). Contains all required fields and proper admin-only access control."
 
+  - task: "User profile update endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated PUT /users/{user_id} endpoint to support address field. Clients can update their own profile with full_name, phone, address, email, bio, profile_image fields."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - User profile update endpoint working correctly. Tested with demo_client credentials. Successfully updated full_name, phone, address, email, bio. Response returns updated user data. Authorization properly restricts users to update only their own profile."
+
+  - task: "Profile image upload endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /upload/profile endpoint for profile image uploads. Validates file types (JPEG, PNG, GIF, WebP), generates unique filenames, saves to uploads/profiles/, returns URL, updates user profile_image field."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Profile image upload endpoint working correctly. Successfully uploaded test PNG image, received proper URL (/api/uploads/profiles/{filename}), verified user profile_image field was updated. File validation and unique filename generation working properly."
+
+  - task: "Pet update endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added PUT /pets/{pet_id} endpoint for updating pet information. Clients can update their own pets with name, species, breed, age, weight, notes, photo_url fields."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Pet update endpoint working correctly. Successfully updated pet with new name, breed, age, weight, notes. Response returns updated pet data. Authorization properly restricts clients to update only their own pets."
+
+  - task: "Pet image upload endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /upload/pet/{pet_id} endpoint for pet image uploads. Validates file types, generates unique filenames, saves to uploads/pets/, returns URL, updates pet photo_url field."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Pet image upload endpoint working correctly. Successfully uploaded test PNG image for pet, received proper URL (/api/uploads/pets/{filename}), verified pet photo_url field was updated. Authorization ensures clients can only upload images for their own pets."
+
+  - task: "Serve uploaded images endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET /uploads/profiles/{filename} and GET /uploads/pets/{filename} endpoints to serve uploaded images. Returns FileResponse for existing files, 404 for missing files."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Image serving endpoints working correctly. Successfully served uploaded profile and pet images. Returns proper 404 for non-existent files. File access and serving functionality working as expected."
+
 frontend:
   - task: "Chat dropdown with My Clients, Team, All filters"
     implemented: true
