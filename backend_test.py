@@ -1191,6 +1191,11 @@ def main():
         tester.test_profile_image_upload()
         tester.test_pet_update()
         tester.test_pet_image_upload()
+        tester.test_serve_uploaded_images()
+        
+        # APPOINTMENT/SCHEDULING FUNCTIONALITY TESTS
+        tester.test_appointment_scheduling_functionality()
+        
     def test_unauthorized_access(self):
         """Test unauthorized access scenarios"""
         # Test without token
