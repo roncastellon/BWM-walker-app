@@ -273,115 +273,135 @@ const AdminBillingPage = () => {
 
           {/* REVENUE TAB */}
           <TabsContent value="revenue" className="space-y-4">
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-primary" />
-                  Service Pricing
+            {/* Revenue Summary Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Card className="rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold text-blue-600">${revenue.daily?.toFixed(0) || '0'}</p>
+                  <p className="text-xs text-muted-foreground">Today</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold text-green-600">${revenue.weekly?.toFixed(0) || '0'}</p>
+                  <p className="text-xs text-muted-foreground">This Week</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold text-purple-600">${revenue.month_to_date?.toFixed(0) || '0'}</p>
+                  <p className="text-xs text-muted-foreground">Month to Date</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold text-primary">${revenue.year_to_date?.toFixed(0) || '0'}</p>
+                  <p className="text-xs text-muted-foreground">Year to Date</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Revenue Details Card */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  Revenue Overview
                 </CardTitle>
-                <CardDescription>Configure pricing for all services</CardDescription>
+                <CardDescription>{revenue.total_paid_invoices || 0} paid invoices total</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {services.map((service) => (
-                    <div
-                      key={service.id}
-                      className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-muted/50"
-                      data-testid={`service-${service.id}`}
-                    >
-                      {editingService === service.id ? (
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <Input
-                            value={editForm.name}
-                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                            placeholder="Service name"
-                          />
-                          <Input
-                            type="number"
-                            value={editForm.price}
-                            onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                            placeholder="Price"
-                          />
-                          <Input
-                            value={editForm.description}
-                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                            placeholder="Description"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                            <DollarSign className="w-6 h-6 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">{service.name}</p>
-                            <p className="text-sm text-muted-foreground">{service.description}</p>
-                            <p className="text-xs text-muted-foreground">{service.duration_minutes} minutes</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-primary">${service.price.toFixed(2)}</p>
-                          </div>
-                        </div>
-                      )}
-                      <div className="flex gap-2">
-                        {editingService === service.id ? (
-                          <>
-                            <Button size="sm" onClick={() => updateServicePricing(service.id)} className="rounded-full">
-                              <Save className="w-4 h-4 mr-1" /> Save
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => setEditingService(null)} className="rounded-full">
-                              Cancel
-                            </Button>
-                          </>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => startEditing(service)} className="rounded-full" data-testid={`edit-service-${service.id}`}>
-                            <Edit2 className="w-4 h-4 mr-1" /> Edit
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-lg bg-blue-50 text-center">
+                    <p className="text-xs text-blue-600 font-medium">Daily</p>
+                    <p className="text-lg font-bold text-blue-800">${revenue.daily?.toFixed(2) || '0.00'}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-green-50 text-center">
+                    <p className="text-xs text-green-600 font-medium">Weekly</p>
+                    <p className="text-lg font-bold text-green-800">${revenue.weekly?.toFixed(2) || '0.00'}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-purple-50 text-center">
+                    <p className="text-xs text-purple-600 font-medium">MTD</p>
+                    <p className="text-lg font-bold text-purple-800">${revenue.month_to_date?.toFixed(2) || '0.00'}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-50 text-center">
+                    <p className="text-xs text-orange-600 font-medium">YTD</p>
+                    <p className="text-lg font-bold text-orange-800">${revenue.year_to_date?.toFixed(2) || '0.00'}</p>
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground text-center mt-4 pt-3 border-t">
+                  Last updated: {revenue.as_of ? new Date(revenue.as_of).toLocaleString() : 'N/A'}
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* INVOICES TAB */}
+          <TabsContent value="invoices" className="space-y-4">
+            {/* Create Invoices */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Clients Ready for Invoicing
+                </CardTitle>
+                <CardDescription>Create invoices for clients with unbilled services</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {clientsDue.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500 opacity-70" />
+                    <p className="text-sm">All clients are up to date!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {clientsDue.map((client) => (
+                      <div key={client.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="font-medium text-sm">{client.full_name}</p>
+                          <p className="text-xs text-muted-foreground">{client.unbilled_appointments} unbilled services</p>
+                        </div>
+                        <Button size="sm" onClick={() => generateInvoice(client.id)} className="rounded-full">
+                          Create Invoice
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Client Billing Cycles */}
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-secondary" />
-                  Client Billing Cycles
+            {/* Open Invoices */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-amber-600" />
+                  Open Invoices
+                  {openInvoices.length > 0 && (
+                    <Badge variant="secondary" className="rounded-full ml-1">{openInvoices.length}</Badge>
+                  )}
                 </CardTitle>
-                <CardDescription>Set how often each client is billed</CardDescription>
               </CardHeader>
               <CardContent>
-                {clients.length === 0 ? (
-                  <p className="text-center py-8 text-muted-foreground">No clients yet</p>
+                {openInvoices.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500 opacity-70" />
+                    <p className="text-sm">No open invoices</p>
+                  </div>
                 ) : (
                   <div className="space-y-3">
-                    {clients.map((client) => (
-                      <div
-                        key={client.id}
-                        className="flex items-center justify-between p-4 rounded-xl bg-muted/30"
-                        data-testid={`client-billing-${client.id}`}
-                      >
+                    {openInvoices.map((invoice) => (
+                      <div key={invoice.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                         <div>
-                          <p className="font-medium">{client.full_name}</p>
-                          <p className="text-sm text-muted-foreground">{client.email}</p>
+                          <p className="font-medium text-sm">{invoice.client_name}</p>
+                          <p className="text-xs text-muted-foreground">Due: {invoice.due_date}</p>
                         </div>
-                        <Select
-                          value={client.billing_cycle || 'weekly'}
-                          onValueChange={(value) => updateBillingCycle(client.id, value)}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold">${invoice.amount?.toFixed(2)}</p>
+                          <Button size="sm" variant="outline" onClick={() => viewInvoiceDetail(invoice.id)} className="rounded-full">
+                            <Eye className="w-3 h-3 mr-1" /> View
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -390,14 +410,8 @@ const AdminBillingPage = () => {
             </Card>
           </TabsContent>
 
-          {/* Create Invoices Tab */}
-          <TabsContent value="create" className="space-y-6">
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  Clients Ready for Invoicing
-                </CardTitle>
+          {/* PRICING TAB */}
+          <TabsContent value="pricing" className="space-y-4">
                 <CardDescription>Clients with completed, uninvoiced appointments</CardDescription>
               </CardHeader>
               <CardContent>
