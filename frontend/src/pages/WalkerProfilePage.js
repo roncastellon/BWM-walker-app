@@ -110,12 +110,32 @@ const WalkerProfilePage = () => {
           <div className="h-32 bg-gradient-to-r from-primary/80 to-primary" />
           <CardContent className="relative pb-8">
             <div className="absolute -top-16 left-8">
-              <Avatar className="w-32 h-32 border-4 border-card">
-                <AvatarImage src={formData.profile_image} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-4xl">
-                  {user?.full_name?.charAt(0) || 'W'}
-                </AvatarFallback>
-              </Avatar>
+              <div 
+                className="relative cursor-pointer group"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Avatar className="w-32 h-32 border-4 border-card">
+                  <AvatarImage src={formData.profile_image || user?.profile_image} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-4xl">
+                    {user?.full_name?.charAt(0) || 'W'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploading ? (
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                  ) : (
+                    <Camera className="w-8 h-8 text-white" />
+                  )}
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+                data-testid="profile-image-input"
+              />
             </div>
             <div className="pt-20">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -125,6 +145,7 @@ const WalkerProfilePage = () => {
                     <Mail className="w-4 h-4" />
                     {user?.email}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-2">Click on profile picture to upload a new photo</p>
                 </div>
                 <Badge className="bg-secondary text-secondary-foreground w-fit rounded-full px-4 py-2">
                   <PawPrint className="w-4 h-4 mr-2" />
