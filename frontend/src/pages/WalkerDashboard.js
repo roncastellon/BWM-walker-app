@@ -318,15 +318,15 @@ const WalkerDashboard = () => {
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <DollarSign className="w-5 h-5" />
               <span className="text-xs">Payroll</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <User className="w-5 h-5" />
               <span className="text-xs">Profile</span>
             </TabsTrigger>
@@ -385,15 +385,15 @@ const WalkerDashboard = () => {
                       <div
                         key={appt.id}
                         className={`flex items-center justify-between p-3 rounded-lg ${
-                          appt.status === 'in_progress' ? 'bg-primary/10 border border-primary' :
-                          appt.status === 'completed' ? 'bg-green-50' : 'bg-muted/50'
+                          appt.status === 'in_progress' ? 'bg-orange-100 border border-orange-400' :
+                          appt.status === 'completed' ? 'bg-sky-50' : 'bg-muted/50'
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            appt.status === 'in_progress' ? 'bg-primary text-primary-foreground' :
-                            appt.status === 'completed' ? 'bg-green-100 text-green-600' :
-                            'bg-secondary/10 text-secondary'
+                            appt.status === 'in_progress' ? 'bg-orange-500 text-white' :
+                            appt.status === 'completed' ? 'bg-sky-100 text-sky-600' :
+                            'bg-sky-100 text-sky-600'
                           }`}>
                             {appt.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                           </div>
@@ -427,8 +427,8 @@ const WalkerDashboard = () => {
               <Link to="/walker/payroll">
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">Completed Walks/Stays</p>
