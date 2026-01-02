@@ -181,10 +181,10 @@ const ClientDashboard = () => {
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-3">
               <Link to="/schedule">
-                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full border-orange-200 hover:border-orange-300">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <CalendarPlus className="w-5 h-5 text-primary" />
+                    <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                      <CalendarPlus className="w-5 h-5 text-orange-600" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">Schedule New</p>
@@ -194,10 +194,10 @@ const ClientDashboard = () => {
                 </Card>
               </Link>
               <Link to="/schedule">
-                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full border-sky-200 hover:border-sky-300">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <ShoppingBag className="w-5 h-5 text-secondary" />
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                      <ShoppingBag className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">Other Services</p>
@@ -212,7 +212,7 @@ const ClientDashboard = () => {
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-primary" />
+                  <Clock className="w-5 h-5 text-orange-500" />
                   Upcoming Walks & Stays
                 </CardTitle>
               </CardHeader>
@@ -222,7 +222,7 @@ const ClientDashboard = () => {
                     <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No upcoming appointments</p>
                     <Link to="/schedule">
-                      <Button size="sm" className="mt-3 rounded-full">
+                      <Button size="sm" className="mt-3 rounded-full bg-orange-500 hover:bg-orange-600">
                         Book Now
                       </Button>
                     </Link>
@@ -232,11 +232,11 @@ const ClientDashboard = () => {
                     {upcomingAppts.slice(0, 5).map((appt) => (
                       <div
                         key={appt.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                        className="flex items-center justify-between p-3 rounded-lg bg-orange-50/50 border border-orange-100"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <PawPrint className="w-5 h-5 text-primary" />
+                          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                            <PawPrint className="w-5 h-5 text-orange-600" />
                           </div>
                           <div>
                             <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
