@@ -285,6 +285,99 @@ backend:
         agent: "testing"
         comment: "✅ PASSED - Image serving endpoints working correctly. Successfully served uploaded profile and pet images. Returns proper 404 for non-existent files. File access and serving functionality working as expected."
 
+  - task: "Appointment time slot limits (max 3 per slot)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented time slot validation in POST /appointments and POST /appointments/admin endpoints. Checks for existing appointments at same date/time and rejects if 3 or more already exist."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Time slot limits working correctly. Successfully enforced max 3 appointments per time slot. 4th appointment correctly rejected with 'This time slot is full (maximum 3 appointments). Please select another time.' error message."
+
+  - task: "Appointment walker conflict detection"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented walker conflict validation in appointment creation and update endpoints. Checks if walker already has appointment at same date/time and rejects with appropriate error."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Walker conflict detection working correctly. Successfully detected and rejected when same walker assigned to same time slot with 'This walker is already booked at this time. Please select another walker or time.' error message."
+
+  - task: "Admin create appointment endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /appointments/admin endpoint for admins to create appointments for any client. Includes same validation as regular appointment creation (time slot limits, walker conflicts)."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Admin create appointment working correctly. Admin successfully created appointments for clients with correct client_id assignment. Proper admin-only access control enforced."
+
+  - task: "Admin update appointment endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced PUT /appointments/{appt_id} endpoint with validation for time slot limits and walker conflicts when updating scheduled_date, scheduled_time, or walker_id."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Admin update appointment working correctly. Successfully updated appointment walker, time, and notes with proper validation. Time slot and walker conflict checks applied during updates."
+
+  - task: "Available slots endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET /appointments/available-slots endpoint to show time slot availability and walker availability for a given date. Returns booked count and available walkers for each time slot."
+      - working: false
+        agent: "testing"
+        comment: "❌ FAILED - Available slots endpoint returning 404 'Appointment not found' error due to routing conflict with /appointments/{appt_id} route."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Fixed routing issue by moving available-slots endpoint before parameterized route. Now working correctly, returns proper structure with date, slots array containing time, booked_count, is_full, and available_walkers for each time slot."
+
+  - task: "Pet sitting service in services list"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Pet Sitting - Our Location (Boarding) service already included in default services initialization with service_type 'petsit_our_location' at $50.00 price."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Pet Sitting - Our Location (Boarding) service found in services list at correct $50.00 price. Service properly configured with boarding description and pricing."
+
 frontend:
   - task: "Client profile editing with image upload"
     implemented: true
