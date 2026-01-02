@@ -114,7 +114,7 @@ const AdminDashboard = () => {
             <Card className="rounded-xl hover:shadow-md hover:bg-secondary/5 transition-all cursor-pointer">
               <CardContent className="p-3 text-center">
                 <p className="text-2xl font-bold text-secondary">{(stats.total_walkers || 0) + sitters.length}</p>
-                <p className="text-xs text-muted-foreground">Walkers/Sitters</p>
+                <p className="text-xs text-muted-foreground">Staff</p>
               </CardContent>
             </Card>
           </Link>
