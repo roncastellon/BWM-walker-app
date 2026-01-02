@@ -840,6 +840,144 @@ const WalkerDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Trade Request Modal */}
+      <Dialog open={tradeModalOpen} onOpenChange={setTradeModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowLeftRight className="w-5 h-5 text-sky-500" />
+              Request Trade
+            </DialogTitle>
+            <DialogDescription>
+              Request another walker to take this appointment.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedApptForTrade && (
+            <div className="p-4 rounded-lg bg-muted/50 my-2">
+              <p className="font-medium capitalize">{selectedApptForTrade.service_type?.replace('_', ' ')}</p>
+              <p className="text-sm text-muted-foreground">
+                {selectedApptForTrade.scheduled_date} at {selectedApptForTrade.scheduled_time}
+              </p>
+            </div>
+          )}
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Select Walker</Label>
+              <Select value={selectedTargetWalker} onValueChange={setSelectedTargetWalker}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a walker..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {walkers.filter(w => w.id !== user?.id).map((walker) => (
+                    <SelectItem key={walker.id} value={walker.id}>
+                      {walker.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTradeModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleTradeRequest} disabled={saving || !selectedTargetWalker}>
+              {saving ? 'Sending...' : 'Send Request'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Appointment Modal */}
+      <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <X className="w-5 h-5" />
+              Cancel Appointment
+            </DialogTitle>
+            <DialogDescription>
+              Please provide a reason for cancellation. The admin will be notified.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedApptForCancel && (
+            <div className="p-4 rounded-lg bg-muted/50 my-2">
+              <p className="font-medium capitalize">{selectedApptForCancel.service_type?.replace('_', ' ')}</p>
+              <p className="text-sm text-muted-foreground">
+                {selectedApptForCancel.scheduled_date} at {selectedApptForCancel.scheduled_time}
+              </p>
+            </div>
+          )}
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Reason for cancellation *</Label>
+              <Textarea
+                placeholder="Please explain why you need to cancel..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelModalOpen(false)}>Keep Appointment</Button>
+            <Button variant="destructive" onClick={handleCancelAppointment} disabled={saving || !cancelReason.trim()}>
+              {saving ? 'Cancelling...' : 'Cancel Appointment'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Time-Off Request Modal */}
+      <Dialog open={timeOffModalOpen} onOpenChange={setTimeOffModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarOff className="w-5 h-5 text-orange-500" />
+              Request Time Off
+            </DialogTitle>
+            <DialogDescription>
+              Schedule your time off. Any appointments during this period will be flagged for reassignment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start-date">Start Date</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={timeOffForm.start_date}
+                  onChange={(e) => setTimeOffForm({ ...timeOffForm, start_date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end-date">End Date</Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  value={timeOffForm.end_date}
+                  onChange={(e) => setTimeOffForm({ ...timeOffForm, end_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reason">Reason (optional)</Label>
+              <Input
+                id="reason"
+                placeholder="Vacation, personal, etc."
+                value={timeOffForm.reason}
+                onChange={(e) => setTimeOffForm({ ...timeOffForm, reason: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTimeOffModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleTimeOffRequest} disabled={saving || !timeOffForm.start_date || !timeOffForm.end_date}>
+              {saving ? 'Submitting...' : 'Request Time Off'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
