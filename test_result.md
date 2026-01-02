@@ -425,14 +425,12 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "Client profile editing with image upload"
-    - "Pet management with edit and image upload"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   backend_testing_complete: true
-  frontend_testing_complete: false
+  frontend_testing_complete: true
 
 agent_communication:
   - agent: "main"
