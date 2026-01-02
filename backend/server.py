@@ -668,6 +668,21 @@ async def get_walkers():
     
     return [UserResponse(**w) for w in walkers]
 
+@api_router.get("/users/sitters")
+async def get_sitters(current_user: dict = Depends(get_current_user)):
+    """Get all active sitters"""
+    sitters = await db.users.find({"role": "sitter", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
+    return sitters
+
+@api_router.get("/users/staff")
+async def get_all_staff(current_user: dict = Depends(get_current_user)):
+    """Get all walkers and sitters (staff who can be assigned appointments)"""
+    staff = await db.users.find(
+        {"role": {"$in": ["walker", "sitter"]}, "is_active": True}, 
+        {"_id": 0, "password_hash": 0}
+    ).to_list(200)
+    return staff
+
 @api_router.put("/users/{user_id}/color")
 async def update_walker_color(user_id: str, color: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
