@@ -378,6 +378,66 @@ backend:
         agent: "testing"
         comment: "✅ PASSED - Pet Sitting - Our Location (Boarding) service found in services list at correct $50.00 price. Service properly configured with boarding description and pricing."
 
+  - task: "Client appointment edit/cancel"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added PUT /appointments/{appt_id}/client-edit and POST /appointments/{appt_id}/client-cancel endpoints. Clients can edit date/time/notes or cancel scheduled appointments. No cancellation charge."
+
+  - task: "Walker trade requests"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /trades, GET /trades, POST /trades/{id}/accept, POST /trades/{id}/reject endpoints. Walkers can request trade, both must approve. Creates trade_requests collection."
+
+  - task: "Walker time-off requests"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /time-off and GET /time-off endpoints. Auto-approved, flags affected appointments with needs_reassignment=true. Notifies admin via message."
+
+  - task: "Auto-invoice generation"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /invoices/auto-generate (weekly/monthly cycle), GET /invoices/pending-review, POST /invoices/{id}/approve-review, POST /invoices/mass-send. Invoices queue for admin review before sending."
+
+  - task: "Walker cancel appointment"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /appointments/{appt_id}/walker-cancel endpoint. Requires mandatory reason, flags for reassignment, notifies admin."
+
 frontend:
   - task: "Global location permission prompt on app load"
     implemented: true
