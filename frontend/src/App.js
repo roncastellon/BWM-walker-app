@@ -260,6 +260,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/mass-text"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <MassTextPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
