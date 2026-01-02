@@ -1234,6 +1234,28 @@ async def get_available_slots(date: str, current_user: dict = Depends(get_curren
     
     return {"date": date, "slots": slot_info}
 
+# Get appointments needing reassignment - Must be before parameterized route
+@api_router.get("/appointments/needs-reassignment")
+async def get_appointments_needing_reassignment(current_user: dict = Depends(get_current_user)):
+    """Admin gets appointments that need reassignment"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    appts = await db.appointments.find(
+        {"needs_reassignment": True, "status": "scheduled"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Enrich with client and walker info
+    for appt in appts:
+        client = await db.users.find_one({"id": appt["client_id"]}, {"_id": 0, "password_hash": 0})
+        appt["client"] = client
+        if appt.get("walker_id"):
+            walker = await db.users.find_one({"id": appt["walker_id"]}, {"_id": 0, "password_hash": 0})
+            appt["original_walker"] = walker
+    
+    return appts
+
 @api_router.get("/appointments/{appt_id}", response_model=Appointment)
 async def get_appointment(appt_id: str):
     appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
