@@ -220,32 +220,6 @@ def calculate_petsit_price(service_type: str, num_dogs: int, start_date: str, en
                 "holiday_surcharge": holiday_surcharge,
                 "subtotal": night_total
             })
-    else:
-        # For at-your-location, count days (any part counts as full day)
-        num_days = max(1, (end - start).days + 1)
-        
-        for i in range(num_days):
-            day_date = (start + timedelta(days=i)).strftime("%Y-%m-%d")
-            day_price = base_price
-            
-            # No multi-dog discount for visits (each dog same price)
-            day_price = base_price * num_dogs
-            
-            # Check for holiday surcharge
-            is_holiday = is_holiday_date(day_date)
-            holiday_surcharge = 10.00 * num_dogs if is_holiday else 0
-            
-            day_total = day_price + holiday_surcharge
-            total += day_total
-            
-            breakdown.append({
-                "date": day_date,
-                "base": base_price,
-                "dogs": num_dogs,
-                "holiday": is_holiday,
-                "holiday_surcharge": holiday_surcharge,
-                "subtotal": day_total
-            })
     
     return {
         "total": round(total, 2),
