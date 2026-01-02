@@ -440,15 +440,18 @@ backend:
 
   - task: "Walker cancel appointment"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added POST /appointments/{appt_id}/walker-cancel endpoint. Requires mandatory reason, flags for reassignment, notifies admin."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Walker cancel appointment working correctly. Successfully tested with demo_walker credentials: POST /appointments/{id}/walker-cancel with mandatory reason 'Emergency - unable to complete walk due to illness' returned 200 status. Walker can successfully cancel scheduled appointments with required reason field."
 
 frontend:
   - task: "Global location permission prompt on app load"
