@@ -766,43 +766,47 @@ const AdminBillingPage = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col items-center gap-2">
                       {/* Blue Dog & Orange Cat Icons */}
-                      <svg viewBox="0 0 90 55" className="w-36 h-24">
-                        {/* Blue Dog - Bigger with floppy ears */}
+                      <svg viewBox="0 0 85 55" className="w-36 h-24">
+                        {/* Blue Dog - with floppy thin ears */}
                         {/* Body */}
                         <ellipse cx="25" cy="32" rx="20" ry="16" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         {/* Head */}
                         <circle cx="18" cy="18" r="14" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Left floppy ear - hanging down */}
-                        <ellipse cx="4" cy="22" rx="5" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Right floppy ear - hanging down */}
-                        <ellipse cx="32" cy="22" rx="5" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Left floppy ear - thinner */}
+                        <ellipse cx="4" cy="22" rx="3" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Right floppy ear - thinner */}
+                        <ellipse cx="32" cy="22" rx="3" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         {/* Eyes */}
-                        <circle cx="13" cy="16" r="2.5" fill="#1e3a5f"/>
-                        <circle cx="23" cy="16" r="2.5" fill="#1e3a5f"/>
+                        <circle cx="13" cy="14" r="2.5" fill="#1e3a5f"/>
+                        <circle cx="23" cy="14" r="2.5" fill="#1e3a5f"/>
                         {/* Nose */}
-                        <ellipse cx="18" cy="23" rx="3" ry="2.5" fill="#1e3a5f"/>
-                        {/* Front paws - just showing at bottom of body */}
+                        <ellipse cx="18" cy="21" rx="3" ry="2" fill="#1e3a5f"/>
+                        {/* Mouth */}
+                        <path d="M 15 25 Q 18 28 21 25" fill="none" stroke="#1e3a5f" strokeWidth="1.5" strokeLinecap="round"/>
+                        {/* Front paws */}
                         <ellipse cx="15" cy="46" rx="5" ry="4" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         <ellipse cx="30" cy="46" rx="5" ry="4" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         
-                        {/* Orange Cat - Bigger and closer to dog */}
-                        {/* Tail wrapping around body - at bottom */}
-                        <path d="M 52 42 Q 45 48 48 52 Q 52 55 58 50" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2" strokeLinecap="round"/>
-                        {/* Body */}
-                        <ellipse cx="62" cy="32" rx="16" ry="14" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Head */}
-                        <circle cx="68" cy="18" r="12" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                        {/* Ears */}
-                        <polygon points="58,10 62,0 67,10" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                        <polygon points="72,10 78,0 82,10" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Orange Cat - Smaller */}
+                        {/* Tail wrapping around body */}
+                        <path d="M 50 38 Q 44 44 47 48 Q 50 50 55 46" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2" strokeLinecap="round"/>
+                        {/* Body - smaller */}
+                        <ellipse cx="60" cy="34" rx="12" ry="10" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Head - smaller */}
+                        <circle cx="64" cy="22" r="9" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        {/* Ears - smaller to fit head */}
+                        <polygon points="57,16 59,9 63,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="1.5"/>
+                        <polygon points="66,14 70,7 73,14" fill="#fb923c" stroke="#1e3a5f" strokeWidth="1.5"/>
                         {/* Eyes */}
-                        <circle cx="64" cy="16" r="2.5" fill="#1e3a5f"/>
-                        <circle cx="72" cy="16" r="2.5" fill="#1e3a5f"/>
+                        <circle cx="60" cy="20" r="2" fill="#1e3a5f"/>
+                        <circle cx="68" cy="20" r="2" fill="#1e3a5f"/>
                         {/* Nose */}
-                        <ellipse cx="68" cy="22" rx="2" ry="1.5" fill="#1e3a5f"/>
-                        {/* Front paws - just showing at bottom of body */}
-                        <ellipse cx="55" cy="44" rx="4" ry="3" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
-                        <ellipse cx="66" cy="44" rx="4" ry="3" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        <ellipse cx="64" cy="25" rx="1.5" ry="1" fill="#1e3a5f"/>
+                        {/* Mouth */}
+                        <path d="M 62 28 Q 64 30 66 28" fill="none" stroke="#1e3a5f" strokeWidth="1.5" strokeLinecap="round"/>
+                        {/* Front paws */}
+                        <ellipse cx="54" cy="42" rx="3.5" ry="2.5" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                        <ellipse cx="63" cy="42" rx="3.5" ry="2.5" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
                       </svg>
                       <p className="text-sm font-medium text-gray-600">Dog Walking & Pet Sitting</p>
                     </div>
