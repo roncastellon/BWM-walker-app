@@ -55,6 +55,53 @@ const ClientDashboard = () => {
     }
   };
 
+  const openEditModal = (appt) => {
+    setSelectedAppt(appt);
+    setEditForm({
+      scheduled_date: appt.scheduled_date,
+      scheduled_time: appt.scheduled_time,
+      notes: appt.notes || ''
+    });
+    setEditModalOpen(true);
+  };
+
+  const openCancelModal = (appt) => {
+    setSelectedAppt(appt);
+    setCancelModalOpen(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!selectedAppt) return;
+    setSaving(true);
+    try {
+      await api.put(`/appointments/${selectedAppt.id}/client-edit`, null, {
+        params: editForm
+      });
+      toast.success('Appointment updated successfully');
+      setEditModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update appointment');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!selectedAppt) return;
+    setSaving(true);
+    try {
+      await api.post(`/appointments/${selectedAppt.id}/client-cancel`);
+      toast.success('Appointment cancelled successfully');
+      setCancelModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to cancel appointment');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'scheduled': return 'bg-sky-100 text-sky-800';
