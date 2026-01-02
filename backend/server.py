@@ -1785,6 +1785,107 @@ async def send_invoice_sms(invoice_id: str, current_user: dict = Depends(get_cur
         logging.error(f"Twilio error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to send SMS: {str(e)}")
 
+# Mass Text/SMS Feature
+class MassTextRequest(BaseModel):
+    recipient_group: str  # "all", "clients", "walkers"
+    message: str
+
+@api_router.post("/admin/mass-text")
+async def send_mass_text(request: MassTextRequest, current_user: dict = Depends(get_current_user)):
+    """Send mass text to all users, all clients, or all walkers"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check Twilio configuration
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    twilio_phone = os.environ.get('TWILIO_PHONE_NUMBER')
+    
+    if not account_sid or not auth_token or not twilio_phone:
+        raise HTTPException(status_code=400, detail="Twilio not configured. Please add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to environment variables.")
+    
+    # Get recipients based on group
+    query = {}
+    if request.recipient_group == "clients":
+        query = {"role": "client"}
+    elif request.recipient_group == "walkers":
+        query = {"role": "walker"}
+    elif request.recipient_group == "all":
+        query = {"role": {"$in": ["client", "walker"]}}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid recipient group")
+    
+    # Get users with phone numbers
+    users = await db.users.find(query, {"_id": 0, "id": 1, "full_name": 1, "phone": 1, "role": 1}).to_list(1000)
+    users_with_phone = [u for u in users if u.get('phone')]
+    
+    if not users_with_phone:
+        raise HTTPException(status_code=400, detail="No recipients with phone numbers found")
+    
+    # Send SMS to each recipient
+    twilio_client = TwilioClient(account_sid, auth_token)
+    sent_count = 0
+    failed_count = 0
+    failed_recipients = []
+    
+    for user in users_with_phone:
+        try:
+            twilio_client.messages.create(
+                body=request.message,
+                from_=twilio_phone,
+                to=user['phone']
+            )
+            sent_count += 1
+        except Exception as e:
+            failed_count += 1
+            failed_recipients.append({"name": user['full_name'], "error": str(e)})
+            logging.error(f"Failed to send SMS to {user['full_name']}: {e}")
+    
+    # Log the mass text
+    await db.mass_texts.insert_one({
+        "id": str(uuid4()),
+        "sender_id": current_user['id'],
+        "sender_name": current_user['full_name'],
+        "recipient_group": request.recipient_group,
+        "message": request.message,
+        "total_recipients": len(users_with_phone),
+        "sent_count": sent_count,
+        "failed_count": failed_count,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "message": f"Mass text sent successfully",
+        "total_recipients": len(users_with_phone),
+        "sent_count": sent_count,
+        "failed_count": failed_count,
+        "failed_recipients": failed_recipients[:5]  # Return first 5 failures
+    }
+
+@api_router.get("/admin/mass-text/history")
+async def get_mass_text_history(current_user: dict = Depends(get_current_user)):
+    """Get history of mass texts sent"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    history = await db.mass_texts.find({}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return history
+
+@api_router.get("/admin/mass-text/recipients-count")
+async def get_recipients_count(current_user: dict = Depends(get_current_user)):
+    """Get count of potential recipients by group"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    clients_with_phone = await db.users.count_documents({"role": "client", "phone": {"$exists": True, "$ne": ""}})
+    walkers_with_phone = await db.users.count_documents({"role": "walker", "phone": {"$exists": True, "$ne": ""}})
+    
+    return {
+        "all": clients_with_phone + walkers_with_phone,
+        "clients": clients_with_phone,
+        "walkers": walkers_with_phone
+    }
+
 # Payment Routes
 @api_router.post("/payments/checkout")
 async def create_checkout_session(invoice_id: str, origin_url: str, current_user: dict = Depends(get_current_user)):
