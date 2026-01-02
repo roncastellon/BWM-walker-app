@@ -60,6 +60,12 @@ const AdminBillingPage = () => {
     sendgrid_configured: false,
     twilio_configured: false
   });
+  
+  // Auto-invoice state
+  const [pendingReviewInvoices, setPendingReviewInvoices] = useState([]);
+  const [generatingInvoices, setGeneratingInvoices] = useState(false);
+  const [sendingAllInvoices, setSendingAllInvoices] = useState(false);
+  });
 
   useEffect(() => {
     fetchAllData();
