@@ -461,13 +461,13 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Walkers Section */}
+            {/* Walkers / Sitters Section */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <PawPrint className="w-5 h-5 text-secondary" />
-                  Walkers
-                  <Badge variant="secondary" className="rounded-full ml-1">{walkers.length}</Badge>
+                  Walkers / Sitters
+                  <Badge variant="secondary" className="rounded-full ml-1">{walkers.length + sitters.length}</Badge>
                 </CardTitle>
                 <Link to="/admin/walkers">
                   <Button size="sm" variant="secondary" className="rounded-full">
@@ -477,11 +477,12 @@ const AdminDashboard = () => {
                 </Link>
               </CardHeader>
               <CardContent>
-                {walkers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No walkers yet</p>
+                {walkers.length === 0 && sitters.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No walkers or sitters yet</p>
                 ) : (
                   <div className="space-y-2">
-                    {walkers.slice(0, 4).map((walker) => (
+                    {/* Show Walkers */}
+                    {walkers.slice(0, 2).map((walker) => (
                       <Link to="/admin/walkers" key={walker.id}>
                         <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                           <Avatar className="w-10 h-10">
@@ -492,18 +493,34 @@ const AdminDashboard = () => {
                           </Avatar>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{walker.full_name}</p>
-                            <p className="text-xs text-muted-foreground">{walker.email}</p>
+                            <p className="text-xs text-muted-foreground">Walker</p>
                           </div>
-                          <Button size="sm" variant="ghost" className="rounded-full">
-                            Edit
-                          </Button>
+                          <Badge className="bg-sky-100 text-sky-700 rounded-full">Walker</Badge>
                         </div>
                       </Link>
                     ))}
-                    {walkers.length > 4 && (
+                    {/* Show Sitters */}
+                    {sitters.slice(0, 2).map((sitter) => (
+                      <Link to="/admin/sitters" key={sitter.id}>
+                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={sitter.profile_image} />
+                            <AvatarFallback className="bg-orange-100 text-orange-600">
+                              {sitter.full_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{sitter.full_name}</p>
+                            <p className="text-xs text-muted-foreground">Sitter</p>
+                          </div>
+                          <Badge className="bg-orange-100 text-orange-700 rounded-full">Sitter</Badge>
+                        </div>
+                      </Link>
+                    ))}
+                    {(walkers.length > 2 || sitters.length > 2) && (
                       <Link to="/admin/walkers">
                         <Button variant="ghost" size="sm" className="w-full rounded-full">
-                          View all {walkers.length} walkers
+                          View all {walkers.length + sitters.length} walkers/sitters
                         </Button>
                       </Link>
                     )}
