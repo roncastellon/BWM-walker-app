@@ -553,11 +553,98 @@ async def update_user(user_id: str, update_data: dict, current_user: dict = Depe
     if current_user['id'] != user_id and current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    allowed_fields = ['full_name', 'phone', 'bio', 'profile_image']
+    allowed_fields = ['full_name', 'phone', 'address', 'email', 'bio', 'profile_image']
     update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
     
     await db.users.update_one({"id": user_id}, {"$set": update_dict})
-    return {"message": "User updated successfully"}
+    
+    # Return updated user
+    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    return updated_user
+
+# File Upload Routes
+@api_router.post("/upload/profile")
+async def upload_profile_image(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Upload profile image for user"""
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.")
+    
+    # Generate unique filename
+    file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    filename = f"{current_user['id']}_{uuid.uuid4().hex[:8]}.{file_ext}"
+    file_path = UPLOADS_DIR / 'profiles' / filename
+    
+    # Save file
+    try:
+        with open(file_path, 'wb') as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+    
+    # Generate URL
+    image_url = f"/api/uploads/profiles/{filename}"
+    
+    # Update user profile
+    await db.users.update_one({"id": current_user['id']}, {"$set": {"profile_image": image_url}})
+    
+    return {"url": image_url, "message": "Profile image uploaded successfully"}
+
+@api_router.post("/upload/pet/{pet_id}")
+async def upload_pet_image(pet_id: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Upload image for a pet"""
+    # Verify pet exists and user owns it
+    pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
+    if not pet:
+        raise HTTPException(status_code=404, detail="Pet not found")
+    
+    if current_user['role'] == 'client' and pet['owner_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.")
+    
+    # Generate unique filename
+    file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    filename = f"{pet_id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+    file_path = UPLOADS_DIR / 'pets' / filename
+    
+    # Save file
+    try:
+        with open(file_path, 'wb') as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+    
+    # Generate URL
+    image_url = f"/api/uploads/pets/{filename}"
+    
+    # Update pet photo
+    await db.pets.update_one({"id": pet_id}, {"$set": {"photo_url": image_url}})
+    
+    return {"url": image_url, "message": "Pet image uploaded successfully"}
+
+# Serve uploaded files
+from fastapi.responses import FileResponse
+
+@api_router.get("/uploads/profiles/{filename}")
+async def get_profile_image(filename: str):
+    """Serve profile images"""
+    file_path = UPLOADS_DIR / 'profiles' / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(file_path)
+
+@api_router.get("/uploads/pets/{filename}")
+async def get_pet_image(filename: str):
+    """Serve pet images"""
+    file_path = UPLOADS_DIR / 'pets' / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(file_path)
 
 # Pet Routes
 @api_router.post("/pets", response_model=Pet)
