@@ -1419,6 +1419,204 @@ class WagWalkAPITester:
         if success:
             print("✅ Mass send invoices successful")
 
+    def test_invoice_delivery_preference_setting(self):
+        """Test invoice delivery preference setting functionality"""
+        print("\n🔍 Testing Invoice Delivery Preference Setting...")
+        
+        if not self.tokens.get('demo_admin'):
+            print("⚠️  Skipping invoice delivery preference test - no demo admin token")
+            return
+        
+        # Test GET company info to check default invoice_delivery_preference
+        success, company_info = self.run_test(
+            "Get Company Info (Check Default Preference)", "GET", "settings/company-info", 200,
+            token=self.tokens['demo_admin'], 
+            description="Get company info and check default invoice_delivery_preference is 'both'"
+        )
+        
+        if success:
+            # Check if invoice_delivery_preference field exists and has default value "both"
+            preference = company_info.get('invoice_delivery_preference')
+            if preference == 'both':
+                print("✅ Default invoice_delivery_preference verified - 'both'")
+            elif preference is None:
+                print("⚠️  invoice_delivery_preference field not found in response")
+            else:
+                print(f"⚠️  Unexpected default invoice_delivery_preference: {preference}")
+        
+        # Test updating invoice_delivery_preference to "email"
+        update_data = {
+            "invoice_delivery_preference": "email"
+        }
+        
+        success, response = self.run_test(
+            "Update Preference to Email", "PUT", "settings/company-info", 200,
+            data=update_data, token=self.tokens['demo_admin'],
+            description="Update invoice_delivery_preference to 'email'"
+        )
+        
+        if success:
+            print("✅ Invoice delivery preference update to 'email' successful")
+        
+        # Test updating invoice_delivery_preference to "text"
+        update_data = {
+            "invoice_delivery_preference": "text"
+        }
+        
+        success, response = self.run_test(
+            "Update Preference to Text", "PUT", "settings/company-info", 200,
+            data=update_data, token=self.tokens['demo_admin'],
+            description="Update invoice_delivery_preference to 'text'"
+        )
+        
+        if success:
+            print("✅ Invoice delivery preference update to 'text' successful")
+        
+        # Test updating invoice_delivery_preference to "both"
+        update_data = {
+            "invoice_delivery_preference": "both"
+        }
+        
+        success, response = self.run_test(
+            "Update Preference to Both", "PUT", "settings/company-info", 200,
+            data=update_data, token=self.tokens['demo_admin'],
+            description="Update invoice_delivery_preference to 'both'"
+        )
+        
+        if success:
+            print("✅ Invoice delivery preference update to 'both' successful")
+        
+        # Verify the setting persists after update
+        success, updated_info = self.run_test(
+            "Verify Preference Persistence", "GET", "settings/company-info", 200,
+            token=self.tokens['demo_admin'], 
+            description="Verify invoice_delivery_preference persists after update"
+        )
+        
+        if success:
+            final_preference = updated_info.get('invoice_delivery_preference')
+            if final_preference == 'both':
+                print("✅ Invoice delivery preference persistence verified - 'both'")
+            else:
+                print(f"⚠️  Preference persistence failed - Expected 'both', got '{final_preference}'")
+
+    def test_walker_trade_self_validation_bug_fix(self):
+        """Test walker trade self-validation bug fix"""
+        print("\n🔍 Testing Walker Trade Self-Validation Bug Fix...")
+        
+        if not self.tokens.get('demo_walker'):
+            print("⚠️  Skipping walker trade self-validation test - no demo walker token")
+            return
+        
+        # Get walker's user ID
+        walker_user_id = self.users.get('demo_walker', {}).get('id')
+        if not walker_user_id:
+            print("⚠️  Could not get walker user ID")
+            return
+        
+        print(f"   Walker ID: {walker_user_id}")
+        
+        # Get walker's appointments to find a scheduled one
+        success, appointments = self.run_test(
+            "Get Walker Appointments for Self-Trade Test", "GET", "appointments", 200,
+            token=self.tokens['demo_walker'], 
+            description="Get walker appointments to find one for self-trade test"
+        )
+        
+        if not success or not appointments:
+            print("⚠️  No appointments available for self-trade test")
+            return
+        
+        # Find a scheduled appointment
+        scheduled_appt = None
+        for appt in appointments:
+            if appt.get('status') == 'scheduled':
+                scheduled_appt = appt
+                break
+        
+        if not scheduled_appt:
+            print("⚠️  No scheduled appointments available for self-trade test")
+            return
+        
+        appointment_id = scheduled_appt['id']
+        print(f"   Using appointment ID: {appointment_id}")
+        
+        # Test creating trade request with walker's own ID as target (should fail)
+        trade_data = {
+            "appointment_id": appointment_id,
+            "target_walker_id": walker_user_id  # Same as requesting walker
+        }
+        
+        success, response = self.run_test(
+            "Create Self-Trade Request (Should Fail)", "POST", "trades", 400,
+            data=trade_data, token=self.tokens['demo_walker'],
+            description="Attempt to create trade request with walker's own ID as target (should return 400 error)"
+        )
+        
+        if success:
+            print("✅ Self-trade validation working - request correctly rejected with 400 status")
+            
+            # Check if the error message is correct
+            if isinstance(response, dict) and 'detail' in response:
+                error_message = response['detail']
+                if "You cannot trade an appointment with yourself" in error_message:
+                    print("✅ Correct error message returned: 'You cannot trade an appointment with yourself'")
+                else:
+                    print(f"⚠️  Unexpected error message: {error_message}")
+            else:
+                print("⚠️  No error message found in response")
+        else:
+            print("❌ Self-trade validation failed - request was not rejected")
+        
+        # Test trading with a different valid walker (should work)
+        # Get other walkers
+        success, walkers = self.run_test(
+            "Get Other Walkers for Valid Trade Test", "GET", "users/walkers", 200,
+            token=self.tokens['demo_walker'], 
+            description="Get other walkers for valid trade test"
+        )
+        
+        if success and walkers:
+            # Find a different walker
+            target_walker_id = None
+            for walker in walkers:
+                if walker['id'] != walker_user_id:
+                    target_walker_id = walker['id']
+                    break
+            
+            if target_walker_id:
+                print(f"   Testing valid trade with walker ID: {target_walker_id}")
+                
+                # Test creating trade request with different walker (should succeed)
+                valid_trade_data = {
+                    "appointment_id": appointment_id,
+                    "target_walker_id": target_walker_id
+                }
+                
+                success, valid_response = self.run_test(
+                    "Create Valid Trade Request", "POST", "trades", 200,
+                    data=valid_trade_data, token=self.tokens['demo_walker'],
+                    description="Create trade request with different valid walker (should succeed)"
+                )
+                
+                if success:
+                    print("✅ Valid trade request creation successful")
+                    
+                    # Clean up - reject the trade request
+                    trade_id = valid_response.get('id')
+                    if trade_id:
+                        self.run_test(
+                            "Cleanup - Reject Valid Trade", "POST", f"trades/{trade_id}/reject", 200,
+                            token=self.tokens['demo_walker'],
+                            description="Clean up by rejecting the valid trade request"
+                        )
+                else:
+                    print("⚠️  Valid trade request creation failed")
+            else:
+                print("⚠️  Could not find different walker for valid trade test")
+        else:
+            print("⚠️  Could not get walkers for valid trade test")
+
     def test_bowwowmeow_new_features(self):
         """Test all new BowWowMeow features"""
         print("\n" + "=" * 70)
@@ -1431,6 +1629,10 @@ class WagWalkAPITester:
         self.test_walker_time_off_requests()
         self.test_walker_cancel_appointment()
         self.test_auto_invoice_generation()
+        
+        # Test the specific new features from the review request
+        self.test_invoice_delivery_preference_setting()
+        self.test_walker_trade_self_validation_bug_fix()
 
     def test_client_profile_and_pet_management_features(self):
         """Test all new client profile and pet management features"""
