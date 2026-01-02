@@ -877,17 +877,8 @@ async def check_walker_availability(walker_id: str, scheduled_date: str, schedul
 # Appointment Routes
 @api_router.post("/appointments", response_model=Appointment)
 async def create_appointment(appt_data: AppointmentCreate, current_user: dict = Depends(get_current_user)):
-    # Check for time slot limits (max 3 appointments per time slot)
-    if appt_data.scheduled_time:
-        existing_at_time = await db.appointments.count_documents({
-            "scheduled_date": appt_data.scheduled_date,
-            "scheduled_time": appt_data.scheduled_time,
-            "status": {"$nin": ["cancelled"]}
-        })
-        if existing_at_time >= 3:
-            raise HTTPException(status_code=400, detail="This time slot is full (maximum 3 appointments). Please select another time.")
-    
     # If walker is specified, check availability with 15-minute buffer
+    # (1 walk per time slot per walker, with 15-min buffer between walks)
     if appt_data.walker_id:
         availability = await check_walker_availability(
             appt_data.walker_id, 
