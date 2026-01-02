@@ -450,6 +450,153 @@ const WalkerDashboard = () => {
           </Card>
         )}
       </div>
+
+      {/* GPS Permission Dialog */}
+      <Dialog open={gpsDialogOpen} onOpenChange={setGpsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-primary" />
+              Enable GPS Tracking
+            </DialogTitle>
+            <DialogDescription>
+              Track your walk route for clients to see in real-time
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {gpsStatus === 'checking' && (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            )}
+            
+            {gpsStatus === 'unavailable' && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-red-800">GPS Not Available</p>
+                    <p className="text-sm text-red-600 mt-1">
+                      Your device doesn't support GPS tracking. You can still start the walk without tracking.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {gpsStatus === 'denied' && (
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-amber-800">Location Access Blocked</p>
+                    <p className="text-sm text-amber-600 mt-1">
+                      Please enable location access in your browser/device settings:
+                    </p>
+                    <ul className="text-sm text-amber-600 mt-2 space-y-1 list-disc list-inside">
+                      <li><strong>iPhone:</strong> Settings → Privacy → Location Services → Browser → Allow</li>
+                      <li><strong>Android:</strong> Settings → Apps → Browser → Permissions → Location → Allow</li>
+                      <li><strong>Browser:</strong> Click the lock icon in the address bar → Site Settings → Location → Allow</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {(gpsStatus === 'prompt' || gpsStatus === 'requesting') && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <Smartphone className="w-5 h-5 text-primary mt-0.5" />
+                    <div>
+                      <p className="font-medium">Allow Location Access</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Tap the button below and allow location access when prompted by your browser.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={requestGpsPermission} 
+                  className="w-full rounded-full"
+                  disabled={gpsStatus === 'requesting'}
+                >
+                  {gpsStatus === 'requesting' ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Requesting Permission...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="w-4 h-4 mr-2" />
+                      Enable Location
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+            
+            {gpsStatus === 'granted' && (
+              <div className="p-4 rounded-xl bg-green-50 border border-green-200">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-green-800">GPS Ready!</p>
+                    <p className="text-sm text-green-600 mt-1">
+                      Location access is enabled. Your walk route will be tracked and visible to the client in real-time.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {gpsStatus === 'error' && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-red-800">Location Error</p>
+                    <p className="text-sm text-red-600 mt-1">
+                      Unable to get your location. Make sure you're outdoors or near a window for better GPS signal.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setGpsDialogOpen(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            {gpsStatus === 'granted' ? (
+              <Button 
+                onClick={() => confirmStartWalk(true)} 
+                disabled={startingWalk}
+                className="flex-1 rounded-full"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start Walk
+              </Button>
+            ) : (
+              <Button 
+                variant="secondary"
+                onClick={() => confirmStartWalk(false)} 
+                disabled={startingWalk}
+                className="flex-1"
+              >
+                Start Without GPS
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
