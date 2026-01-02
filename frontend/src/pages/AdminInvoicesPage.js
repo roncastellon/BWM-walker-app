@@ -768,6 +768,8 @@ const AdminBillingPage = () => {
                       {/* Blue Dog & Orange Cat Icons */}
                       <svg viewBox="0 0 85 55" className="w-36 h-24">
                         {/* Blue Dog - with floppy angled ears higher on head */}
+                        {/* Dog Tail - wagging up between dog and cat */}
+                        <path d="M 42 30 Q 48 20 45 12 Q 44 8 46 10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2" strokeLinecap="round"/>
                         {/* Body */}
                         <ellipse cx="25" cy="32" rx="20" ry="16" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         {/* Head */}
