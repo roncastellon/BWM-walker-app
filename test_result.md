@@ -320,12 +320,14 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Client profile editing with image upload"
+    - "Pet management with edit and image upload"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_complete: true
-  frontend_testing_complete: true
+  backend_testing_complete: false
+  frontend_testing_complete: false
 
 agent_communication:
   - agent: "main"
@@ -342,3 +344,5 @@ agent_communication:
     message: "✅ FIX IMPLEMENTED AND CONFIRMED: The root cause was ChatArea and ContactsList components being defined INSIDE MessagesPage as closures. This caused them to be recreated on every render. Solution: Moved both components outside as memo components with proper props. Test result: 97 characters typed, 97 characters received - perfect focus retention! Please verify with comprehensive testing."
   - agent: "testing"
     message: "✅ MOBILE CHAT FOCUS RETENTION FIX VERIFIED: Comprehensive testing completed successfully! The major refactor fix is working perfectly. Test Results: 1) Walker Team Chat: 96/96 characters retained (100% success), 2) Walker Personal Chat: 41/41 characters retained (100% success), 3) Client Chat: 76/76 characters retained (100% success). The solution of moving ChatArea and ContactsList components outside MessagesPage as memo components has completely resolved the focus retention issue. Mobile chat is now fully functional across all user roles and chat types. Testing complete - no further issues found."
+  - agent: "main"
+    message: "NEW FEATURE: Implemented client profile editing and pet management with image uploads. Backend: Added file upload endpoints (/upload/profile, /upload/pet/{pet_id}), updated user model to include address field, added PUT /pets/{pet_id} for editing pets. Frontend: Created ClientProfilePage.js with profile picture upload and personal info form (name, email, phone, address, bio), updated PetsPage.js with edit button and pet photo upload capability, added /profile route for clients, added 'My Profile' to client navigation. Please test all profile and pet management flows."
