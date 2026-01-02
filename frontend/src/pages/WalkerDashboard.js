@@ -428,11 +428,11 @@ const WalkerDashboard = () => {
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">Time Sheets</p>
-                      <p className="text-xs text-muted-foreground">View hours</p>
+                      <p className="font-medium text-sm">Completed Walks/Stays</p>
+                      <p className="text-xs text-muted-foreground">View history</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -441,11 +441,11 @@ const WalkerDashboard = () => {
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-primary" />
+                      <FileText className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">Submit Payroll</p>
-                      <p className="text-xs text-muted-foreground">Weekly submission</p>
+                      <p className="font-medium text-sm">Billing Sheet</p>
+                      <p className="text-xs text-muted-foreground">Weekly summary</p>
                     </div>
                   </CardContent>
                 </Card>
