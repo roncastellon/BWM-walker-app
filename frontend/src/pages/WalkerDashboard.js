@@ -471,7 +471,7 @@ const WalkerDashboard = () => {
                     <p className="text-xs text-muted-foreground">Pending</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold text-green-600">{stats.todays_appointments || 0}</p>
+                    <p className="text-2xl font-bold text-orange-600">{stats.todays_appointments || 0}</p>
                     <p className="text-xs text-muted-foreground">Today</p>
                   </div>
                 </div>
@@ -577,14 +577,14 @@ const WalkerDashboard = () => {
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <CheckCircle className="w-5 h-5 text-sky-600" />
                   My Stats
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-4 rounded-lg bg-green-50">
-                    <p className="text-3xl font-bold text-green-600">{stats.completed_walks || 0}</p>
+                  <div className="text-center p-4 rounded-lg bg-sky-50">
+                    <p className="text-3xl font-bold text-sky-600">{stats.completed_walks || 0}</p>
                     <p className="text-sm text-muted-foreground">Total Completed</p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-secondary/10">
