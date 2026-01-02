@@ -127,6 +127,7 @@ const Layout = ({ children }) => {
   const getMessagesPath = () => {
     if (isAdmin) return '/admin/chat';
     if (isWalker) return '/walker/chat';
+    if (user?.role === 'sitter') return '/sitter/chat';
     return '/messages';
   };
 
