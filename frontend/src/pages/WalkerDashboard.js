@@ -455,20 +455,60 @@ const WalkerDashboard = () => {
                   </CardContent>
                 </Card>
               </Link>
-              <Link to="/tracking">
-                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Navigation className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">Walk Tracking</p>
-                      <p className="text-xs text-muted-foreground">GPS & route</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+              <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full" onClick={() => setTimeOffModalOpen(true)}>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <CalendarOff className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Request Time Off</p>
+                    <p className="text-xs text-muted-foreground">Schedule vacation</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Pending Trade Requests */}
+            {tradeRequests.length > 0 && (
+              <Card className="rounded-xl border-orange-200 bg-orange-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2 text-orange-800">
+                    <ArrowLeftRight className="w-5 h-5" />
+                    Trade Requests
+                    <Badge className="bg-orange-500 text-white rounded-full ml-2">{tradeRequests.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {tradeRequests.map((trade) => (
+                      <div key={trade.id} className="p-3 rounded-lg bg-white border border-orange-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium text-sm">
+                            {trade.requesting_walker_id === user?.id ? 'Your request' : `From ${trade.requester?.full_name}`}
+                          </p>
+                          <Badge className="bg-orange-100 text-orange-800 rounded-full text-xs">Pending</Badge>
+                        </div>
+                        {trade.appointment && (
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {trade.appointment.scheduled_date} at {trade.appointment.scheduled_time}
+                          </p>
+                        )}
+                        {trade.target_walker_id === user?.id && (
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => handleTradeResponse(trade.id, false)} disabled={saving} className="flex-1">
+                              Reject
+                            </Button>
+                            <Button size="sm" onClick={() => handleTradeResponse(trade.id, true)} disabled={saving} className="flex-1 bg-sky-500 hover:bg-sky-600">
+                              Accept
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Today's Schedule */}
             <Card className="rounded-xl">
