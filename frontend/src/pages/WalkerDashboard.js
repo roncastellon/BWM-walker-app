@@ -515,7 +515,7 @@ const WalkerDashboard = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock className="w-5 h-5 text-secondary" />
-                  Today's Walks
+                  Today&apos;s Walks
                   <Badge variant="secondary" className="rounded-full ml-2">{todayAppointments.length}</Badge>
                 </CardTitle>
               </CardHeader>
