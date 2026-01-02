@@ -208,17 +208,6 @@ const WalkerProfilePage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="profile_image">Profile Image URL</Label>
-                <Input
-                  id="profile_image"
-                  placeholder="https://example.com/photo.jpg"
-                  value={formData.profile_image}
-                  onChange={(e) => setFormData({ ...formData, profile_image: e.target.value })}
-                  data-testid="profile-image-input"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea
                   id="bio"
@@ -250,7 +239,7 @@ const WalkerProfilePage = () => {
           <CardContent>
             <div className="flex items-start gap-6 p-6 rounded-xl bg-muted/50">
               <Avatar className="w-20 h-20">
-                <AvatarImage src={formData.profile_image} />
+                <AvatarImage src={formData.profile_image || user?.profile_image} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                   {formData.full_name?.charAt(0) || 'W'}
                 </AvatarFallback>
