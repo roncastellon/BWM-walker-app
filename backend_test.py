@@ -882,6 +882,17 @@ def main():
         tester.test_notification_config_endpoint()
         tester.test_send_invoice_email_sms()
         
+        # CLIENT PROFILE & PET MANAGEMENT FEATURES
+        print("\n" + "=" * 60)
+        print("🆕 TESTING CLIENT PROFILE & PET MANAGEMENT FEATURES")
+        print("=" * 60)
+        
+        tester.test_client_profile_update()
+        tester.test_profile_image_upload()
+        tester.test_pet_update()
+        tester.test_pet_image_upload()
+        tester.test_serve_uploaded_images()
+        
         # Security tests
         tester.test_unauthorized_access()
         
