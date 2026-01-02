@@ -436,6 +436,57 @@ class PaymentTransaction(BaseModel):
     metadata: Optional[Dict] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Subscription/Freemium Model
+class SubscriptionTier(str, Enum):
+    FREE = "free"
+    PREMIUM = "premium"
+
+class Subscription(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    tier: SubscriptionTier = SubscriptionTier.FREE
+    stripe_subscription_id: Optional[str] = None
+    stripe_customer_id: Optional[str] = None
+    plan_type: Optional[str] = None  # "monthly" or "yearly"
+    status: str = "active"  # active, canceled, past_due, trialing
+    trial_ends_at: Optional[str] = None
+    current_period_start: Optional[str] = None
+    current_period_end: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Freemium Limits
+FREEMIUM_LIMITS = {
+    "free": {
+        "max_walkers": 5,
+        "max_clients": 10,
+        "invoicing": False,
+        "mass_text": False,
+        "gps_tracking": False,
+        "revenue_reports": False,
+        "recurring_schedules": False,
+        "custom_branding": False,
+    },
+    "premium": {
+        "max_walkers": -1,  # Unlimited
+        "max_clients": -1,  # Unlimited
+        "invoicing": True,
+        "mass_text": True,
+        "gps_tracking": True,
+        "revenue_reports": True,
+        "recurring_schedules": True,
+        "custom_branding": True,
+    }
+}
+
+SUBSCRIPTION_PRICES = {
+    "monthly": 14.99,
+    "yearly": 149.00,
+}
+
+TRIAL_DAYS = 14
+
 # Helper Functions
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
