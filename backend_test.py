@@ -1218,20 +1218,5 @@ def main():
     
     return 0 if len(tester.failed_tests) == 0 else 1
 
-def test_unauthorized_access(self):
-    """Test unauthorized access scenarios"""
-    # Test without token
-    self.run_test(
-        "Unauthorized Access", "GET", "auth/me", 401,
-        description="Access protected endpoint without token"
-    )
-
-    # Test client accessing admin endpoint
-    if self.tokens.get('client'):
-        self.run_test(
-            "Client Admin Access", "GET", "users/clients", 403,
-            token=self.tokens['client'], description="Client trying to access admin endpoint"
-        )
-
 if __name__ == "__main__":
     sys.exit(main())
