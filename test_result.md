@@ -753,3 +753,28 @@ agent_communication:
   - agent: "testing"
     message: "✅ BOWWOWMEOW BACKEND TESTING COMPLETE - Tested 5 new backend features with mixed results: 1) ✅ Client Appointment Edit/Cancel - WORKING (both edit and cancel endpoints functional), 2) ❌ Walker Trade Requests - FAILED (POST /trades returns 'Can only trade scheduled appointments' error even for scheduled appointments), 3) ❌ Walker Time-Off Requests - FAILED (core functionality works but GET /appointments/needs-reassignment returns 404 error), 4) ✅ Walker Cancel Appointment - WORKING (successfully cancels with mandatory reason), 5) ❌ Auto-Invoice Generation - FAILED (generation works but GET /invoices/pending-review returns 404 error). CRITICAL ISSUE DISCOVERED: Time slot limits (max 3 per slot) are NOT implemented - created 4 appointments at same time slot and all were accepted. Overall: 2/5 features fully working, 3 have implementation issues requiring fixes."
 
+
+  - task: "Invoice delivery preference setting"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminInvoicesPage.js, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added invoice_delivery_preference field to company settings. Frontend has dropdown selector with options: Email Only, Text (SMS) Only, Both Email & Text. Backend stores/retrieves this setting as part of company-info. Default is 'both'."
+
+  - task: "Walker trade self-validation bug fix"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed bug where walker could trade appointment with themselves. Added validation in POST /trades endpoint to check if target_walker_id equals current_user_id and reject with 400 error 'You cannot trade an appointment with yourself'."
+
