@@ -11,25 +11,55 @@ import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Users, Search, Mail, Phone, Plus, PawPrint, DollarSign, Trash2 } from 'lucide-react';
+import { Checkbox } from '../components/ui/checkbox';
+import { Users, Search, Mail, Phone, Plus, PawPrint, DollarSign, Trash2, Edit, Calendar, Clock, Save, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Generate 15-minute increment time slots
+const generateTimeSlots = () => {
+  const slots = [];
+  for (let hour = 6; hour <= 20; hour++) {
+    for (let min = 0; min < 60; min += 15) {
+      const h = hour.toString().padStart(2, '0');
+      const m = min.toString().padStart(2, '0');
+      slots.push(`${h}:${m}`);
+    }
+  }
+  return slots;
+};
+
+const TIME_SLOTS = generateTimeSlots();
+
+const DAYS_OF_WEEK = [
+  { value: 'monday', label: 'Monday', short: 'Mon' },
+  { value: 'tuesday', label: 'Tuesday', short: 'Tue' },
+  { value: 'wednesday', label: 'Wednesday', short: 'Wed' },
+  { value: 'thursday', label: 'Thursday', short: 'Thu' },
+  { value: 'friday', label: 'Friday', short: 'Fri' },
+  { value: 'saturday', label: 'Saturday', short: 'Sat' },
+  { value: 'sunday', label: 'Sunday', short: 'Sun' },
+];
 
 const AdminClientsPage = () => {
   const { api } = useAuth();
   const [clients, setClients] = useState([]);
   const [services, setServices] = useState([]);
+  const [walkers, setWalkers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
   
-  // Form state for new customer
+  // Form state for new/edit customer
   const [customerForm, setCustomerForm] = useState({
     username: '',
     email: '',
     password: '',
     full_name: '',
     phone: '',
+    address: '',
     billing_cycle: 'weekly',
   });
   
@@ -45,6 +75,15 @@ const AdminClientsPage = () => {
   
   // Custom pricing overrides
   const [customPricing, setCustomPricing] = useState({});
+  
+  // Walking schedule
+  const [walkingSchedule, setWalkingSchedule] = useState({
+    walks_per_day: 1,
+    days: [],
+    preferred_times: [],
+    preferred_walker_id: '',
+    notes: '',
+  });
 
   useEffect(() => {
     fetchData();
@@ -52,12 +91,14 @@ const AdminClientsPage = () => {
 
   const fetchData = async () => {
     try {
-      const [clientsRes, servicesRes] = await Promise.all([
+      const [clientsRes, servicesRes, walkersRes] = await Promise.all([
         api.get('/users/clients'),
         api.get('/services'),
+        api.get('/users/walkers'),
       ]);
       setClients(clientsRes.data);
       setServices(servicesRes.data);
+      setWalkers(walkersRes.data);
       
       // Initialize custom pricing with default prices
       const defaultPricing = {};
@@ -79,6 +120,7 @@ const AdminClientsPage = () => {
       password: '',
       full_name: '',
       phone: '',
+      address: '',
       billing_cycle: 'weekly',
     });
     setPets([{
@@ -94,6 +136,13 @@ const AdminClientsPage = () => {
       defaultPricing[s.service_type] = s.price;
     });
     setCustomPricing(defaultPricing);
+    setWalkingSchedule({
+      walks_per_day: 1,
+      days: [],
+      preferred_times: [],
+      preferred_walker_id: '',
+      notes: '',
+    });
   };
 
   const addPet = () => {
@@ -119,8 +168,36 @@ const AdminClientsPage = () => {
     setPets(newPets);
   };
 
+  const toggleDay = (day) => {
+    const newDays = walkingSchedule.days.includes(day)
+      ? walkingSchedule.days.filter(d => d !== day)
+      : [...walkingSchedule.days, day];
+    setWalkingSchedule({ ...walkingSchedule, days: newDays });
+  };
+
+  const addPreferredTime = () => {
+    if (walkingSchedule.preferred_times.length < walkingSchedule.walks_per_day) {
+      setWalkingSchedule({
+        ...walkingSchedule,
+        preferred_times: [...walkingSchedule.preferred_times, '09:00']
+      });
+    }
+  };
+
+  const updatePreferredTime = (index, value) => {
+    const newTimes = [...walkingSchedule.preferred_times];
+    newTimes[index] = value;
+    setWalkingSchedule({ ...walkingSchedule, preferred_times: newTimes });
+  };
+
+  const removePreferredTime = (index) => {
+    const newTimes = walkingSchedule.preferred_times.filter((_, i) => i !== index);
+    setWalkingSchedule({ ...walkingSchedule, preferred_times: newTimes });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
     
     try {
       // 1. Create the customer account
@@ -130,12 +207,16 @@ const AdminClientsPage = () => {
       });
       
       const newClientId = registerRes.data.user.id;
-      const token = registerRes.data.access_token;
       
       // 2. Set billing cycle
       await api.put(`/users/${newClientId}/billing-cycle?billing_cycle=${customerForm.billing_cycle}`);
       
-      // 3. Add pets for the customer (need to use admin token to add pets for another user)
+      // 3. Update address if provided
+      if (customerForm.address) {
+        await api.put(`/users/${newClientId}`, { address: customerForm.address });
+      }
+      
+      // 4. Add pets for the customer
       for (const pet of pets) {
         if (pet.name.trim()) {
           await api.post('/pets/admin', {
@@ -150,7 +231,7 @@ const AdminClientsPage = () => {
         }
       }
       
-      // 4. Save custom pricing for this client
+      // 5. Save custom pricing for this client
       const hasCustomPricing = Object.entries(customPricing).some(([type, price]) => {
         const defaultService = services.find(s => s.service_type === type);
         return defaultService && price !== defaultService.price;
@@ -160,22 +241,137 @@ const AdminClientsPage = () => {
         await api.post(`/users/${newClientId}/custom-pricing`, customPricing);
       }
       
+      // 6. Save walking schedule
+      if (walkingSchedule.days.length > 0) {
+        await api.post(`/users/${newClientId}/walking-schedule`, walkingSchedule);
+      }
+      
       toast.success(`Customer "${customerForm.full_name}" created successfully!`);
       setDialogOpen(false);
       resetForm();
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create customer');
+    } finally {
+      setSaving(false);
     }
   };
 
   const viewClientDetails = async (client) => {
     try {
-      // Fetch client's pets
-      const petsRes = await api.get(`/pets?owner_id=${client.id}`);
-      setSelectedClient({ ...client, pets: petsRes.data });
+      // Fetch client's pets and schedule
+      const [petsRes, scheduleRes] = await Promise.all([
+        api.get(`/pets?owner_id=${client.id}`),
+        api.get(`/users/${client.id}/walking-schedule`).catch(() => ({ data: null })),
+      ]);
+      setSelectedClient({ 
+        ...client, 
+        pets: petsRes.data,
+        walkingSchedule: scheduleRes.data 
+      });
+      setEditMode(false);
     } catch (error) {
-      setSelectedClient({ ...client, pets: [] });
+      setSelectedClient({ ...client, pets: [], walkingSchedule: null });
+    }
+  };
+
+  const startEditClient = () => {
+    if (!selectedClient) return;
+    
+    setCustomerForm({
+      username: selectedClient.username || '',
+      email: selectedClient.email || '',
+      password: '',
+      full_name: selectedClient.full_name || '',
+      phone: selectedClient.phone || '',
+      address: selectedClient.address || '',
+      billing_cycle: selectedClient.billing_cycle || 'weekly',
+    });
+    
+    if (selectedClient.pets?.length > 0) {
+      setPets(selectedClient.pets.map(p => ({
+        id: p.id,
+        name: p.name || '',
+        species: p.species || 'dog',
+        breed: p.breed || '',
+        age: p.age?.toString() || '',
+        weight: p.weight?.toString() || '',
+        notes: p.notes || '',
+      })));
+    } else {
+      setPets([{ name: '', species: 'dog', breed: '', age: '', weight: '', notes: '' }]);
+    }
+    
+    if (selectedClient.walkingSchedule) {
+      setWalkingSchedule(selectedClient.walkingSchedule);
+    } else {
+      setWalkingSchedule({
+        walks_per_day: 1,
+        days: [],
+        preferred_times: [],
+        preferred_walker_id: '',
+        notes: '',
+      });
+    }
+    
+    setEditMode(true);
+  };
+
+  const saveClientEdit = async () => {
+    if (!selectedClient) return;
+    setSaving(true);
+    
+    try {
+      // Update user profile
+      await api.put(`/users/${selectedClient.id}`, {
+        full_name: customerForm.full_name,
+        email: customerForm.email,
+        phone: customerForm.phone,
+        address: customerForm.address,
+      });
+      
+      // Update billing cycle
+      await api.put(`/users/${selectedClient.id}/billing-cycle?billing_cycle=${customerForm.billing_cycle}`);
+      
+      // Update pets
+      for (const pet of pets) {
+        if (pet.name.trim()) {
+          if (pet.id) {
+            // Update existing pet
+            await api.put(`/pets/${pet.id}`, {
+              name: pet.name,
+              species: pet.species,
+              breed: pet.breed || null,
+              age: pet.age ? parseInt(pet.age) : null,
+              weight: pet.weight ? parseFloat(pet.weight) : null,
+              notes: pet.notes || null,
+            });
+          } else {
+            // Create new pet
+            await api.post('/pets/admin', {
+              owner_id: selectedClient.id,
+              name: pet.name,
+              species: pet.species,
+              breed: pet.breed || null,
+              age: pet.age ? parseInt(pet.age) : null,
+              weight: pet.weight ? parseFloat(pet.weight) : null,
+              notes: pet.notes || null,
+            });
+          }
+        }
+      }
+      
+      // Save walking schedule
+      await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
+      
+      toast.success('Customer updated successfully!');
+      setEditMode(false);
+      setSelectedClient(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update customer');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -214,7 +410,7 @@ const AdminClientsPage = () => {
                 data-testid="search-clients"
               />
             </div>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button className="rounded-full" data-testid="add-client-btn">
                   <Plus className="w-4 h-4 mr-2" />
@@ -224,15 +420,16 @@ const AdminClientsPage = () => {
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add New Customer</DialogTitle>
-                  <DialogDescription>Create a new customer account with their info, pets, and pricing</DialogDescription>
+                  <DialogDescription>Create a new customer account with their info, pets, schedule, and pricing</DialogDescription>
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <Tabs defaultValue="info" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="info">Customer Info</TabsTrigger>
-                      <TabsTrigger value="pets">Pet Info</TabsTrigger>
-                      <TabsTrigger value="pricing">Pricing & Billing</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="info">Info</TabsTrigger>
+                      <TabsTrigger value="pets">Pets</TabsTrigger>
+                      <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                      <TabsTrigger value="pricing">Pricing</TabsTrigger>
                     </TabsList>
                     
                     {/* Customer Info Tab */}
@@ -285,6 +482,17 @@ const AdminClientsPage = () => {
                             data-testid="customer-phone"
                           />
                         </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input
+                          id="address"
+                          value={customerForm.address}
+                          onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
+                          placeholder="123 Main St, City, State"
+                          data-testid="customer-address"
+                        />
                       </div>
                       
                       <div className="space-y-2">
@@ -399,6 +607,141 @@ const AdminClientsPage = () => {
                       </Button>
                     </TabsContent>
                     
+                    {/* Schedule Tab */}
+                    <TabsContent value="schedule" className="space-y-4 mt-4">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            Days Per Week
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {DAYS_OF_WEEK.map((day) => (
+                              <Button
+                                key={day.value}
+                                type="button"
+                                variant={walkingSchedule.days.includes(day.value) ? 'default' : 'outline'}
+                                size="sm"
+                                className="rounded-full"
+                                onClick={() => toggleDay(day.value)}
+                              >
+                                {day.short}
+                              </Button>
+                            ))}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {walkingSchedule.days.length} day(s) selected
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            Walks Per Day
+                          </Label>
+                          <Select
+                            value={walkingSchedule.walks_per_day.toString()}
+                            onValueChange={(value) => setWalkingSchedule({ 
+                              ...walkingSchedule, 
+                              walks_per_day: parseInt(value),
+                              preferred_times: walkingSchedule.preferred_times.slice(0, parseInt(value))
+                            })}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1 walk</SelectItem>
+                              <SelectItem value="2">2 walks</SelectItem>
+                              <SelectItem value="3">3 walks</SelectItem>
+                              <SelectItem value="4">4 walks</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Preferred Walk Times</Label>
+                          <div className="space-y-2">
+                            {walkingSchedule.preferred_times.map((time, index) => (
+                              <div key={index} className="flex items-center gap-2">
+                                <Select
+                                  value={time}
+                                  onValueChange={(value) => updatePreferredTime(index, value)}
+                                >
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-60">
+                                    {TIME_SLOTS.map((slot) => (
+                                      <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <span className="text-sm text-muted-foreground">Walk {index + 1}</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removePreferredTime(index)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ))}
+                            {walkingSchedule.preferred_times.length < walkingSchedule.walks_per_day && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={addPreferredTime}
+                                className="rounded-full"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                Add Time
+                              </Button>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Time slots are in 15-minute increments
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Preferred Walker (Optional)</Label>
+                          <Select
+                            value={walkingSchedule.preferred_walker_id || 'any'}
+                            onValueChange={(value) => setWalkingSchedule({ 
+                              ...walkingSchedule, 
+                              preferred_walker_id: value === 'any' ? '' : value 
+                            })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Any available walker" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="any">Any available walker</SelectItem>
+                              {walkers.map((walker) => (
+                                <SelectItem key={walker.id} value={walker.id}>
+                                  {walker.full_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Schedule Notes</Label>
+                          <Textarea
+                            value={walkingSchedule.notes}
+                            onChange={(e) => setWalkingSchedule({ ...walkingSchedule, notes: e.target.value })}
+                            placeholder="Any special scheduling requirements..."
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
                     {/* Pricing & Billing Tab */}
                     <TabsContent value="pricing" className="space-y-4 mt-4">
                       <div className="space-y-2">
@@ -455,8 +798,8 @@ const AdminClientsPage = () => {
                     <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button type="submit" className="rounded-full" data-testid="submit-customer">
-                      Create Customer
+                    <Button type="submit" className="rounded-full" disabled={saving} data-testid="submit-customer">
+                      {saving ? 'Creating...' : 'Create Customer'}
                     </Button>
                   </div>
                 </form>
@@ -524,25 +867,37 @@ const AdminClientsPage = () => {
           </div>
         )}
 
-        {/* Client Details Dialog */}
-        <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
-          <DialogContent className="max-w-lg">
+        {/* Client Details/Edit Dialog */}
+        <Dialog open={!!selectedClient} onOpenChange={(open) => { if (!open) { setSelectedClient(null); setEditMode(false); } }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Customer Details</DialogTitle>
+              <DialogTitle>{editMode ? 'Edit Customer' : 'Customer Details'}</DialogTitle>
             </DialogHeader>
-            {selectedClient && (
+            {selectedClient && !editMode && (
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-16 h-16">
-                    <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                      {selectedClient.full_name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-xl font-bold">{selectedClient.full_name}</h3>
-                    <p className="text-muted-foreground">{selectedClient.email}</p>
-                    {selectedClient.phone && <p className="text-sm text-muted-foreground">{selectedClient.phone}</p>}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="w-16 h-16">
+                      <AvatarImage src={selectedClient.profile_image} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                        {selectedClient.full_name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-xl font-bold">{selectedClient.full_name}</h3>
+                      <p className="text-muted-foreground">{selectedClient.email}</p>
+                      {selectedClient.phone && <p className="text-sm text-muted-foreground">{selectedClient.phone}</p>}
+                      {selectedClient.address && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {selectedClient.address}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  <Button variant="outline" size="sm" onClick={startEditClient} data-testid="edit-client-btn">
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
                 </div>
                 
                 <div className="flex gap-2">
@@ -550,6 +905,39 @@ const AdminClientsPage = () => {
                   <Badge variant="outline" className="rounded-full capitalize">{selectedClient.billing_cycle || 'weekly'} billing</Badge>
                 </div>
                 
+                {/* Walking Schedule */}
+                {selectedClient.walkingSchedule && selectedClient.walkingSchedule.days?.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium flex items-center gap-2 mb-3">
+                      <Calendar className="w-4 h-4 text-primary" />
+                      Walking Schedule
+                    </h4>
+                    <div className="p-3 rounded-xl bg-muted/50 space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">Days:</span>
+                        <span className="capitalize">{selectedClient.walkingSchedule.days.join(', ')}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">Walks per day:</span>
+                        <span>{selectedClient.walkingSchedule.walks_per_day}</span>
+                      </div>
+                      {selectedClient.walkingSchedule.preferred_times?.length > 0 && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">Preferred times:</span>
+                          <span>{selectedClient.walkingSchedule.preferred_times.join(', ')}</span>
+                        </div>
+                      )}
+                      {selectedClient.walkingSchedule.preferred_walker_id && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">Preferred walker:</span>
+                          <span>{walkers.find(w => w.id === selectedClient.walkingSchedule.preferred_walker_id)?.full_name || 'Unknown'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Pets */}
                 <div className="border-t pt-4">
                   <h4 className="font-medium flex items-center gap-2 mb-3">
                     <PawPrint className="w-4 h-4 text-primary" />
@@ -570,6 +958,257 @@ const AdminClientsPage = () => {
                   ) : (
                     <p className="text-muted-foreground text-sm">No pets added</p>
                   )}
+                </div>
+              </div>
+            )}
+            
+            {/* Edit Mode */}
+            {selectedClient && editMode && (
+              <div className="space-y-6">
+                <Tabs defaultValue="info" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="info">Info</TabsTrigger>
+                    <TabsTrigger value="pets">Pets</TabsTrigger>
+                    <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="info" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Full Name</Label>
+                        <Input
+                          value={customerForm.full_name}
+                          onChange={(e) => setCustomerForm({ ...customerForm, full_name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input
+                          type="email"
+                          value={customerForm.email}
+                          onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Phone</Label>
+                        <Input
+                          value={customerForm.phone}
+                          onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Billing Cycle</Label>
+                        <Select
+                          value={customerForm.billing_cycle}
+                          onValueChange={(value) => setCustomerForm({ ...customerForm, billing_cycle: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Address</Label>
+                      <Input
+                        value={customerForm.address}
+                        onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
+                        placeholder="123 Main St, City, State"
+                      />
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="pets" className="space-y-4 mt-4">
+                    {pets.map((pet, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium">Pet {index + 1}</h4>
+                          {pets.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removePet(index)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Input
+                            value={pet.name}
+                            onChange={(e) => updatePet(index, 'name', e.target.value)}
+                            placeholder="Name"
+                          />
+                          <Select
+                            value={pet.species}
+                            onValueChange={(value) => updatePet(index, 'species', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="dog">Dog</SelectItem>
+                              <SelectItem value="cat">Cat</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 mt-3">
+                          <Input
+                            value={pet.breed}
+                            onChange={(e) => updatePet(index, 'breed', e.target.value)}
+                            placeholder="Breed"
+                          />
+                          <Input
+                            type="number"
+                            value={pet.age}
+                            onChange={(e) => updatePet(index, 'age', e.target.value)}
+                            placeholder="Age"
+                          />
+                          <Input
+                            type="number"
+                            value={pet.weight}
+                            onChange={(e) => updatePet(index, 'weight', e.target.value)}
+                            placeholder="Weight"
+                          />
+                        </div>
+                      </Card>
+                    ))}
+                    <Button type="button" variant="outline" onClick={addPet} className="w-full rounded-full" size="sm">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Pet
+                    </Button>
+                  </TabsContent>
+                  
+                  <TabsContent value="schedule" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label>Days Per Week</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {DAYS_OF_WEEK.map((day) => (
+                          <Button
+                            key={day.value}
+                            type="button"
+                            variant={walkingSchedule.days.includes(day.value) ? 'default' : 'outline'}
+                            size="sm"
+                            className="rounded-full"
+                            onClick={() => toggleDay(day.value)}
+                          >
+                            {day.short}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Walks Per Day</Label>
+                      <Select
+                        value={walkingSchedule.walks_per_day.toString()}
+                        onValueChange={(value) => setWalkingSchedule({ 
+                          ...walkingSchedule, 
+                          walks_per_day: parseInt(value),
+                          preferred_times: walkingSchedule.preferred_times.slice(0, parseInt(value))
+                        })}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 walk</SelectItem>
+                          <SelectItem value="2">2 walks</SelectItem>
+                          <SelectItem value="3">3 walks</SelectItem>
+                          <SelectItem value="4">4 walks</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Preferred Times</Label>
+                      <div className="space-y-2">
+                        {walkingSchedule.preferred_times.map((time, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Select
+                              value={time}
+                              onValueChange={(value) => updatePreferredTime(index, value)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-60">
+                                {TIME_SLOTS.map((slot) => (
+                                  <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removePreferredTime(index)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {walkingSchedule.preferred_times.length < walkingSchedule.walks_per_day && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={addPreferredTime}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Time
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Preferred Walker</Label>
+                      <Select
+                        value={walkingSchedule.preferred_walker_id || 'any'}
+                        onValueChange={(value) => setWalkingSchedule({ 
+                          ...walkingSchedule, 
+                          preferred_walker_id: value === 'any' ? '' : value 
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Any available" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="any">Any available</SelectItem>
+                          {walkers.map((walker) => (
+                            <SelectItem key={walker.id} value={walker.id}>
+                              {walker.full_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button type="button" variant="outline" onClick={() => setEditMode(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={saveClientEdit} disabled={saving} className="rounded-full">
+                    {saving ? 'Saving...' : (
+                      <>
+                        <Save className="w-4 h-4 mr-1" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             )}
