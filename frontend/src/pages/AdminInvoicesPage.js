@@ -383,6 +383,101 @@ const AdminBillingPage = () => {
 
           {/* INVOICES TAB */}
           <TabsContent value="invoices" className="space-y-4">
+            {/* Auto-Generate Invoices */}
+            <Card className="rounded-xl border-sky-200 bg-sky-50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2 text-sky-800">
+                  <Zap className="w-5 h-5" />
+                  Auto-Generate Invoices
+                </CardTitle>
+                <CardDescription>Create invoices automatically for billing periods</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Button 
+                    onClick={() => generateAutoInvoices('weekly')} 
+                    disabled={generatingInvoices}
+                    variant="outline"
+                    className="rounded-full"
+                  >
+                    {generatingInvoices ? (
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Calendar className="w-4 h-4 mr-2" />
+                    )}
+                    Generate Weekly
+                  </Button>
+                  <Button 
+                    onClick={() => generateAutoInvoices('monthly')} 
+                    disabled={generatingInvoices}
+                    variant="outline"
+                    className="rounded-full"
+                  >
+                    {generatingInvoices ? (
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Calendar className="w-4 h-4 mr-2" />
+                    )}
+                    Generate Monthly
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pending Review Invoices */}
+            {pendingReviewInvoices.length > 0 && (
+              <Card className="rounded-xl border-orange-200 bg-orange-50">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2 text-orange-800">
+                        <FileCheck className="w-5 h-5" />
+                        Pending Review
+                        <Badge className="bg-orange-500 text-white rounded-full ml-2">{pendingReviewInvoices.length}</Badge>
+                      </CardTitle>
+                      <CardDescription>Review and approve invoices before sending</CardDescription>
+                    </div>
+                    <Button 
+                      onClick={massSendInvoices} 
+                      disabled={sendingAllInvoices || pendingReviewInvoices.filter(i => i.review_status === 'approved').length === 0}
+                      className="rounded-full bg-orange-500 hover:bg-orange-600"
+                    >
+                      {sendingAllInvoices ? (
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <SendHorizonal className="w-4 h-4 mr-2" />
+                      )}
+                      Send All Approved
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {pendingReviewInvoices.map((invoice) => (
+                      <div key={invoice.id} className="flex items-center justify-between p-3 rounded-lg bg-white border border-orange-200">
+                        <div>
+                          <p className="font-medium text-sm">{invoice.client?.full_name || 'Client'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {invoice.billing_period_start} - {invoice.billing_period_end}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold">${invoice.amount?.toFixed(2)}</p>
+                          {invoice.review_status === 'pending' ? (
+                            <Button size="sm" onClick={() => approveInvoice(invoice.id)} className="rounded-full bg-sky-500 hover:bg-sky-600">
+                              Approve
+                            </Button>
+                          ) : (
+                            <Badge className="bg-sky-100 text-sky-800 rounded-full">Approved</Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Create Invoices */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
