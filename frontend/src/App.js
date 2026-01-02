@@ -280,6 +280,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/sitters"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminSittersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/invoices"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
