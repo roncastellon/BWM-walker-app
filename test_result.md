@@ -401,7 +401,7 @@ test_plan:
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_complete: false
+  backend_testing_complete: true
   frontend_testing_complete: false
 
 agent_communication:
