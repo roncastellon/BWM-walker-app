@@ -379,6 +379,66 @@ backend:
         comment: "✅ PASSED - Pet Sitting - Our Location (Boarding) service found in services list at correct $50.00 price. Service properly configured with boarding description and pricing."
 
 frontend:
+  - task: "Global location permission prompt on app load"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/LocationPermissionPrompt.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added LocationPermissionPrompt component to App.js, prompts users on first app load to enable location services for walk tracking"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Global location permission prompt working perfectly. Dialog appears on fresh page load with correct title 'Enable Location Services'. Shows both benefits: 'Track Walk Routes' and 'Real-Time Updates'. Contains 'Maybe Later' and 'Allow Location' buttons. Dialog closes properly when 'Maybe Later' is clicked, allowing user to proceed to login."
+
+  - task: "Walker profile picture upload"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/WalkerProfilePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated WalkerProfilePage.js with clickable avatar for direct image upload (same functionality as ClientProfilePage)"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Walker profile picture upload working correctly. Profile page displays with 'My Profile' title and current user info. Profile picture avatar is clickable with camera icon appearing on hover. Upload instruction text 'Click on profile picture to upload a new photo' is visible. Hidden file input with data-testid='profile-image-input' exists. Edit Profile form has all required fields: Full Name, Phone Number, and Bio."
+
+  - task: "Admin profile picture upload"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminProfilePage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created AdminProfilePage.js with profile picture upload functionality"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Admin profile picture upload working correctly. Navigation shows 'My Profile' link which navigates to /admin/profile. Admin profile page displays with 'Administrator' badge. Profile picture avatar is clickable with camera icon appearing on hover. Upload instruction text 'Click on profile picture to upload a new photo' is visible. Hidden file input exists for image upload. Edit Profile form has all required fields: Full Name, Phone Number, and Bio."
+
+  - task: "Company Info tab accessibility"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminInvoicesPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Company Info tab was already implemented in /admin/billing under 'Company Info' tab"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Company Info tab accessibility working correctly. Located in Billing & Revenue page (/admin/billing) as 'Company Info' tab. Company Information form displays with all 7 required fields: Company Name, Business Email, Business Phone, Website, Business Address, Tax ID, Logo URL. 'Save Company Info' button exists and is functional. SendGrid and Twilio configuration status section is shown with proper status indicators (Email: Not configured, SMS: Not configured). All form fields are functional and can be filled."
+
   - task: "Client profile editing with image upload"
     implemented: true
     working: true
