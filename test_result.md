@@ -753,6 +753,9 @@ agent_communication:
   - agent: "testing"
     message: "✅ BOWWOWMEOW BACKEND TESTING COMPLETE - Tested 5 new backend features with mixed results: 1) ✅ Client Appointment Edit/Cancel - WORKING (both edit and cancel endpoints functional), 2) ❌ Walker Trade Requests - FAILED (POST /trades returns 'Can only trade scheduled appointments' error even for scheduled appointments), 3) ❌ Walker Time-Off Requests - FAILED (core functionality works but GET /appointments/needs-reassignment returns 404 error), 4) ✅ Walker Cancel Appointment - WORKING (successfully cancels with mandatory reason), 5) ❌ Auto-Invoice Generation - FAILED (generation works but GET /invoices/pending-review returns 404 error). CRITICAL ISSUE DISCOVERED: Time slot limits (max 3 per slot) are NOT implemented - created 4 appointments at same time slot and all were accepted. Overall: 2/5 features fully working, 3 have implementation issues requiring fixes."
 
+  - agent: "testing"
+    message: "✅ NEW BOWWOWMEOW FEATURES TESTING COMPLETE - Tested 2 specific new features from review request with excellent results: 1) ✅ Invoice Delivery Preference Setting - WORKING PERFECTLY (GET /api/settings/company-info returns invoice_delivery_preference field with default 'both', PUT successfully updates to 'email'/'text'/'both', setting persists after update), 2) ✅ Walker Trade Self-Validation Bug Fix - WORKING PERFECTLY (walker cannot trade with themselves - returns 400 error with correct message 'You cannot trade an appointment with yourself', trading with different walker still works correctly). Both new features implemented correctly and functioning as expected. No issues found."
+
 
   - task: "Invoice delivery preference setting"
     implemented: true
