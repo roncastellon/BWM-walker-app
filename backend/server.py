@@ -2694,14 +2694,15 @@ async def get_subscription(current_user: dict = Depends(get_current_user)):
     
     if not subscription:
         # Create default free subscription
-        subscription = {
+        new_sub = {
             "id": str(uuid.uuid4()),
             "user_id": current_user['id'],
             "tier": "free",
             "status": "active",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
-        await db.subscriptions.insert_one(subscription)
+        await db.subscriptions.insert_one(new_sub)
+        subscription = {k: v for k, v in new_sub.items() if k != '_id'}
     
     # Check if trial has expired
     if subscription.get('trial_ends_at'):
