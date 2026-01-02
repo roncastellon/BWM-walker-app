@@ -80,6 +80,8 @@ const HomeRedirect = () => {
       return <Navigate to="/admin" replace />;
     case 'walker':
       return <Navigate to="/walker" replace />;
+    case 'sitter':
+      return <Navigate to="/sitter" replace />;
     default:
       return <Navigate to="/dashboard" replace />;
   }
