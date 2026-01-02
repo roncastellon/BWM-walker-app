@@ -347,13 +347,23 @@ const MessagesPage = () => {
   const fetchContacts = useCallback(async () => {
     try {
       const response = await api.get(`/messages/contacts?contact_type=${contactFilter}`);
-      setContacts(response.data);
+      const contactsList = response.data;
+      setContacts(contactsList);
+      
+      // Auto-select first contact with unread messages (if any) when page first loads
+      if (!selectedContact && !isGroupChat && contactsList.length > 0) {
+        const contactWithUnread = contactsList.find(c => c.unread_count > 0);
+        if (contactWithUnread) {
+          setSelectedContact(contactWithUnread);
+          setShowChat(true);
+        }
+      }
     } catch (error) {
       console.error('Failed to load contacts');
     } finally {
       setLoading(false);
     }
-  }, [api, contactFilter]);
+  }, [api, contactFilter, selectedContact, isGroupChat]);
 
   const fetchMessagesOnly = useCallback(async () => {
     try {
