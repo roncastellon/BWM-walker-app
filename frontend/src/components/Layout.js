@@ -106,6 +106,7 @@ const Layout = ({ children }) => {
       { path: '/billing', label: 'Billing', icon: CreditCard },
       { path: '/messages', label: 'Messages', icon: MessageCircle },
       { path: '/pets', label: 'My Pets', icon: PawPrint },
+      { path: '/profile', label: 'My Profile', icon: Settings },
     ];
   };
 
