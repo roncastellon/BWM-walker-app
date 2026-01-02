@@ -106,7 +106,7 @@ const SetupPage = () => {
         phone: formData.phone || null
       });
 
-      toast.success('Admin account created! Welcome to WagWalk!');
+      toast.success('Admin account created! Welcome to BowWowMeow!');
       
       // Auto-login
       login(response.data.access_token, response.data.user);
@@ -139,7 +139,7 @@ const SetupPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-4">
             <PawPrint className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-heading font-bold">WagWalk</h1>
+          <h1 className="text-3xl font-heading font-bold">BowWowMeow</h1>
           <p className="text-muted-foreground mt-1">Let's set up your account</p>
         </div>
 
@@ -182,7 +182,7 @@ const SetupPage = () => {
                       <Input
                         id="company_name"
                         name="company_name"
-                        placeholder="WagWalk Pet Services"
+                        placeholder="BowWowMeow Pet Services"
                         value={formData.company_name}
                         onChange={handleChange}
                         className="pl-10"

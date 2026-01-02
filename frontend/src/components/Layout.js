@@ -143,7 +143,7 @@ const Layout = ({ children }) => {
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <Dog className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="font-heading text-xl font-bold hidden sm:inline">WagWalk</span>
+            <span className="font-heading text-xl font-bold hidden sm:inline">BowWowMeow</span>
           </Link>
 
           {/* Desktop Navigation */}

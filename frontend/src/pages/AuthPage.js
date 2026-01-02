@@ -64,7 +64,7 @@ const AuthPage = () => {
     setLoading(true);
     try {
       const user = await register(registerForm);
-      toast.success(`Welcome to WagWalk, ${user.full_name}!`);
+      toast.success(`Welcome to BowWowMeow, ${user.full_name}!`);
       navigateByRole(user.role);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
@@ -101,7 +101,7 @@ const AuthPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
             <Dog className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-4xl font-heading font-bold text-foreground">WagWalk</h1>
+          <h1 className="text-4xl font-heading font-bold text-foreground">BowWowMeow</h1>
           <p className="text-muted-foreground mt-2">Premium Pet Care Services</p>
         </div>
 

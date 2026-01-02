@@ -509,11 +509,11 @@ const AdminBillingPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="company-name">Company Name</Label>
-                    <Input id="company-name" value={companyInfo.company_name} onChange={(e) => setCompanyInfo({ ...companyInfo, company_name: e.target.value })} placeholder="WagWalk Pet Services" />
+                    <Input id="company-name" value={companyInfo.company_name} onChange={(e) => setCompanyInfo({ ...companyInfo, company_name: e.target.value })} placeholder="BowWowMeow Pet Services" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="company-email">Business Email</Label>
-                    <Input id="company-email" type="email" value={companyInfo.email} onChange={(e) => setCompanyInfo({ ...companyInfo, email: e.target.value })} placeholder="billing@wagwalk.com" />
+                    <Input id="company-email" type="email" value={companyInfo.email} onChange={(e) => setCompanyInfo({ ...companyInfo, email: e.target.value })} placeholder="billing@bowwowmeow.com" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="company-phone">Business Phone</Label>
@@ -521,7 +521,7 @@ const AdminBillingPage = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="company-website">Website</Label>
-                    <Input id="company-website" value={companyInfo.website} onChange={(e) => setCompanyInfo({ ...companyInfo, website: e.target.value })} placeholder="www.wagwalk.com" />
+                    <Input id="company-website" value={companyInfo.website} onChange={(e) => setCompanyInfo({ ...companyInfo, website: e.target.value })} placeholder="www.bowwowmeow.com" />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="company-address">Business Address</Label>
