@@ -385,7 +385,6 @@ const PetsPage = () => {
                 <Button type="submit" className="w-full rounded-full bg-orange-500 hover:bg-orange-600" data-testid="submit-pet-btn">
                   {editingPet ? 'Save Changes' : 'Add Pet'}
                 </Button>
-                </Button>
               </form>
             </DialogContent>
           </Dialog>
