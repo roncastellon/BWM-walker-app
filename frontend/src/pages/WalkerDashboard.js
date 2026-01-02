@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
-import { Calendar, Clock, Play, Square, PawPrint, Users, CheckCircle, Navigation, MapPin, Smartphone, AlertTriangle, Settings } from 'lucide-react';
+import { 
+  Calendar, CreditCard, PawPrint, Clock, ArrowRight, MessageCircle, 
+  User, DollarSign, Play, Square, Navigation, MapPin, Smartphone,
+  AlertTriangle, CheckCircle, Send, Users, FileText
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 const WalkerDashboard = () => {
@@ -17,13 +23,14 @@ const WalkerDashboard = () => {
   const [nextWalk, setNextWalk] = useState(null);
   const [activeWalk, setActiveWalk] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [startingWalk, setStartingWalk] = useState(false);
   const timerRef = useRef(null);
   
   // GPS Permission Dialog State
   const [gpsDialogOpen, setGpsDialogOpen] = useState(false);
-  const [gpsStatus, setGpsStatus] = useState('checking'); // checking, granted, denied, unavailable
+  const [gpsStatus, setGpsStatus] = useState('checking');
   const [pendingWalkId, setPendingWalkId] = useState(null);
 
   useEffect(() => {
@@ -51,34 +58,32 @@ const WalkerDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, apptsRes] = await Promise.all([
+      const [statsRes, apptsRes, contactsRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/appointments'),
+        api.get('/messages/contacts'),
       ]);
       setStats(statsRes.data);
+      setContacts(contactsRes.data || []);
       
       const today = new Date().toISOString().split('T')[0];
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       
-      // Get today's appointments
       const todayAppts = apptsRes.data
         .filter(a => a.scheduled_date === today)
         .sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
       
       setTodayAppointments(todayAppts);
       
-      // Check for active walk
       const active = apptsRes.data.find(a => a.status === 'in_progress');
       if (active) {
         setActiveWalk(active);
         setNextWalk(null);
       } else {
-        // Find the next scheduled walk (first scheduled walk of the day or next one by time)
         const nextScheduled = todayAppts.find(a => 
           a.status === 'scheduled' && a.scheduled_time >= currentTime
         ) || todayAppts.find(a => a.status === 'scheduled');
-        
         setNextWalk(nextScheduled || null);
       }
     } catch (error) {
@@ -89,18 +94,15 @@ const WalkerDashboard = () => {
   };
 
   const startWalk = async (apptId) => {
-    // Show GPS permission dialog first
     setPendingWalkId(apptId);
     setGpsStatus('checking');
     setGpsDialogOpen(true);
     
-    // Check GPS availability and permission
     if (!navigator.geolocation) {
       setGpsStatus('unavailable');
       return;
     }
     
-    // Check current permission status if available
     if (navigator.permissions) {
       try {
         const permission = await navigator.permissions.query({ name: 'geolocation' });
@@ -122,7 +124,7 @@ const WalkerDashboard = () => {
   const requestGpsPermission = () => {
     setGpsStatus('requesting');
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      () => {
         setGpsStatus('granted');
         toast.success('GPS tracking enabled!');
       },
@@ -145,33 +147,26 @@ const WalkerDashboard = () => {
     
     try {
       if (withGps && navigator.geolocation && gpsStatus === 'granted') {
-        // Start with GPS tracking
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             try {
               await api.post(`/appointments/${pendingWalkId}/start-tracking`, null, {
-                params: {
-                  lat: position.coords.latitude,
-                  lng: position.coords.longitude
-                }
+                params: { lat: position.coords.latitude, lng: position.coords.longitude }
               });
               toast.success('Walk started with GPS tracking!');
               navigate('/tracking');
-            } catch (error) {
-              // Fallback to regular start
+            } catch {
               await startWalkWithoutGps();
             }
             fetchData();
           },
-          async () => {
-            await startWalkWithoutGps();
-          },
+          async () => { await startWalkWithoutGps(); },
           { enableHighAccuracy: true, timeout: 10000 }
         );
       } else {
         await startWalkWithoutGps();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to start walk');
     } finally {
       setStartingWalk(false);
@@ -190,7 +185,7 @@ const WalkerDashboard = () => {
       });
       setNextWalk(null);
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error('Failed to start walk');
     }
   };
@@ -198,7 +193,6 @@ const WalkerDashboard = () => {
   const endWalk = async () => {
     if (!activeWalk) return;
     try {
-      // Try stop-tracking first (for GPS tracked walks), fallback to /end
       try {
         await api.post(`/appointments/${activeWalk.id}/stop-tracking`);
       } catch {
@@ -207,7 +201,7 @@ const WalkerDashboard = () => {
       toast.success('Walk completed!');
       setActiveWalk(null);
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error('Failed to end walk');
     }
   };
@@ -232,6 +226,9 @@ const WalkerDashboard = () => {
     }
   };
 
+  const clientContacts = contacts.filter(c => c.role === 'client');
+  const adminContacts = contacts.filter(c => c.role === 'admin');
+
   if (loading) {
     return (
       <Layout>
@@ -245,41 +242,40 @@ const WalkerDashboard = () => {
   return (
     <Layout>
       <div className="space-y-6" data-testid="walker-dashboard">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl md:text-3xl font-heading font-bold">
-            Welcome back, {user?.full_name?.split(' ')[0]}!
-          </h1>
-          <p className="text-muted-foreground">Here's your schedule for today</p>
+        {/* Welcome Header */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary/90 to-secondary p-6 text-secondary-foreground">
+          <div className="relative z-10">
+            <h1 className="text-2xl lg:text-3xl font-heading font-bold mb-1">
+              Welcome, {user?.full_name?.split(' ')[0]}!
+            </h1>
+            <p className="text-secondary-foreground/80">
+              {todayAppointments.length} walks scheduled today
+            </p>
+          </div>
+          <div className="absolute right-4 bottom-0 opacity-10">
+            <PawPrint className="w-32 h-32" />
+          </div>
         </div>
 
-        {/* Active Walk Timer - Shows when walk is in progress */}
+        {/* Active Walk Banner */}
         {activeWalk && (
-          <Card className="rounded-2xl shadow-lg border-2 border-primary bg-primary/5">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center">
-                    <Navigation className="w-8 h-8 text-primary-foreground animate-pulse" />
+          <Card className="rounded-xl border-2 border-primary bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+                    <Navigation className="w-6 h-6 text-primary-foreground animate-pulse" />
                   </div>
                   <div>
-                    <Badge className="bg-green-500 text-white rounded-full mb-2">Walk In Progress</Badge>
-                    <h2 className="text-xl font-bold capitalize">{activeWalk.service_type?.replace('_', ' ')}</h2>
-                    <p className="text-muted-foreground">Started at {new Date(activeWalk.start_time).toLocaleTimeString()}</p>
+                    <Badge className="bg-green-500 text-white rounded-full mb-1">In Progress</Badge>
+                    <p className="font-medium capitalize">{activeWalk.service_type?.replace('_', ' ')}</p>
                   </div>
                 </div>
                 <div className="text-center">
-                  <p className="text-5xl font-mono font-bold text-primary">{formatTime(elapsedTime)}</p>
-                  <p className="text-sm text-muted-foreground">Duration</p>
+                  <p className="text-3xl font-mono font-bold text-primary">{formatTime(elapsedTime)}</p>
                 </div>
-                <Button
-                  onClick={endWalk}
-                  variant="destructive"
-                  size="lg"
-                  className="rounded-full px-8"
-                  data-testid="end-walk-btn"
-                >
-                  <Square className="w-5 h-5 mr-2" />
+                <Button onClick={endWalk} variant="destructive" className="rounded-full">
+                  <Square className="w-4 h-4 mr-2" />
                   End Walk
                 </Button>
               </div>
@@ -287,168 +283,319 @@ const WalkerDashboard = () => {
           </Card>
         )}
 
-        {/* Next/Pending Walk - Prominent card with Start button */}
+        {/* Next Walk Banner */}
         {!activeWalk && nextWalk && (
-          <Card className="rounded-2xl shadow-lg border-2 border-secondary bg-secondary/5">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
-                    <PawPrint className="w-8 h-8 text-secondary-foreground" />
+          <Card className="rounded-xl border-2 border-secondary bg-secondary/5">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                    <PawPrint className="w-6 h-6 text-secondary-foreground" />
                   </div>
                   <div>
-                    <Badge className="bg-blue-100 text-blue-800 rounded-full mb-2">
-                      {nextWalk.scheduled_time <= new Date().toTimeString().slice(0, 5) ? 'Ready Now' : 'Up Next'}
-                    </Badge>
-                    <h2 className="text-xl font-bold capitalize">{nextWalk.service_type?.replace('_', ' ')}</h2>
-                    <p className="text-muted-foreground flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      Scheduled for {nextWalk.scheduled_time}
-                    </p>
-                    {nextWalk.client_name && (
-                      <p className="text-sm text-muted-foreground">Client: {nextWalk.client_name}</p>
-                    )}
+                    <Badge className="bg-blue-100 text-blue-800 rounded-full mb-1">Up Next</Badge>
+                    <p className="font-medium capitalize">{nextWalk.service_type?.replace('_', ' ')}</p>
+                    <p className="text-xs text-muted-foreground">{nextWalk.scheduled_time} • {nextWalk.client_name}</p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => startWalk(nextWalk.id)}
+                <Button 
+                  onClick={() => startWalk(nextWalk.id)} 
                   disabled={startingWalk}
-                  size="lg"
-                  className="rounded-full px-8 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                  data-testid="start-next-walk-btn"
+                  className="rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  {startingWalk ? 'Starting...' : 'Start Walk'}
+                  <Play className="w-4 h-4 mr-2" />
+                  Start Walk
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* No Walks Message */}
-        {!activeWalk && !nextWalk && todayAppointments.length === 0 && (
-          <Card className="rounded-2xl shadow-sm bg-muted/30">
-            <CardContent className="p-8 text-center">
-              <Calendar className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h2 className="text-xl font-semibold mb-2">No walks scheduled</h2>
-              <p className="text-muted-foreground">Enjoy your day off! Check your schedule for upcoming walks.</p>
-            </CardContent>
-          </Card>
-        )}
+        {/* Main Tabs */}
+        <Tabs defaultValue="schedule" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              <Calendar className="w-5 h-5" />
+              <span className="text-xs">Schedule</span>
+            </TabsTrigger>
+            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              <DollarSign className="w-5 h-5" />
+              <span className="text-xs">Payroll</span>
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-xs">Chat</span>
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              <User className="w-5 h-5" />
+              <span className="text-xs">Profile</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Today's Walks</p>
-                  <p className="text-3xl font-bold mt-1">{stats.todays_appointments || 0}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-3xl font-bold mt-1">{stats.completed_walks || 0}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-3xl font-bold mt-1">{stats.pending_appointments || 0}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Today's Full Schedule */}
-        {todayAppointments.length > 0 && (
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-xl">Today's Schedule</CardTitle>
-              <CardDescription>
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {todayAppointments.map((appt) => (
-                  <div
-                    key={appt.id}
-                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl transition-all gap-3 ${
-                      appt.status === 'in_progress' 
-                        ? 'bg-primary/10 border-2 border-primary' 
-                        : appt.status === 'completed'
-                          ? 'bg-green-50 border border-green-200'
-                          : appt.id === nextWalk?.id
-                            ? 'bg-secondary/10 border-2 border-secondary'
-                            : 'bg-muted/50'
-                    }`}
-                    data-testid={`appointment-${appt.id}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                        appt.status === 'in_progress' ? 'bg-primary text-primary-foreground' : 
-                        appt.status === 'completed' ? 'bg-green-100 text-green-600' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        {appt.status === 'completed' ? (
-                          <CheckCircle className="w-6 h-6" />
-                        ) : (
-                          <Clock className="w-6 h-6" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium capitalize">{appt.service_type?.replace('_', ' ')}</p>
-                        <p className="text-sm text-muted-foreground">{appt.scheduled_time}</p>
-                        {appt.client_name && (
-                          <p className="text-xs text-muted-foreground">Client: {appt.client_name}</p>
-                        )}
-                      </div>
+          {/* SCHEDULE TAB */}
+          <TabsContent value="schedule" className="space-y-4">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-3">
+              <Link to="/walker/schedule">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-secondary" />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className={`${getStatusColor(appt.status)} rounded-full`}>
-                        {appt.status?.replace('_', ' ')}
-                      </Badge>
-                      {appt.status === 'scheduled' && !activeWalk && appt.id !== nextWalk?.id && (
-                        <Button
-                          onClick={() => startWalk(appt.id)}
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full"
-                          data-testid={`start-walk-${appt.id}`}
-                        >
-                          <Play className="w-4 h-4 mr-1" />
-                          Start
-                        </Button>
-                      )}
+                    <div>
+                      <p className="font-medium text-sm">My Schedule</p>
+                      <p className="text-xs text-muted-foreground">View full calendar</p>
                     </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/tracking">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Navigation className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Walk Tracking</p>
+                      <p className="text-xs text-muted-foreground">GPS & route</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+
+            {/* Today's Schedule */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-secondary" />
+                  Today's Walks
+                  <Badge variant="secondary" className="rounded-full ml-2">{todayAppointments.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {todayAppointments.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No walks scheduled today</p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                ) : (
+                  <div className="space-y-3">
+                    {todayAppointments.map((appt) => (
+                      <div
+                        key={appt.id}
+                        className={`flex items-center justify-between p-3 rounded-lg ${
+                          appt.status === 'in_progress' ? 'bg-primary/10 border border-primary' :
+                          appt.status === 'completed' ? 'bg-green-50' : 'bg-muted/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            appt.status === 'in_progress' ? 'bg-primary text-primary-foreground' :
+                            appt.status === 'completed' ? 'bg-green-100 text-green-600' :
+                            'bg-secondary/10 text-secondary'
+                          }`}>
+                            {appt.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
+                            <p className="text-xs text-muted-foreground">{appt.scheduled_time} • {appt.client_name}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
+                            {appt.status?.replace('_', ' ')}
+                          </Badge>
+                          {appt.status === 'scheduled' && !activeWalk && (
+                            <Button size="sm" variant="outline" onClick={() => startWalk(appt.id)} className="rounded-full">
+                              <Play className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* PAYROLL TAB */}
+          <TabsContent value="payroll" className="space-y-4">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-3">
+              <Link to="/walker/payroll">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Time Sheets</p>
+                      <p className="text-xs text-muted-foreground">View hours</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/walker/payroll">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Submit Payroll</p>
+                      <p className="text-xs text-muted-foreground">Weekly submission</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+
+            {/* Stats Summary */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-secondary" />
+                  This Week
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold text-secondary">{stats.completed_walks || 0}</p>
+                    <p className="text-xs text-muted-foreground">Walks Done</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold text-primary">{stats.pending_appointments || 0}</p>
+                    <p className="text-xs text-muted-foreground">Pending</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold text-green-600">{stats.todays_appointments || 0}</p>
+                    <p className="text-xs text-muted-foreground">Today</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* CHAT TAB */}
+          <TabsContent value="chat" className="space-y-4">
+            {/* Admin */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                  Admin
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {adminContacts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No admin contacts</p>
+                ) : (
+                  <div className="space-y-2">
+                    {adminContacts.map((contact) => (
+                      <Link to="/walker/chat" key={contact.id}>
+                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={contact.profile_image} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {contact.full_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{contact.full_name}</p>
+                            <p className="text-xs text-muted-foreground">Administrator</p>
+                          </div>
+                          <Send className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* My Clients */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="w-5 h-5 text-secondary" />
+                  My Clients
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {clientContacts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No clients assigned</p>
+                ) : (
+                  <div className="space-y-2">
+                    {clientContacts.slice(0, 5).map((contact) => (
+                      <Link to="/walker/chat" key={contact.id}>
+                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={contact.profile_image} />
+                            <AvatarFallback className="bg-secondary/10 text-secondary">
+                              {contact.full_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{contact.full_name}</p>
+                            <p className="text-xs text-muted-foreground">Client</p>
+                          </div>
+                          <Send className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* PROFILE TAB */}
+          <TabsContent value="profile" className="space-y-4">
+            {/* Me */}
+            <Link to="/walker/profile">
+              <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <Avatar className="w-14 h-14">
+                    <AvatarImage src={user?.profile_image} />
+                    <AvatarFallback className="bg-secondary/10 text-secondary text-xl">
+                      {user?.full_name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium">{user?.full_name}</p>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <Badge className="bg-secondary/10 text-secondary rounded-full">Walker</Badge>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Stats */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  My Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-4 rounded-lg bg-green-50">
+                    <p className="text-3xl font-bold text-green-600">{stats.completed_walks || 0}</p>
+                    <p className="text-sm text-muted-foreground">Total Completed</p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg bg-secondary/10">
+                    <p className="text-3xl font-bold text-secondary">{stats.todays_appointments || 0}</p>
+                    <p className="text-sm text-muted-foreground">Today's Walks</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* GPS Permission Dialog */}
@@ -477,9 +624,7 @@ const WalkerDashboard = () => {
                   <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
                   <div>
                     <p className="font-medium text-red-800">GPS Not Available</p>
-                    <p className="text-sm text-red-600 mt-1">
-                      Your device doesn't support GPS tracking. You can still start the walk without tracking.
-                    </p>
+                    <p className="text-sm text-red-600 mt-1">You can still start the walk without tracking.</p>
                   </div>
                 </div>
               </div>
@@ -491,14 +636,7 @@ const WalkerDashboard = () => {
                   <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5" />
                   <div>
                     <p className="font-medium text-amber-800">Location Access Blocked</p>
-                    <p className="text-sm text-amber-600 mt-1">
-                      Please enable location access in your browser/device settings:
-                    </p>
-                    <ul className="text-sm text-amber-600 mt-2 space-y-1 list-disc list-inside">
-                      <li><strong>iPhone:</strong> Settings → Privacy → Location Services → Browser → Allow</li>
-                      <li><strong>Android:</strong> Settings → Apps → Browser → Permissions → Location → Allow</li>
-                      <li><strong>Browser:</strong> Click the lock icon in the address bar → Site Settings → Location → Allow</li>
-                    </ul>
+                    <p className="text-sm text-amber-600 mt-1">Enable location in your browser/device settings.</p>
                   </div>
                 </div>
               </div>
@@ -511,29 +649,12 @@ const WalkerDashboard = () => {
                     <Smartphone className="w-5 h-5 text-primary mt-0.5" />
                     <div>
                       <p className="font-medium">Allow Location Access</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Tap the button below and allow location access when prompted by your browser.
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">Tap below and allow when prompted.</p>
                     </div>
                   </div>
                 </div>
-                
-                <Button 
-                  onClick={requestGpsPermission} 
-                  className="w-full rounded-full"
-                  disabled={gpsStatus === 'requesting'}
-                >
-                  {gpsStatus === 'requesting' ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Requesting Permission...
-                    </>
-                  ) : (
-                    <>
-                      <MapPin className="w-4 h-4 mr-2" />
-                      Enable Location
-                    </>
-                  )}
+                <Button onClick={requestGpsPermission} className="w-full rounded-full" disabled={gpsStatus === 'requesting'}>
+                  {gpsStatus === 'requesting' ? 'Requesting...' : <><MapPin className="w-4 h-4 mr-2" />Enable Location</>}
                 </Button>
               </div>
             )}
@@ -544,23 +665,7 @@ const WalkerDashboard = () => {
                   <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
                   <div>
                     <p className="font-medium text-green-800">GPS Ready!</p>
-                    <p className="text-sm text-green-600 mt-1">
-                      Location access is enabled. Your walk route will be tracked and visible to the client in real-time.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {gpsStatus === 'error' && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-red-800">Location Error</p>
-                    <p className="text-sm text-red-600 mt-1">
-                      Unable to get your location. Make sure you're outdoors or near a window for better GPS signal.
-                    </p>
+                    <p className="text-sm text-green-600 mt-1">Your route will be tracked.</p>
                   </div>
                 </div>
               </div>
@@ -568,29 +673,13 @@ const WalkerDashboard = () => {
           </div>
           
           <DialogFooter className="flex gap-2 sm:gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setGpsDialogOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setGpsDialogOpen(false)} className="flex-1">Cancel</Button>
             {gpsStatus === 'granted' ? (
-              <Button 
-                onClick={() => confirmStartWalk(true)} 
-                disabled={startingWalk}
-                className="flex-1 rounded-full"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Start Walk
+              <Button onClick={() => confirmStartWalk(true)} disabled={startingWalk} className="flex-1 rounded-full">
+                <Play className="w-4 h-4 mr-2" />Start Walk
               </Button>
             ) : (
-              <Button 
-                variant="secondary"
-                onClick={() => confirmStartWalk(false)} 
-                disabled={startingWalk}
-                className="flex-1"
-              >
+              <Button variant="secondary" onClick={() => confirmStartWalk(false)} disabled={startingWalk} className="flex-1">
                 Start Without GPS
               </Button>
             )}
