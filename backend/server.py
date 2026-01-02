@@ -3144,6 +3144,10 @@ async def create_trade_request(
     if current_user["role"] not in ["walker", "sitter", "admin"]:
         raise HTTPException(status_code=403, detail="Only walkers can create trade requests")
     
+    # Prevent trading with yourself
+    if request.target_walker_id == current_user["id"]:
+        raise HTTPException(status_code=400, detail="You cannot trade an appointment with yourself")
+    
     # Verify appointment exists and belongs to requesting walker
     appt = await db.appointments.find_one({"id": request.appointment_id}, {"_id": 0})
     if not appt:
