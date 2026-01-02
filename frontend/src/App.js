@@ -24,6 +24,7 @@ import AdminProfilePage from "./pages/AdminProfilePage";
 import LiveTrackingPage from "./pages/LiveTrackingPage";
 import MassTextPage from "./pages/MassTextPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
+import SetupPage from "./pages/SetupPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
