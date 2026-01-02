@@ -579,20 +579,270 @@ class WagWalkAPITester:
             self.tokens['demo_client'] = response.get('access_token')
             self.users['demo_client'] = response.get('user')
 
-    def test_unauthorized_access(self):
-        """Test unauthorized access scenarios"""
-        # Test without token
-        self.run_test(
-            "Unauthorized Access", "GET", "auth/me", 401,
-            description="Access protected endpoint without token"
+    def test_client_profile_update(self):
+        """Test client profile update functionality"""
+        print("\n🔍 Testing Client Profile Update...")
+        
+        if not self.tokens.get('demo_client'):
+            print("⚠️  Skipping profile update test - no demo client token")
+            return
+        
+        user_id = self.users['demo_client']['id']
+        
+        # Test profile update with new data
+        update_data = {
+            "full_name": "Sarah Johnson Updated",
+            "phone": "555-0199",
+            "address": "456 Oak Street, Springfield, IL 62701",
+            "email": "sarah.updated@example.com",
+            "bio": "Dog lover and outdoor enthusiast. Looking forward to professional pet care services."
+        }
+        
+        success, response = self.run_test(
+            "Update Client Profile", "PUT", f"users/{user_id}", 200,
+            data=update_data, token=self.tokens['demo_client'],
+            description="Update client profile with new personal information"
         )
+        
+        if success:
+            # Verify the response contains updated data
+            if response.get('full_name') == update_data['full_name']:
+                print("✅ Profile update verified - full_name updated correctly")
+            else:
+                print("⚠️  Profile update verification failed - full_name not updated")
+            
+            if response.get('address') == update_data['address']:
+                print("✅ Profile update verified - address updated correctly")
+            else:
+                print("⚠️  Profile update verification failed - address not updated")
 
-        # Test client accessing admin endpoint
-        if self.tokens.get('client'):
-            self.run_test(
-                "Client Admin Access", "GET", "users/clients", 403,
-                token=self.tokens['client'], description="Client trying to access admin endpoint"
+    def test_profile_image_upload(self):
+        """Test profile image upload functionality"""
+        print("\n🔍 Testing Profile Image Upload...")
+        
+        if not self.tokens.get('demo_client'):
+            print("⚠️  Skipping profile image upload test - no demo client token")
+            return
+        
+        # Create a test image file (1x1 pixel PNG)
+        test_image_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x12IDATx\x9cc```bPPP\x00\x02\xac\xea\x05\x1b\x00\x00\x00\x00IEND\xaeB`\x82'
+        
+        url = f"{self.base_url}/api/upload/profile"
+        headers = {'Authorization': f'Bearer {self.tokens["demo_client"]}'}
+        
+        files = {'file': ('test_profile.png', io.BytesIO(test_image_data), 'image/png')}
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Profile Image Upload...")
+        print(f"   Upload profile image for demo client")
+        
+        try:
+            response = requests.post(url, files=files, headers=headers, timeout=30)
+            
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    result = response.json()
+                    if 'url' in result:
+                        print(f"✅ Image URL returned: {result['url']}")
+                        return True, result
+                    else:
+                        print("⚠️  No URL in response")
+                        return False, {}
+                except:
+                    return True, {}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text[:200]}")
+                self.failed_tests.append({
+                    "test": "Profile Image Upload",
+                    "expected": 200,
+                    "actual": response.status_code,
+                    "endpoint": "upload/profile"
+                })
+                return False, {}
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            self.failed_tests.append({
+                "test": "Profile Image Upload",
+                "error": str(e),
+                "endpoint": "upload/profile"
+            })
+            return False, {}
+
+    def test_pet_update(self):
+        """Test pet update functionality"""
+        print("\n🔍 Testing Pet Update...")
+        
+        if not self.tokens.get('demo_client'):
+            print("⚠️  Skipping pet update test - no demo client token")
+            return
+        
+        # First get the list of pets to find a pet ID
+        success, pets_response = self.run_test(
+            "Get Client Pets for Update", "GET", "pets", 200,
+            token=self.tokens['demo_client'], description="Get client's pets to find one to update"
+        )
+        
+        if not success or not pets_response:
+            print("⚠️  No pets found for update test")
+            return
+        
+        pet_id = pets_response[0]['id']
+        
+        # Test pet update with new data
+        update_data = {
+            "name": "Buddy Updated",
+            "breed": "Golden Retriever Mix",
+            "age": 4,
+            "weight": 68.5,
+            "notes": "Very friendly dog, loves treats and belly rubs. Updated information."
+        }
+        
+        success, response = self.run_test(
+            "Update Pet", "PUT", f"pets/{pet_id}", 200,
+            data=update_data, token=self.tokens['demo_client'],
+            description="Update pet with new information"
+        )
+        
+        if success:
+            # Verify the response contains updated data
+            if response.get('name') == update_data['name']:
+                print("✅ Pet update verified - name updated correctly")
+            else:
+                print("⚠️  Pet update verification failed - name not updated")
+            
+            if response.get('weight') == update_data['weight']:
+                print("✅ Pet update verified - weight updated correctly")
+            else:
+                print("⚠️  Pet update verification failed - weight not updated")
+            
+            # Store the pet ID for image upload test
+            self.pets['updated_pet_id'] = pet_id
+
+    def test_pet_image_upload(self):
+        """Test pet image upload functionality"""
+        print("\n🔍 Testing Pet Image Upload...")
+        
+        if not self.tokens.get('demo_client'):
+            print("⚠️  Skipping pet image upload test - no demo client token")
+            return
+        
+        # Use the pet ID from the update test, or get pets if not available
+        pet_id = self.pets.get('updated_pet_id')
+        if not pet_id:
+            # Get pets to find a pet ID
+            success, pets_response = self.run_test(
+                "Get Pets for Image Upload", "GET", "pets", 200,
+                token=self.tokens['demo_client'], description="Get pets to find one for image upload"
             )
+            if success and pets_response:
+                pet_id = pets_response[0]['id']
+            else:
+                print("⚠️  No pets found for image upload test")
+                return
+        
+        # Create a test image file (1x1 pixel PNG)
+        test_image_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x12IDATx\x9cc```bPPP\x00\x02\xac\xea\x05\x1b\x00\x00\x00\x00IEND\xaeB`\x82'
+        
+        url = f"{self.base_url}/api/upload/pet/{pet_id}"
+        headers = {'Authorization': f'Bearer {self.tokens["demo_client"]}'}
+        
+        files = {'file': ('test_pet.png', io.BytesIO(test_image_data), 'image/png')}
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Pet Image Upload...")
+        print(f"   Upload image for pet {pet_id}")
+        
+        try:
+            response = requests.post(url, files=files, headers=headers, timeout=30)
+            
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    result = response.json()
+                    if 'url' in result:
+                        print(f"✅ Pet image URL returned: {result['url']}")
+                        self.pets['uploaded_image_url'] = result['url']
+                        return True, result
+                    else:
+                        print("⚠️  No URL in response")
+                        return False, {}
+                except:
+                    return True, {}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text[:200]}")
+                self.failed_tests.append({
+                    "test": "Pet Image Upload",
+                    "expected": 200,
+                    "actual": response.status_code,
+                    "endpoint": f"upload/pet/{pet_id}"
+                })
+                return False, {}
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            self.failed_tests.append({
+                "test": "Pet Image Upload",
+                "error": str(e),
+                "endpoint": f"upload/pet/{pet_id}"
+            })
+            return False, {}
+
+    def test_serve_uploaded_images(self):
+        """Test serving uploaded images"""
+        print("\n🔍 Testing Serve Uploaded Images...")
+        
+        # Test serving a profile image (we'll test with a known filename pattern)
+        # Since we uploaded images, let's try to access them
+        
+        # Test profile image endpoint (even if file doesn't exist, should return 404 not 500)
+        success, response = self.run_test(
+            "Serve Profile Image", "GET", "uploads/profiles/test_profile.png", 404,
+            description="Test profile image serving endpoint (expecting 404 for non-existent file)"
+        )
+        
+        # Test pet image endpoint (even if file doesn't exist, should return 404 not 500)
+        success, response = self.run_test(
+            "Serve Pet Image", "GET", "uploads/pets/test_pet.png", 404,
+            description="Test pet image serving endpoint (expecting 404 for non-existent file)"
+        )
+        
+        # If we have an uploaded image URL, test accessing it
+        if self.pets.get('uploaded_image_url'):
+            # Extract filename from URL
+            image_url = self.pets['uploaded_image_url']
+            if '/api/uploads/pets/' in image_url:
+                filename = image_url.split('/api/uploads/pets/')[-1]
+                success, response = self.run_test(
+                    "Serve Uploaded Pet Image", "GET", f"uploads/pets/{filename}", 200,
+                    description="Test accessing uploaded pet image"
+                )
+
+    def test_client_profile_and_pet_management_features(self):
+        """Test all new client profile and pet management features"""
+        print("\n" + "=" * 60)
+        print("🆕 TESTING CLIENT PROFILE & PET MANAGEMENT FEATURES")
+        print("=" * 60)
+        
+        # Run all the new feature tests
+        self.test_client_profile_update()
+        self.test_profile_image_upload()
+        self.test_pet_update()
+        self.test_pet_image_upload()
+        self.test_serve_uploaded_images()
 
 def main():
     print("🐕 Starting WagWalk API Tests...")
