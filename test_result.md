@@ -410,15 +410,18 @@ backend:
 
   - task: "Walker time-off requests"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added POST /time-off and GET /time-off endpoints. Auto-approved, flags affected appointments with needs_reassignment=true. Notifies admin via message."
+      - working: false
+        agent: "testing"
+        comment: "❌ FAILED - Walker time-off requests partially working. Issues found: 1) POST /time-off and GET /time-off endpoints work correctly - walker can request time off and retrieve requests, 2) GET /appointments/needs-reassignment endpoint returns 404 'Appointment not found' error - appears to have routing conflict or implementation issue. The core time-off functionality works but admin cannot view flagged appointments."
 
   - task: "Auto-invoice generation"
     implemented: true
