@@ -94,7 +94,7 @@ const Layout = ({ children }) => {
         { path: '/walker', label: 'Dashboard', icon: Home },
         { path: '/walker/schedule', label: 'My Schedule', icon: Calendar },
         { path: '/tracking', label: 'Walk Tracking', icon: Navigation },
-        { path: '/walker/payroll', label: 'Payroll', icon: CreditCard },
+        { path: '/walker/payroll', label: 'Time Sheets & Payroll', icon: CreditCard },
         { path: '/walker/chat', label: 'Messages', icon: MessageCircle },
         { path: '/walker/profile', label: 'My Profile', icon: Settings },
       ];
