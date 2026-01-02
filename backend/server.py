@@ -1091,11 +1091,15 @@ async def update_appointment(appt_id: str, update_data: dict, current_user: dict
     new_date = update_data.get('scheduled_date', appt.get('scheduled_date'))
     new_time = update_data.get('scheduled_time', appt.get('scheduled_time'))
     new_walker = update_data.get('walker_id', appt.get('walker_id'))
+    new_service = update_data.get('service_type', appt.get('service_type'))
     
-    # Check walker availability with 15-minute buffer - exclude current appointment
-    # (1 walk per time slot per walker, with 15-min buffer between walks)
+    # Check walker availability with 15-minute buffer after walk ends
     if new_walker and new_date and new_time:
-        availability = await check_walker_availability(new_walker, new_date, new_time, exclude_appt_id=appt_id)
+        availability = await check_walker_availability(
+            new_walker, new_date, new_time, 
+            exclude_appt_id=appt_id,
+            service_type=new_service
+        )
         if not availability["available"]:
             raise HTTPException(status_code=400, detail=availability["message"])
     
