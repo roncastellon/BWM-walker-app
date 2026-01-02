@@ -77,8 +77,6 @@ class ServiceType(str, Enum):
     TRANSPORT = "transport"
     CONCIERGE = "concierge"
     # Pet Sitting Services
-    PETSIT_YOUR_LOCATION_3 = "petsit_your_location_3"  # At client's home, 3 visits/day
-    PETSIT_YOUR_LOCATION_4 = "petsit_your_location_4"  # At client's home, 4 visits/day
     PETSIT_OUR_LOCATION = "petsit_our_location"        # Boarding at our location
 
 class AppointmentStatus(str, Enum):
