@@ -318,6 +318,22 @@ const AdminDashboard = () => {
 
           {/* CHAT TAB */}
           <TabsContent value="chat" className="space-y-4">
+            {/* Mass Text Quick Action */}
+            <Link to="/admin/mass-text">
+              <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">Send Mass Text</p>
+                    <p className="text-sm text-muted-foreground">Text all clients, walkers, or everyone</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                </CardContent>
+              </Card>
+            </Link>
+
             {/* Walkers */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
