@@ -798,6 +798,27 @@ async def get_holiday_dates_endpoint(year: int):
 # Appointment Routes
 @api_router.post("/appointments", response_model=Appointment)
 async def create_appointment(appt_data: AppointmentCreate, current_user: dict = Depends(get_current_user)):
+    # Check for time slot limits (max 3 appointments per time slot)
+    if appt_data.scheduled_time:
+        existing_at_time = await db.appointments.count_documents({
+            "scheduled_date": appt_data.scheduled_date,
+            "scheduled_time": appt_data.scheduled_time,
+            "status": {"$nin": ["cancelled"]}
+        })
+        if existing_at_time >= 3:
+            raise HTTPException(status_code=400, detail="This time slot is full (maximum 3 appointments). Please select another time.")
+    
+    # If walker is specified, check they don't already have an appointment at this time
+    if appt_data.walker_id:
+        walker_busy = await db.appointments.find_one({
+            "walker_id": appt_data.walker_id,
+            "scheduled_date": appt_data.scheduled_date,
+            "scheduled_time": appt_data.scheduled_time,
+            "status": {"$nin": ["cancelled"]}
+        })
+        if walker_busy:
+            raise HTTPException(status_code=400, detail="This walker is already booked at this time. Please select another walker or time.")
+    
     appointment = Appointment(
         client_id=current_user['id'],
         **appt_data.model_dump()
