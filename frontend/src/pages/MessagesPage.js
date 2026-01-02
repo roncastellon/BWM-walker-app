@@ -355,14 +355,17 @@ const MessagesPage = () => {
   const pollInterval = useRef(null);
   const hasMarkedRead = useRef(false);
 
+  const initialLoadDone = useRef(false);
+  
   const fetchContacts = useCallback(async () => {
     try {
       const response = await api.get(`/messages/contacts?contact_type=${contactFilter}`);
       const contactsList = response.data;
       setContacts(contactsList);
       
-      // Auto-select first contact with unread messages (if any) when page first loads
-      if (!selectedContact && !isGroupChat && contactsList.length > 0) {
+      // Auto-select first contact with unread messages on initial load only
+      if (!initialLoadDone.current && contactsList.length > 0) {
+        initialLoadDone.current = true;
         const contactWithUnread = contactsList.find(c => c.unread_count > 0);
         if (contactWithUnread) {
           setSelectedContact(contactWithUnread);
@@ -374,7 +377,7 @@ const MessagesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [api, contactFilter, selectedContact, isGroupChat]);
+  }, [api, contactFilter]);
 
   const fetchMessagesOnly = useCallback(async () => {
     try {
