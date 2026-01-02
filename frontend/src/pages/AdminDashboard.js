@@ -337,17 +337,17 @@ const AdminDashboard = () => {
               </Card>
             </Link>
 
-            {/* Walkers */}
+            {/* Walkers/Sitters */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <PawPrint className="w-5 h-5 text-secondary" />
-                  Walkers
+                  Walkers / Sitters
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {walkerContacts.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No walkers</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">No walkers or sitters</p>
                 ) : (
                   <div className="space-y-2">
                     {walkerContacts.slice(0, 5).map((contact) => (
@@ -361,7 +361,7 @@ const AdminDashboard = () => {
                           </Avatar>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{contact.full_name}</p>
-                            <p className="text-xs text-muted-foreground">Walker</p>
+                            <p className="text-xs text-muted-foreground">{contact.role === 'sitter' ? 'Sitter' : 'Walker'}</p>
                           </div>
                           <Send className="w-4 h-4 text-muted-foreground" />
                         </div>
