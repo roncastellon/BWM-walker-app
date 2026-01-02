@@ -113,8 +113,8 @@ const AdminDashboard = () => {
           <Link to="/admin/walkers">
             <Card className="rounded-xl hover:shadow-md hover:bg-secondary/5 transition-all cursor-pointer">
               <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-secondary">{stats.total_walkers || 0}</p>
-                <p className="text-xs text-muted-foreground">Walkers</p>
+                <p className="text-2xl font-bold text-secondary">{(stats.total_walkers || 0) + sitters.length}</p>
+                <p className="text-xs text-muted-foreground">Walkers/Sitters</p>
               </CardContent>
             </Card>
           </Link>
