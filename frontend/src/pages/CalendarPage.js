@@ -64,7 +64,7 @@ const CalendarPage = () => {
       ];
       
       if (isAdmin) {
-        requests.push(api.get('/users?role=client'));
+        requests.push(api.get('/users/clients'));
       }
       
       const responses = await Promise.all(requests);
