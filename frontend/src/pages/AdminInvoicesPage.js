@@ -811,8 +811,8 @@ const AdminBillingPage = () => {
                       {/* Blue Dog & Orange Cat Icons */}
                       <svg viewBox="0 0 85 55" className="w-36 h-24">
                         {/* Blue Dog - with floppy angled ears higher on head */}
-                        {/* Dog Tail - shorter, wagging up between dog and cat */}
-                        <path d="M 42 30 Q 46 24 44 18 Q 43 16 45 17" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2" strokeLinecap="round"/>
+                        {/* Dog Tail - triangular with black outline and blue fill */}
+                        <path d="M 38 28 L 44 16 L 46 30 Z" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2" strokeLinejoin="round"/>
                         {/* Body */}
                         <ellipse cx="25" cy="32" rx="20" ry="16" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         {/* Head */}
