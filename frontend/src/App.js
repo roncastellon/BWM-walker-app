@@ -126,6 +126,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/tracking"
         element={
           <ProtectedRoute allowedRoles={['client', 'walker', 'admin']}>
