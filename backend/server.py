@@ -176,8 +176,6 @@ def calculate_petsit_price(service_type: str, num_dogs: int, start_date: str, en
     from datetime import date
     
     base_prices = {
-        "petsit_your_location_3": 50.00,  # 3 visits/day
-        "petsit_your_location_4": 75.00,  # 4 visits/day
         "petsit_our_location": 50.00,     # per night
     }
     
