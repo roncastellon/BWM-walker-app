@@ -1120,11 +1120,14 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
     scheduled_date = appt_data.get('scheduled_date')
     scheduled_time = appt_data.get('scheduled_time')
     walker_id = appt_data.get('walker_id')
+    service_type = appt_data.get('service_type', 'walk_30')
     
-    # Check walker availability with 15-minute buffer
-    # (1 walk per time slot per walker, with 15-min buffer between walks)
+    # Check walker availability with 15-minute buffer after walk ends
     if walker_id:
-        availability = await check_walker_availability(walker_id, scheduled_date, scheduled_time)
+        availability = await check_walker_availability(
+            walker_id, scheduled_date, scheduled_time,
+            service_type=service_type
+        )
         if not availability["available"]:
             raise HTTPException(status_code=400, detail=availability["message"])
     
@@ -1132,7 +1135,7 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         client_id=appt_data.get('client_id'),
         walker_id=walker_id,
         pet_ids=appt_data.get('pet_ids', []),
-        service_type=appt_data.get('service_type'),
+        service_type=service_type,
         scheduled_date=scheduled_date,
         scheduled_time=scheduled_time,
         notes=appt_data.get('notes', '')
