@@ -631,6 +631,54 @@ frontend:
         agent: "testing"
         comment: "✅ PASSED - Send Email and Send SMS buttons working correctly. Both buttons found in invoice detail modal. Buttons properly styled and functional. Integration with SendGrid/Twilio status correctly implemented - buttons show appropriate state based on configuration status."
 
+  - task: "Client edit/cancel appointments UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ClientDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added edit (pencil) and cancel (X) buttons next to scheduled appointments. Edit modal for date/time/notes. Cancel modal with confirmation. No cancellation charge."
+
+  - task: "Walker trade and cancel UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/WalkerDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added trade (↔) and cancel (X) buttons next to scheduled walks. Trade modal with walker selection. Cancel modal with mandatory reason. Pending trades section shows incoming requests with Accept/Reject."
+
+  - task: "Walker time-off request UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/WalkerDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added 'Request Time Off' card in quick actions. Opens modal with start/end date and optional reason. Shows count of affected appointments."
+
+  - task: "Auto-invoice admin UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminInvoicesPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added 'Auto-Generate Invoices' section with Generate Weekly/Monthly buttons. Pending Review section shows auto-generated invoices with Approve button. 'Send All Approved' button for mass sending."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
