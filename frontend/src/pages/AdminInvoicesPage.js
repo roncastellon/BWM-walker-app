@@ -14,7 +14,7 @@ import {
   DollarSign, FileText, Clock, CheckCircle, AlertCircle, 
   TrendingUp, Calendar, Users, Edit2, Save, RefreshCw, Settings, 
   CreditCard, Building2, Mail, MessageSquare, Eye, Send, Phone, Image,
-  Zap, FileCheck, SendHorizonal
+  Zap, FileCheck, SendHorizonal, User, PawPrint
 } from 'lucide-react';
 import { toast } from 'sonner';
 
