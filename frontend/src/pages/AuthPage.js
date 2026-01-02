@@ -95,21 +95,21 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-sky-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-orange-50 to-sky-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 mb-4">
-            <Dog className="w-8 h-8 text-orange-500" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-sky-400 to-orange-400 mb-4">
+            <Dog className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-heading font-bold text-foreground">BowWowMeow</h1>
           <p className="text-muted-foreground mt-2">Premium Pet Care Services</p>
         </div>
 
-        <Card className="rounded-3xl shadow-xl border-orange-200/50">
+        <Card className="rounded-3xl shadow-xl border-sky-200/50">
           <Tabs defaultValue="login">
             <CardHeader>
-              <TabsList className="grid w-full grid-cols-2 bg-orange-100/50">
-                <TabsTrigger value="login" data-testid="login-tab" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Login</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-sky-100 to-orange-100">
+                <TabsTrigger value="login" data-testid="login-tab" className="data-[state=active]:bg-sky-500 data-[state=active]:text-white">Login</TabsTrigger>
                 <TabsTrigger value="register" data-testid="register-tab" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Register</TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -125,7 +125,7 @@ const AuthPage = () => {
                       value={loginForm.username}
                       onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                       required
-                      className="border-orange-200 focus:border-orange-400"
+                      className="border-sky-200 focus:border-sky-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -138,13 +138,13 @@ const AuthPage = () => {
                       value={loginForm.password}
                       onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                       required
-                      className="border-orange-200 focus:border-orange-400"
+                      className="border-sky-200 focus:border-sky-400"
                     />
                   </div>
                   <Button
                     type="submit"
                     data-testid="login-submit"
-                    className="w-full rounded-full bg-orange-500 hover:bg-orange-600"
+                    className="w-full rounded-full bg-sky-500 hover:bg-sky-600"
                     disabled={loading}
                   >
                     {loading ? 'Signing in...' : 'Sign In'}
@@ -229,6 +229,7 @@ const AuthPage = () => {
                       <SelectContent>
                         <SelectItem value="client">Pet Owner (Client)</SelectItem>
                         <SelectItem value="walker">Dog Walker</SelectItem>
+                        <SelectItem value="sitter">Pet Sitter</SelectItem>
                         <SelectItem value="admin">Administrator</SelectItem>
                       </SelectContent>
                     </Select>
@@ -248,7 +249,7 @@ const AuthPage = () => {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          <PawPrint className="inline w-4 h-4 mr-1 text-orange-400" />
+          <PawPrint className="inline w-4 h-4 mr-1 text-sky-400" />
           Trusted by pet owners everywhere
         </p>
       </div>
