@@ -425,15 +425,18 @@ backend:
 
   - task: "Auto-invoice generation"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added POST /invoices/auto-generate (weekly/monthly cycle), GET /invoices/pending-review, POST /invoices/{id}/approve-review, POST /invoices/mass-send. Invoices queue for admin review before sending."
+      - working: false
+        agent: "testing"
+        comment: "❌ FAILED - Auto-invoice generation partially working. Issues found: 1) POST /invoices/auto-generate works correctly for both weekly and monthly cycles, 2) GET /invoices/pending-review returns 404 'Invoice not found' error - appears to have routing conflict or no pending invoices exist, 3) POST /invoices/mass-send works correctly. The invoice generation works but pending review functionality has issues."
 
   - task: "Walker cancel appointment"
     implemented: true
