@@ -2695,7 +2695,7 @@ async def get_subscription(current_user: dict = Depends(get_current_user)):
     if not subscription:
         # Create default free subscription
         subscription = {
-            "id": str(uuid4()),
+            "id": str(uuid.uuid4()),
             "user_id": current_user['id'],
             "tier": "free",
             "status": "active",
