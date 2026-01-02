@@ -23,6 +23,7 @@ import AdminInvoicesPage from "./pages/AdminInvoicesPage";
 import AdminProfilePage from "./pages/AdminProfilePage";
 import LiveTrackingPage from "./pages/LiveTrackingPage";
 import MassTextPage from "./pages/MassTextPage";
+import SubscriptionPage from "./pages/SubscriptionPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
