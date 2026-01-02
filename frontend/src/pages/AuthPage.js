@@ -95,22 +95,22 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-sky-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Dog className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 mb-4">
+            <Dog className="w-8 h-8 text-orange-500" />
           </div>
           <h1 className="text-4xl font-heading font-bold text-foreground">BowWowMeow</h1>
           <p className="text-muted-foreground mt-2">Premium Pet Care Services</p>
         </div>
 
-        <Card className="rounded-3xl shadow-xl border-border/50">
+        <Card className="rounded-3xl shadow-xl border-orange-200/50">
           <Tabs defaultValue="login">
             <CardHeader>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login" data-testid="login-tab">Login</TabsTrigger>
-                <TabsTrigger value="register" data-testid="register-tab">Register</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-orange-100/50">
+                <TabsTrigger value="login" data-testid="login-tab" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Login</TabsTrigger>
+                <TabsTrigger value="register" data-testid="register-tab" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Register</TabsTrigger>
               </TabsList>
             </CardHeader>
             <CardContent>
@@ -125,6 +125,7 @@ const AuthPage = () => {
                       value={loginForm.username}
                       onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                       required
+                      className="border-orange-200 focus:border-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -137,12 +138,13 @@ const AuthPage = () => {
                       value={loginForm.password}
                       onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                       required
+                      className="border-orange-200 focus:border-orange-400"
                     />
                   </div>
                   <Button
                     type="submit"
                     data-testid="login-submit"
-                    className="w-full rounded-full"
+                    className="w-full rounded-full bg-orange-500 hover:bg-orange-600"
                     disabled={loading}
                   >
                     {loading ? 'Signing in...' : 'Sign In'}
@@ -162,6 +164,7 @@ const AuthPage = () => {
                         value={registerForm.username}
                         onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
                         required
+                        className="border-orange-200 focus:border-orange-400"
                       />
                     </div>
                     <div className="space-y-2">
@@ -174,6 +177,7 @@ const AuthPage = () => {
                         value={registerForm.email}
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                         required
+                        className="border-orange-200 focus:border-orange-400"
                       />
                     </div>
                   </div>
@@ -186,6 +190,7 @@ const AuthPage = () => {
                       value={registerForm.full_name}
                       onChange={(e) => setRegisterForm({ ...registerForm, full_name: e.target.value })}
                       required
+                      className="border-orange-200 focus:border-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -196,6 +201,7 @@ const AuthPage = () => {
                       placeholder="(555) 123-4567"
                       value={registerForm.phone}
                       onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
+                      className="border-orange-200 focus:border-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -208,6 +214,7 @@ const AuthPage = () => {
                       value={registerForm.password}
                       onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                       required
+                      className="border-orange-200 focus:border-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -216,7 +223,7 @@ const AuthPage = () => {
                       value={registerForm.role}
                       onValueChange={(value) => setRegisterForm({ ...registerForm, role: value })}
                     >
-                      <SelectTrigger data-testid="register-role">
+                      <SelectTrigger data-testid="register-role" className="border-orange-200">
                         <SelectValue placeholder="Select account type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -229,7 +236,7 @@ const AuthPage = () => {
                   <Button
                     type="submit"
                     data-testid="register-submit"
-                    className="w-full rounded-full"
+                    className="w-full rounded-full bg-orange-500 hover:bg-orange-600"
                     disabled={loading}
                   >
                     {loading ? 'Creating account...' : 'Create Account'}
@@ -241,7 +248,7 @@ const AuthPage = () => {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          <PawPrint className="inline w-4 h-4 mr-1" />
+          <PawPrint className="inline w-4 h-4 mr-1 text-orange-400" />
           Trusted by pet owners everywhere
         </p>
       </div>
