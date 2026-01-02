@@ -301,12 +301,23 @@ const ContactsList = memo(({
                 }`}
                 data-testid={`contact-${contact.id}`}
               >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={contact.profile_image} />
-                  <AvatarFallback>{contact.full_name?.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={contact.profile_image} />
+                    <AvatarFallback>{contact.full_name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  {contact.unread_count > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                      {contact.unread_count > 9 ? '9+' : contact.unread_count}
+                    </span>
+                  )}
+                </div>
                 <div className="text-left flex-1 min-w-0">
-                  <p className="font-medium truncate">{contact.full_name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className={`font-medium truncate ${contact.unread_count > 0 ? 'font-bold' : ''}`}>
+                      {contact.full_name}
+                    </p>
+                  </div>
                   <div className={`text-xs ${
                     selectedContact?.id === contact.id && !isGroupChat
                       ? 'text-primary-foreground/70'
