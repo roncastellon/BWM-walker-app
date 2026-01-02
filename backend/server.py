@@ -61,12 +61,19 @@ api_router = APIRouter(prefix="/api")
 class UserRole(str, Enum):
     ADMIN = "admin"
     WALKER = "walker"
+    SITTER = "sitter"
     CLIENT = "client"
 
 class ServiceType(str, Enum):
+    # Walking Services
     WALK_30 = "walk_30"
     WALK_60 = "walk_60"
-    OVERNIGHT = "overnight"
+    # Staying/Sitting Services (minimum 1 day)
+    STAY_DAY = "stay_day"                                # Day stay (drop-off)
+    STAY_OVERNIGHT = "stay_overnight"                    # Overnight stay
+    STAY_EXTENDED = "stay_extended"                      # Multi-day stay
+    OVERNIGHT = "overnight"                              # Legacy overnight
+    # Other Services
     TRANSPORT = "transport"
     CONCIERGE = "concierge"
     # Pet Sitting Services
