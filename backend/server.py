@@ -910,8 +910,119 @@ async def update_appointment(appt_id: str, update_data: dict, current_user: dict
     if not appt:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    await db.appointments.update_one({"id": appt_id}, {"$set": update_data})
-    return {"message": "Appointment updated successfully"}
+    # If changing time slot, validate constraints
+    new_date = update_data.get('scheduled_date', appt.get('scheduled_date'))
+    new_time = update_data.get('scheduled_time', appt.get('scheduled_time'))
+    new_walker = update_data.get('walker_id', appt.get('walker_id'))
+    
+    # Check time slot limit (max 3 per slot) - exclude current appointment
+    if new_date and new_time:
+        existing_at_time = await db.appointments.count_documents({
+            "id": {"$ne": appt_id},
+            "scheduled_date": new_date,
+            "scheduled_time": new_time,
+            "status": {"$nin": ["cancelled"]}
+        })
+        if existing_at_time >= 3:
+            raise HTTPException(status_code=400, detail="This time slot is full (maximum 3 appointments). Please select another time.")
+    
+    # Check walker availability - exclude current appointment
+    if new_walker and new_date and new_time:
+        walker_busy = await db.appointments.find_one({
+            "id": {"$ne": appt_id},
+            "walker_id": new_walker,
+            "scheduled_date": new_date,
+            "scheduled_time": new_time,
+            "status": {"$nin": ["cancelled"]}
+        })
+        if walker_busy:
+            raise HTTPException(status_code=400, detail="This walker is already booked at this time.")
+    
+    allowed_fields = ['scheduled_date', 'scheduled_time', 'walker_id', 'status', 'notes', 'service_type', 'pet_ids']
+    update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
+    
+    await db.appointments.update_one({"id": appt_id}, {"$set": update_dict})
+    
+    updated_appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    return updated_appt
+
+# Admin endpoint to create appointments for any client
+@api_router.post("/appointments/admin", response_model=Appointment)
+async def admin_create_appointment(appt_data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    scheduled_date = appt_data.get('scheduled_date')
+    scheduled_time = appt_data.get('scheduled_time')
+    walker_id = appt_data.get('walker_id')
+    
+    # Check time slot limit
+    if scheduled_time:
+        existing_at_time = await db.appointments.count_documents({
+            "scheduled_date": scheduled_date,
+            "scheduled_time": scheduled_time,
+            "status": {"$nin": ["cancelled"]}
+        })
+        if existing_at_time >= 3:
+            raise HTTPException(status_code=400, detail="This time slot is full (maximum 3 appointments).")
+    
+    # Check walker availability
+    if walker_id:
+        walker_busy = await db.appointments.find_one({
+            "walker_id": walker_id,
+            "scheduled_date": scheduled_date,
+            "scheduled_time": scheduled_time,
+            "status": {"$nin": ["cancelled"]}
+        })
+        if walker_busy:
+            raise HTTPException(status_code=400, detail="This walker is already booked at this time.")
+    
+    appointment = Appointment(
+        client_id=appt_data.get('client_id'),
+        walker_id=walker_id,
+        pet_ids=appt_data.get('pet_ids', []),
+        service_type=appt_data.get('service_type'),
+        scheduled_date=scheduled_date,
+        scheduled_time=scheduled_time,
+        notes=appt_data.get('notes', '')
+    )
+    appt_dict = appointment.model_dump()
+    appt_dict['created_at'] = appt_dict['created_at'].isoformat()
+    await db.appointments.insert_one(appt_dict)
+    return appointment
+
+# Get available time slots for a date
+@api_router.get("/appointments/available-slots")
+async def get_available_slots(date: str, current_user: dict = Depends(get_current_user)):
+    """Get available time slots and walker availability for a given date"""
+    time_slots = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00']
+    
+    # Get all appointments for this date
+    appointments = await db.appointments.find({
+        "scheduled_date": date,
+        "status": {"$nin": ["cancelled"]}
+    }, {"_id": 0}).to_list(100)
+    
+    # Get all walkers
+    walkers = await db.users.find({"role": "walker", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
+    
+    slot_info = []
+    for slot in time_slots:
+        appts_at_slot = [a for a in appointments if a.get('scheduled_time') == slot]
+        slot_count = len(appts_at_slot)
+        
+        # Find available walkers for this slot
+        booked_walker_ids = [a.get('walker_id') for a in appts_at_slot if a.get('walker_id')]
+        available_walkers = [w for w in walkers if w['id'] not in booked_walker_ids]
+        
+        slot_info.append({
+            "time": slot,
+            "booked_count": slot_count,
+            "is_full": slot_count >= 3,
+            "available_walkers": available_walkers
+        })
+    
+    return {"date": date, "slots": slot_info}
 
 @api_router.post("/appointments/{appt_id}/start")
 async def start_walk(appt_id: str, current_user: dict = Depends(get_current_user)):
