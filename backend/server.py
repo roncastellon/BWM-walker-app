@@ -418,6 +418,42 @@ class Timesheet(BaseModel):
     paid: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Walk Completion Report
+class WalkCompletionReport(BaseModel):
+    did_pee: bool
+    did_poop: bool
+    filled_water: bool
+    notes: Optional[str] = None
+
+# Walk Trade Request
+class WalkTradeRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    appointment_id: str
+    requesting_walker_id: str
+    target_walker_id: str
+    status: str = "pending"  # pending, accepted, rejected, cancelled
+    requester_approved: bool = True  # Requester initiates, so auto-approved
+    target_approved: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Walker Time Off Request
+class TimeOffRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    walker_id: str
+    start_date: str
+    end_date: str
+    reason: Optional[str] = None
+    status: str = "pending"  # pending, approved, rejected
+    affected_appointments: List[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Walker Cancellation
+class WalkCancellationRequest(BaseModel):
+    reason: str
+
+
 # Walker pay rates
 WALKER_PAY_RATES = {
     "walk_30": 15.00,  # 30-minute walk
