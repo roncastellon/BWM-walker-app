@@ -53,9 +53,9 @@ const AdminDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
+      case 'scheduled': return 'bg-sky-100 text-sky-800';
+      case 'in_progress': return 'bg-orange-100 text-orange-800';
+      case 'completed': return 'bg-sky-50 text-sky-700';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -124,9 +124,9 @@ const AdminDashboard = () => {
             </Card>
           </Link>
           <Link to="/admin/billing">
-            <Card className="rounded-xl hover:shadow-md hover:bg-green-50 transition-all cursor-pointer">
+            <Card className="rounded-xl hover:shadow-md hover:bg-orange-50 transition-all cursor-pointer">
               <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-green-600">${(stats.month_revenue || 0).toFixed(0)}</p>
+                <p className="text-2xl font-bold text-orange-600">${(stats.month_revenue || 0).toFixed(0)}</p>
                 <p className="text-xs text-muted-foreground">MTD Revenue</p>
               </CardContent>
             </Card>
