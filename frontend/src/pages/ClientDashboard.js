@@ -245,9 +245,21 @@ const ClientDashboard = () => {
                             </p>
                           </div>
                         </div>
-                        <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
-                          {appt.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
+                            {appt.status}
+                          </Badge>
+                          {appt.status === 'scheduled' && (
+                            <>
+                              <Button size="sm" variant="ghost" onClick={() => openEditModal(appt)} className="h-8 w-8 p-0">
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
