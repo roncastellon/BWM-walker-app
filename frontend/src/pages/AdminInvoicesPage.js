@@ -233,6 +233,43 @@ const AdminBillingPage = () => {
     }
   };
 
+  // Auto-invoice functions
+  const generateAutoInvoices = async (cycle) => {
+    setGeneratingInvoices(true);
+    try {
+      const res = await api.post(`/invoices/auto-generate?cycle=${cycle}`);
+      toast.success(res.data.message);
+      fetchAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to generate invoices');
+    } finally {
+      setGeneratingInvoices(false);
+    }
+  };
+
+  const approveInvoice = async (invoiceId) => {
+    try {
+      await api.post(`/invoices/${invoiceId}/approve-review`);
+      toast.success('Invoice approved');
+      fetchAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to approve invoice');
+    }
+  };
+
+  const massSendInvoices = async () => {
+    setSendingAllInvoices(true);
+    try {
+      const res = await api.post('/invoices/mass-send');
+      toast.success(res.data.message);
+      fetchAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to send invoices');
+    } finally {
+      setSendingAllInvoices(false);
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
