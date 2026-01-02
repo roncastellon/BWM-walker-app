@@ -1041,17 +1041,11 @@ async def update_appointment(appt_id: str, update_data: dict, current_user: dict
         if existing_at_time >= 3:
             raise HTTPException(status_code=400, detail="This time slot is full (maximum 3 appointments). Please select another time.")
     
-    # Check walker availability - exclude current appointment
+    # Check walker availability with 15-minute buffer - exclude current appointment
     if new_walker and new_date and new_time:
-        walker_busy = await db.appointments.find_one({
-            "id": {"$ne": appt_id},
-            "walker_id": new_walker,
-            "scheduled_date": new_date,
-            "scheduled_time": new_time,
-            "status": {"$nin": ["cancelled"]}
-        })
-        if walker_busy:
-            raise HTTPException(status_code=400, detail="This walker is already booked at this time.")
+        availability = await check_walker_availability(new_walker, new_date, new_time, exclude_appt_id=appt_id)
+        if not availability["available"]:
+            raise HTTPException(status_code=400, detail=availability["message"])
     
     allowed_fields = ['scheduled_date', 'scheduled_time', 'walker_id', 'status', 'notes', 'service_type', 'pet_ids']
     update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
@@ -1081,16 +1075,11 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         if existing_at_time >= 3:
             raise HTTPException(status_code=400, detail="This time slot is full (maximum 3 appointments).")
     
-    # Check walker availability
+    # Check walker availability with 15-minute buffer
     if walker_id:
-        walker_busy = await db.appointments.find_one({
-            "walker_id": walker_id,
-            "scheduled_date": scheduled_date,
-            "scheduled_time": scheduled_time,
-            "status": {"$nin": ["cancelled"]}
-        })
-        if walker_busy:
-            raise HTTPException(status_code=400, detail="This walker is already booked at this time.")
+        availability = await check_walker_availability(walker_id, scheduled_date, scheduled_time)
+        if not availability["available"]:
+            raise HTTPException(status_code=400, detail=availability["message"])
     
     appointment = Appointment(
         client_id=appt_data.get('client_id'),
