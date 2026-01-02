@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#f97316"/>
+  <g transform="translate(100, 80)">
+    <!-- Paw pad main -->
+    <ellipse cx="156" cy="220" rx="70" ry="80" fill="white"/>
+    <!-- Paw toes -->
+    <ellipse cx="80" cy="120" rx="35" ry="45" fill="white"/>
+    <ellipse cx="156" cy="90" rx="35" ry="45" fill="white"/>
+    <ellipse cx="232" cy="120" rx="35" ry="45" fill="white"/>
+    <!-- Small toe pads -->
+    <ellipse cx="60" cy="200" rx="25" ry="30" fill="white"/>
+    <ellipse cx="252" cy="200" rx="25" ry="30" fill="white"/>
+  </g>
+  <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white">WagWalk</text>
+</svg>
