@@ -291,6 +291,13 @@ class Pet(BaseModel):
     weight: Optional[float] = None
     notes: Optional[str] = None
     photo_url: Optional[str] = None
+    # New fields for vet, emergency contact, prescription, things to know
+    vet_name: Optional[str] = None
+    vet_phone: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    prescriptions: Optional[str] = None
+    things_to_know: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class PetCreate(BaseModel):
@@ -301,6 +308,13 @@ class PetCreate(BaseModel):
     weight: Optional[float] = None
     notes: Optional[str] = None
     photo_url: Optional[str] = None
+    # New fields
+    vet_name: Optional[str] = None
+    vet_phone: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    prescriptions: Optional[str] = None
+    things_to_know: Optional[str] = None
 
 class ServicePricing(BaseModel):
     model_config = ConfigDict(extra="ignore")
