@@ -1775,6 +1775,8 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
     - Client: Can see their scheduled walker + all admins
     - Walker: Can see My Clients (scheduled), Team (walkers+admins), All
     - Admin: Can see everyone
+    
+    Returns contacts with unread_count for each contact
     """
     contacts = []
     
@@ -1868,6 +1870,19 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
                 {"_id": 0, "password_hash": 0}
             ).to_list(500)
             contacts = [{"type": u['role'], **u} for u in all_users]
+    
+    # Add unread count for each contact
+    for contact in contacts:
+        unread_count = await db.messages.count_documents({
+            "sender_id": contact['id'],
+            "receiver_id": current_user['id'],
+            "is_group_message": False,
+            "read": False
+        })
+        contact['unread_count'] = unread_count
+    
+    # Sort contacts: those with unread messages first, then alphabetically
+    contacts.sort(key=lambda c: (-c.get('unread_count', 0), c.get('full_name', '').lower()))
     
     return contacts
 
