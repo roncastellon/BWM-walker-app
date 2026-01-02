@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -7,13 +8,19 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { User, Camera, Save, Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { User, Camera, Save, Loader2, PawPrint, Plus, Dog, Cat, Bird, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ClientProfilePage = () => {
   const { user, api, refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pets, setPets] = useState([]);
+  const [petsLoading, setPetsLoading] = useState(true);
+  const [petDialogOpen, setPetDialogOpen] = useState(false);
+  const [savingPet, setSavingPet] = useState(false);
   const fileInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
@@ -23,6 +30,17 @@ const ClientProfilePage = () => {
     address: '',
     bio: '',
   });
+
+  const emptyPetForm = {
+    name: '',
+    species: 'dog',
+    breed: '',
+    age: '',
+    weight: '',
+    notes: '',
+  };
+  
+  const [petFormData, setPetFormData] = useState(emptyPetForm);
 
   useEffect(() => {
     if (user) {
@@ -35,6 +53,21 @@ const ClientProfilePage = () => {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchPets();
+  }, []);
+
+  const fetchPets = async () => {
+    try {
+      const response = await api.get('/pets');
+      setPets(response.data);
+    } catch (error) {
+      console.error('Failed to load pets');
+    } finally {
+      setPetsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +91,6 @@ const ClientProfilePage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image must be less than 5MB');
       return;
@@ -69,7 +101,7 @@ const ClientProfilePage = () => {
     uploadFormData.append('file', file);
 
     try {
-      const response = await api.post('/upload/profile', uploadFormData, {
+      await api.post('/upload/profile', uploadFormData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -84,6 +116,39 @@ const ClientProfilePage = () => {
       toast.error('Failed to upload image');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleAddPet = async (e) => {
+    e.preventDefault();
+    setSavingPet(true);
+    
+    try {
+      await api.post('/pets', {
+        ...petFormData,
+        age: petFormData.age ? parseInt(petFormData.age) : null,
+        weight: petFormData.weight ? parseFloat(petFormData.weight) : null,
+      });
+      toast.success('Pet added successfully!');
+      setPetDialogOpen(false);
+      setPetFormData(emptyPetForm);
+      fetchPets();
+    } catch (error) {
+      console.error('Add pet error:', error);
+      toast.error('Failed to add pet');
+    } finally {
+      setSavingPet(false);
+    }
+  };
+
+  const getSpeciesIcon = (species) => {
+    switch (species?.toLowerCase()) {
+      case 'cat':
+        return <Cat className="w-5 h-5" />;
+      case 'bird':
+        return <Bird className="w-5 h-5" />;
+      default:
+        return <Dog className="w-5 h-5" />;
     }
   };
 
@@ -223,6 +288,183 @@ const ClientProfilePage = () => {
                 )}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* My Pets Section */}
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-xl">My Pets</CardTitle>
+              <CardDescription>Add and manage your furry family members</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Dialog open={petDialogOpen} onOpenChange={setPetDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="rounded-full" data-testid="add-pet-from-profile-btn">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Pet
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Pet</DialogTitle>
+                    <DialogDescription>Tell us about your pet</DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleAddPet} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="pet-name">Name</Label>
+                      <Input
+                        id="pet-name"
+                        placeholder="Pet's name"
+                        value={petFormData.name}
+                        onChange={(e) => setPetFormData({ ...petFormData, name: e.target.value })}
+                        required
+                        data-testid="pet-name-input"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Species</Label>
+                        <Select
+                          value={petFormData.species}
+                          onValueChange={(value) => setPetFormData({ ...petFormData, species: value })}
+                        >
+                          <SelectTrigger data-testid="pet-species-select">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dog">Dog</SelectItem>
+                            <SelectItem value="cat">Cat</SelectItem>
+                            <SelectItem value="bird">Bird</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="pet-breed">Breed</Label>
+                        <Input
+                          id="pet-breed"
+                          placeholder="e.g., Golden Retriever"
+                          value={petFormData.breed}
+                          onChange={(e) => setPetFormData({ ...petFormData, breed: e.target.value })}
+                          data-testid="pet-breed-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="pet-age">Age (years)</Label>
+                        <Input
+                          id="pet-age"
+                          type="number"
+                          min="0"
+                          placeholder="Age"
+                          value={petFormData.age}
+                          onChange={(e) => setPetFormData({ ...petFormData, age: e.target.value })}
+                          data-testid="pet-age-input"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="pet-weight">Weight (lbs)</Label>
+                        <Input
+                          id="pet-weight"
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          placeholder="Weight"
+                          value={petFormData.weight}
+                          onChange={(e) => setPetFormData({ ...petFormData, weight: e.target.value })}
+                          data-testid="pet-weight-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="pet-notes">Special Notes</Label>
+                      <Textarea
+                        id="pet-notes"
+                        placeholder="Allergies, medications, temperament, etc."
+                        value={petFormData.notes}
+                        onChange={(e) => setPetFormData({ ...petFormData, notes: e.target.value })}
+                        data-testid="pet-notes-input"
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full rounded-full" 
+                      disabled={savingPet}
+                      data-testid="submit-pet-btn"
+                    >
+                      {savingPet ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        'Add Pet'
+                      )}
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {petsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : pets.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <PawPrint className="w-8 h-8 text-primary" />
+                </div>
+                <p className="mb-2">No pets added yet</p>
+                <p className="text-sm">Click "Add Pet" to add your furry friend</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {pets.slice(0, 3).map((pet) => (
+                  <div
+                    key={pet.id}
+                    className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                  >
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={pet.photo_url} alt={pet.name} />
+                      <AvatarFallback className="bg-primary/10">
+                        {getSpeciesIcon(pet.species)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{pet.name}</p>
+                      <p className="text-sm text-muted-foreground capitalize truncate">
+                        {pet.breed || pet.species}
+                        {pet.age && ` • ${pet.age} yrs`}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                
+                {pets.length > 3 && (
+                  <p className="text-sm text-muted-foreground text-center pt-2">
+                    +{pets.length - 3} more pet{pets.length - 3 > 1 ? 's' : ''}
+                  </p>
+                )}
+                
+                <Link to="/pets">
+                  <Button variant="outline" className="w-full rounded-full mt-4" data-testid="manage-all-pets-btn">
+                    Manage All Pets
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
