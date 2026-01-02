@@ -892,36 +892,39 @@ const AdminBillingPage = () => {
                       </div>
                     </div>
                   )}
-                      </table>
-                    </div>
-                  </div>
-                )}
 
-                {/* Send Actions */}
-                {invoiceDetail.status !== 'paid' && (
-                  <div className="flex gap-3 pt-4 border-t">
-                    <Button
-                      onClick={() => sendInvoiceEmail(invoiceDetail.id)}
-                      disabled={sendingEmail || !notificationConfig.sendgrid_configured}
-                      className="rounded-full flex-1"
-                      variant={notificationConfig.sendgrid_configured ? "default" : "outline"}
-                      data-testid="send-invoice-email"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      {sendingEmail ? 'Sending...' : 'Send Email'}
-                    </Button>
-                    <Button
-                      onClick={() => sendInvoiceSms(invoiceDetail.id)}
-                      disabled={sendingSms || !notificationConfig.twilio_configured}
-                      className="rounded-full flex-1"
-                      variant={notificationConfig.twilio_configured ? "default" : "outline"}
-                      data-testid="send-invoice-sms"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      {sendingSms ? 'Sending...' : 'Send SMS'}
-                    </Button>
+                  {/* Thank You Footer */}
+                  <div className="text-center p-4 rounded-xl bg-gradient-to-r from-sky-100 to-orange-100 border border-sky-200">
+                    <p className="text-gray-700 font-medium">Thank you for trusting us with your furry friends! 🐾</p>
+                    <p className="text-sm text-gray-500 mt-1">Bow Wow Meow - Where pets are family</p>
                   </div>
-                )}
+
+                  {/* Send Actions */}
+                  {invoiceDetail.status !== 'paid' && (
+                    <div className="flex gap-3 pt-4 border-t">
+                      <Button
+                        onClick={() => sendInvoiceEmail(invoiceDetail.id)}
+                        disabled={sendingEmail || !notificationConfig.sendgrid_configured}
+                        className="rounded-full flex-1 bg-sky-500 hover:bg-sky-600"
+                        variant={notificationConfig.sendgrid_configured ? "default" : "outline"}
+                        data-testid="send-invoice-email"
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        {sendingEmail ? 'Sending...' : 'Send Email'}
+                      </Button>
+                      <Button
+                        onClick={() => sendInvoiceSms(invoiceDetail.id)}
+                        disabled={sendingSms || !notificationConfig.twilio_configured}
+                        className="rounded-full flex-1 bg-orange-500 hover:bg-orange-600"
+                        variant={notificationConfig.twilio_configured ? "default" : "outline"}
+                        data-testid="send-invoice-sms"
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        {sendingSms ? 'Sending...' : 'Send SMS'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <p className="text-center py-8 text-muted-foreground">No details available</p>
