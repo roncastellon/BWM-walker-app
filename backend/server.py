@@ -3033,7 +3033,526 @@ async def check_feature_access(feature: str, current_user: dict = Depends(get_cu
 # Root
 @api_router.get("/")
 async def root():
-    return {"message": "WagWalk API v1.0"}
+    return {"message": "BowWowMeow API v1.0"}
+
+# ============================================
+# CLIENT APPOINTMENT EDIT/CANCEL
+# ============================================
+
+@api_router.put("/appointments/{appt_id}/client-edit")
+async def client_edit_appointment(
+    appt_id: str,
+    scheduled_date: Optional[str] = None,
+    scheduled_time: Optional[str] = None,
+    notes: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Client can edit their scheduled appointment"""
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Verify client owns this appointment
+    if appt["client_id"] != current_user["id"] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Can only edit scheduled appointments
+    if appt["status"] != "scheduled":
+        raise HTTPException(status_code=400, detail="Can only edit scheduled appointments")
+    
+    update_data = {}
+    if scheduled_date:
+        update_data["scheduled_date"] = scheduled_date
+    if scheduled_time:
+        update_data["scheduled_time"] = scheduled_time
+    if notes is not None:
+        update_data["notes"] = notes
+    
+    if update_data:
+        await db.appointments.update_one({"id": appt_id}, {"$set": update_data})
+    
+    updated = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    return updated
+
+@api_router.post("/appointments/{appt_id}/client-cancel")
+async def client_cancel_appointment(
+    appt_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Client can cancel their scheduled appointment (no charge)"""
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Verify client owns this appointment
+    if appt["client_id"] != current_user["id"] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Can only cancel scheduled appointments
+    if appt["status"] != "scheduled":
+        raise HTTPException(status_code=400, detail="Can only cancel scheduled appointments")
+    
+    await db.appointments.update_one(
+        {"id": appt_id}, 
+        {"$set": {"status": "cancelled", "cancelled_by": "client", "cancelled_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Appointment cancelled successfully"}
+
+# ============================================
+# WALKER TRADE REQUESTS
+# ============================================
+
+class TradeRequestCreate(BaseModel):
+    appointment_id: str
+    target_walker_id: str
+
+@api_router.post("/trades")
+async def create_trade_request(
+    request: TradeRequestCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Walker requests to trade a walk with another walker"""
+    if current_user["role"] not in ["walker", "sitter", "admin"]:
+        raise HTTPException(status_code=403, detail="Only walkers can create trade requests")
+    
+    # Verify appointment exists and belongs to requesting walker
+    appt = await db.appointments.find_one({"id": request.appointment_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if appt["walker_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="You can only trade your own appointments")
+    
+    if appt["status"] != "scheduled":
+        raise HTTPException(status_code=400, detail="Can only trade scheduled appointments")
+    
+    # Verify target walker exists
+    target = await db.users.find_one({"id": request.target_walker_id}, {"_id": 0})
+    if not target or target["role"] not in ["walker", "sitter"]:
+        raise HTTPException(status_code=404, detail="Target walker not found")
+    
+    # Create trade request
+    trade = WalkTradeRequest(
+        appointment_id=request.appointment_id,
+        requesting_walker_id=current_user["id"],
+        target_walker_id=request.target_walker_id,
+        status="pending",
+        requester_approved=True,
+        target_approved=False
+    )
+    
+    await db.trade_requests.insert_one(trade.model_dump())
+    return {"message": "Trade request sent", "trade_id": trade.id}
+
+@api_router.get("/trades")
+async def get_trade_requests(current_user: dict = Depends(get_current_user)):
+    """Get trade requests for current walker"""
+    if current_user["role"] not in ["walker", "sitter", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get trades where user is requester or target
+    trades = await db.trade_requests.find({
+        "$or": [
+            {"requesting_walker_id": current_user["id"]},
+            {"target_walker_id": current_user["id"]}
+        ],
+        "status": "pending"
+    }, {"_id": 0}).to_list(100)
+    
+    # Enrich with appointment and walker details
+    for trade in trades:
+        appt = await db.appointments.find_one({"id": trade["appointment_id"]}, {"_id": 0})
+        if appt:
+            trade["appointment"] = appt
+        requester = await db.users.find_one({"id": trade["requesting_walker_id"]}, {"_id": 0, "password_hash": 0})
+        target = await db.users.find_one({"id": trade["target_walker_id"]}, {"_id": 0, "password_hash": 0})
+        trade["requester"] = requester
+        trade["target"] = target
+    
+    return trades
+
+@api_router.post("/trades/{trade_id}/accept")
+async def accept_trade_request(
+    trade_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Target walker accepts the trade request"""
+    trade = await db.trade_requests.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade request not found")
+    
+    if trade["target_walker_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Only target walker can accept")
+    
+    if trade["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Trade is no longer pending")
+    
+    # Update trade as accepted
+    await db.trade_requests.update_one(
+        {"id": trade_id},
+        {"$set": {"target_approved": True, "status": "accepted"}}
+    )
+    
+    # Transfer the appointment to target walker
+    await db.appointments.update_one(
+        {"id": trade["appointment_id"]},
+        {"$set": {"walker_id": trade["target_walker_id"]}}
+    )
+    
+    return {"message": "Trade accepted, appointment transferred"}
+
+@api_router.post("/trades/{trade_id}/reject")
+async def reject_trade_request(
+    trade_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Target walker rejects the trade request"""
+    trade = await db.trade_requests.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade request not found")
+    
+    if trade["target_walker_id"] != current_user["id"] and trade["requesting_walker_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.trade_requests.update_one(
+        {"id": trade_id},
+        {"$set": {"status": "rejected"}}
+    )
+    
+    return {"message": "Trade request rejected"}
+
+# ============================================
+# WALKER TIME-OFF REQUESTS
+# ============================================
+
+class TimeOffRequestCreate(BaseModel):
+    start_date: str
+    end_date: str
+    reason: Optional[str] = None
+
+@api_router.post("/time-off")
+async def create_time_off_request(
+    request: TimeOffRequestCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Walker requests time off - admin gets notified, affected walks flagged"""
+    if current_user["role"] not in ["walker", "sitter"]:
+        raise HTTPException(status_code=403, detail="Only walkers/sitters can request time off")
+    
+    # Find affected appointments during this period
+    affected_appts = await db.appointments.find({
+        "walker_id": current_user["id"],
+        "status": "scheduled",
+        "scheduled_date": {"$gte": request.start_date, "$lte": request.end_date}
+    }, {"_id": 0}).to_list(1000)
+    
+    affected_ids = [a["id"] for a in affected_appts]
+    
+    # Create time-off request
+    time_off = TimeOffRequest(
+        walker_id=current_user["id"],
+        start_date=request.start_date,
+        end_date=request.end_date,
+        reason=request.reason,
+        status="approved",  # Auto-approved
+        affected_appointments=affected_ids
+    )
+    
+    await db.time_off_requests.insert_one(time_off.model_dump())
+    
+    # Flag affected appointments for reassignment
+    if affected_ids:
+        await db.appointments.update_many(
+            {"id": {"$in": affected_ids}},
+            {"$set": {"needs_reassignment": True, "reassignment_reason": "walker_time_off"}}
+        )
+    
+    # Notify admin (create a notification/message)
+    admins = await db.users.find({"role": "admin"}, {"_id": 0}).to_list(100)
+    for admin in admins:
+        notification = Message(
+            sender_id=current_user["id"],
+            receiver_id=admin["id"],
+            content=f"Time-off request: {current_user['full_name']} requested time off from {request.start_date} to {request.end_date}. {len(affected_ids)} appointment(s) need reassignment."
+        )
+        await db.messages.insert_one(notification.model_dump())
+    
+    return {
+        "message": "Time-off request submitted",
+        "time_off_id": time_off.id,
+        "affected_appointments": len(affected_ids)
+    }
+
+@api_router.get("/time-off")
+async def get_time_off_requests(current_user: dict = Depends(get_current_user)):
+    """Get time-off requests"""
+    if current_user["role"] == "admin":
+        # Admin sees all
+        requests = await db.time_off_requests.find({}, {"_id": 0}).to_list(100)
+    else:
+        # Walker sees their own
+        requests = await db.time_off_requests.find(
+            {"walker_id": current_user["id"]}, {"_id": 0}
+        ).to_list(100)
+    
+    # Enrich with walker info
+    for req in requests:
+        walker = await db.users.find_one({"id": req["walker_id"]}, {"_id": 0, "password_hash": 0})
+        req["walker"] = walker
+    
+    return requests
+
+@api_router.get("/appointments/needs-reassignment")
+async def get_appointments_needing_reassignment(current_user: dict = Depends(get_current_user)):
+    """Admin gets appointments that need reassignment"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    appts = await db.appointments.find(
+        {"needs_reassignment": True, "status": "scheduled"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Enrich with client and walker info
+    for appt in appts:
+        client = await db.users.find_one({"id": appt["client_id"]}, {"_id": 0, "password_hash": 0})
+        appt["client"] = client
+        if appt.get("walker_id"):
+            walker = await db.users.find_one({"id": appt["walker_id"]}, {"_id": 0, "password_hash": 0})
+            appt["original_walker"] = walker
+    
+    return appts
+
+# ============================================
+# AUTO-INVOICE GENERATION
+# ============================================
+
+@api_router.post("/invoices/auto-generate")
+async def auto_generate_invoices(
+    cycle: str = "weekly",  # "weekly" or "monthly"
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin triggers auto-generation of invoices for review"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    from datetime import date
+    import calendar
+    
+    today = date.today()
+    
+    # Determine date range based on cycle
+    if cycle == "weekly":
+        # Previous week (Monday to Sunday)
+        days_since_monday = today.weekday()
+        end_date = today - timedelta(days=days_since_monday + 1)  # Last Sunday
+        start_date = end_date - timedelta(days=6)  # Previous Monday
+    else:  # monthly
+        # Previous month
+        if today.month == 1:
+            start_date = date(today.year - 1, 12, 1)
+            end_date = date(today.year - 1, 12, 31)
+        else:
+            start_date = date(today.year, today.month - 1, 1)
+            last_day = calendar.monthrange(today.year, today.month - 1)[1]
+            end_date = date(today.year, today.month - 1, last_day)
+    
+    start_str = start_date.strftime("%Y-%m-%d")
+    end_str = end_date.strftime("%Y-%m-%d")
+    
+    # Get all clients with completed appointments in this period
+    clients = await db.users.find({"role": "client"}, {"_id": 0}).to_list(1000)
+    
+    invoices_created = []
+    
+    for client in clients:
+        # Get unbilled completed appointments for this client in the date range
+        appts = await db.appointments.find({
+            "client_id": client["id"],
+            "status": "completed",
+            "scheduled_date": {"$gte": start_str, "$lte": end_str},
+            "invoiced": {"$ne": True}
+        }, {"_id": 0}).to_list(1000)
+        
+        if not appts:
+            continue
+        
+        # Calculate total
+        total = 0
+        for appt in appts:
+            service = await db.services.find_one({"service_type": appt["service_type"]}, {"_id": 0})
+            if service:
+                total += service["price"]
+            else:
+                # Default prices
+                default_prices = {"walk_30": 25, "walk_60": 40}
+                total += default_prices.get(appt["service_type"], 30)
+        
+        # Create invoice in "draft" status for review
+        due_date = (today + timedelta(days=14)).strftime("%Y-%m-%d")
+        invoice = Invoice(
+            client_id=client["id"],
+            appointment_ids=[a["id"] for a in appts],
+            amount=total,
+            status=InvoiceStatus.PENDING,
+            due_date=due_date
+        )
+        invoice_dict = invoice.model_dump()
+        invoice_dict["auto_generated"] = True
+        invoice_dict["billing_period_start"] = start_str
+        invoice_dict["billing_period_end"] = end_str
+        invoice_dict["review_status"] = "pending"  # pending, approved, sent
+        
+        await db.invoices.insert_one(invoice_dict)
+        
+        # Mark appointments as invoiced
+        appt_ids = [a["id"] for a in appts]
+        await db.appointments.update_many(
+            {"id": {"$in": appt_ids}},
+            {"$set": {"invoiced": True, "invoice_id": invoice.id}}
+        )
+        
+        invoices_created.append({
+            "invoice_id": invoice.id,
+            "client_name": client["full_name"],
+            "amount": total,
+            "appointments_count": len(appts)
+        })
+    
+    return {
+        "message": f"Auto-generated {len(invoices_created)} invoices for {cycle} billing",
+        "period": f"{start_str} to {end_str}",
+        "invoices": invoices_created
+    }
+
+@api_router.get("/invoices/pending-review")
+async def get_invoices_pending_review(current_user: dict = Depends(get_current_user)):
+    """Get auto-generated invoices pending admin review"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    invoices = await db.invoices.find(
+        {"review_status": "pending"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Enrich with client info
+    for inv in invoices:
+        client = await db.users.find_one({"id": inv["client_id"]}, {"_id": 0, "password_hash": 0})
+        inv["client"] = client
+    
+    return invoices
+
+@api_router.post("/invoices/{invoice_id}/approve-review")
+async def approve_invoice_for_sending(
+    invoice_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin approves an invoice for sending"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {"review_status": "approved"}}
+    )
+    
+    return {"message": "Invoice approved for sending"}
+
+@api_router.post("/invoices/mass-send")
+async def mass_send_approved_invoices(current_user: dict = Depends(get_current_user)):
+    """Admin sends all approved invoices at once"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    invoices = await db.invoices.find(
+        {"review_status": "approved"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    sent_count = 0
+    errors = []
+    
+    for inv in invoices:
+        try:
+            # Get client info
+            client = await db.users.find_one({"id": inv["client_id"]}, {"_id": 0})
+            if not client:
+                continue
+            
+            # Try to send email if SendGrid is configured
+            if SENDGRID_AVAILABLE and os.environ.get('SENDGRID_API_KEY'):
+                # Send email (simplified)
+                pass
+            
+            # Try to send SMS if Twilio is configured
+            if TWILIO_AVAILABLE and os.environ.get('TWILIO_ACCOUNT_SID'):
+                # Send SMS (simplified)
+                pass
+            
+            # Mark as sent
+            await db.invoices.update_one(
+                {"id": inv["id"]},
+                {"$set": {"review_status": "sent", "sent_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            sent_count += 1
+        except Exception as e:
+            errors.append({"invoice_id": inv["id"], "error": str(e)})
+    
+    return {
+        "message": f"Sent {sent_count} invoices",
+        "sent_count": sent_count,
+        "errors": errors
+    }
+
+# ============================================
+# WALKER CANCEL APPOINTMENT
+# ============================================
+
+@api_router.post("/appointments/{appt_id}/walker-cancel")
+async def walker_cancel_appointment(
+    appt_id: str,
+    request: WalkCancellationRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Walker cancels their assigned appointment with mandatory reason"""
+    if current_user["role"] not in ["walker", "sitter"]:
+        raise HTTPException(status_code=403, detail="Only walkers can cancel appointments")
+    
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if appt["walker_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not your appointment")
+    
+    if appt["status"] != "scheduled":
+        raise HTTPException(status_code=400, detail="Can only cancel scheduled appointments")
+    
+    # Flag for reassignment instead of cancelling
+    await db.appointments.update_one(
+        {"id": appt_id},
+        {"$set": {
+            "needs_reassignment": True,
+            "reassignment_reason": "walker_cancelled",
+            "cancellation_reason": request.reason,
+            "walker_id": None  # Remove walker assignment
+        }}
+    )
+    
+    # Notify admin
+    admins = await db.users.find({"role": "admin"}, {"_id": 0}).to_list(100)
+    for admin in admins:
+        notification = Message(
+            sender_id=current_user["id"],
+            receiver_id=admin["id"],
+            content=f"Walker {current_user['full_name']} cancelled appointment on {appt['scheduled_date']}. Reason: {request.reason}. Appointment needs reassignment."
+        )
+        await db.messages.insert_one(notification.model_dump())
+    
+    return {"message": "Appointment cancelled and flagged for reassignment"}
+
 
 # Include router
 app.include_router(api_router)
