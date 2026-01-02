@@ -85,9 +85,9 @@ const SitterDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
+      case 'scheduled': return 'bg-sky-100 text-sky-800';
+      case 'in_progress': return 'bg-orange-100 text-orange-800';
+      case 'completed': return 'bg-sky-50 text-sky-700';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -137,20 +137,20 @@ const SitterDashboard = () => {
 
         {/* Active Stays */}
         {activeStays.length > 0 && (
-          <Card className="rounded-xl border-2 border-purple-500 bg-purple-50">
+          <Card className="rounded-xl border-2 border-orange-500 bg-orange-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Moon className="w-5 h-5 text-purple-600" />
+                <Moon className="w-5 h-5 text-orange-600" />
                 Active Stays ({activeStays.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {activeStays.map((stay) => (
-                  <div key={stay.id} className="flex items-center justify-between p-3 rounded-lg bg-white border border-purple-200">
+                  <div key={stay.id} className="flex items-center justify-between p-3 rounded-lg bg-white border border-orange-200">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <PawPrint className="w-5 h-5 text-purple-600" />
+                      <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                        <PawPrint className="w-5 h-5 text-orange-600" />
                       </div>
                       <div>
                         <p className="font-medium text-sm">{stay.client_name}</p>
@@ -170,19 +170,19 @@ const SitterDashboard = () => {
         {/* Main Tabs */}
         <Tabs defaultValue="schedule" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 h-auto p-1">
-            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <DollarSign className="w-5 h-5" />
               <span className="text-xs">Payroll</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <User className="w-5 h-5" />
               <span className="text-xs">Profile</span>
             </TabsTrigger>
@@ -195,8 +195,8 @@ const SitterDashboard = () => {
               <Link to="/sitter/schedule">
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-purple-600" />
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">My Schedule</p>
@@ -205,10 +205,10 @@ const SitterDashboard = () => {
                   </CardContent>
                 </Card>
               </Link>
-              <Card className="rounded-xl bg-purple-50">
+              <Card className="rounded-xl bg-orange-50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <Bed className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Bed className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
                     <p className="font-medium text-sm">Active Stays</p>
@@ -222,7 +222,7 @@ const SitterDashboard = () => {
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Sun className="w-5 h-5 text-purple-600" />
+                  <Sun className="w-5 h-5 text-sky-600" />
                   Today's Stays
                   <Badge variant="secondary" className="rounded-full ml-2">{todayStays.length}</Badge>
                 </CardTitle>
