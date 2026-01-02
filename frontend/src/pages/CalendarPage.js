@@ -284,7 +284,20 @@ const CalendarPage = () => {
     }
   };
 
-  const timeSlots = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+  // Generate 15-minute increment time slots
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 6; hour <= 20; hour++) {
+      for (let min = 0; min < 60; min += 15) {
+        const h = hour.toString().padStart(2, '0');
+        const m = min.toString().padStart(2, '0');
+        slots.push(`${h}:${m}`);
+      }
+    }
+    return slots;
+  };
+  
+  const timeSlots = generateTimeSlots();
 
   const renderAppointmentCard = (appt, compact = false) => (
     <div
