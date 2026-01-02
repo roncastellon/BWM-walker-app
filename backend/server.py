@@ -2686,6 +2686,207 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     
     return stats
 
+# Subscription/Freemium Endpoints
+@api_router.get("/subscription")
+async def get_subscription(current_user: dict = Depends(get_current_user)):
+    """Get current user's subscription status"""
+    subscription = await db.subscriptions.find_one({"user_id": current_user['id']}, {"_id": 0})
+    
+    if not subscription:
+        # Create default free subscription
+        subscription = {
+            "id": str(uuid4()),
+            "user_id": current_user['id'],
+            "tier": "free",
+            "status": "active",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.subscriptions.insert_one(subscription)
+    
+    # Check if trial has expired
+    if subscription.get('trial_ends_at'):
+        trial_end = datetime.fromisoformat(subscription['trial_ends_at'].replace('Z', '+00:00'))
+        if datetime.now(timezone.utc) > trial_end and subscription.get('tier') == 'premium' and subscription.get('status') == 'trialing':
+            subscription['tier'] = 'free'
+            subscription['status'] = 'active'
+            await db.subscriptions.update_one(
+                {"user_id": current_user['id']},
+                {"$set": {"tier": "free", "status": "active"}}
+            )
+    
+    # Get current usage counts
+    walker_count = await db.users.count_documents({"role": "walker"})
+    client_count = await db.users.count_documents({"role": "client"})
+    
+    limits = FREEMIUM_LIMITS.get(subscription.get('tier', 'free'), FREEMIUM_LIMITS['free'])
+    
+    return {
+        **subscription,
+        "limits": limits,
+        "usage": {
+            "walkers": walker_count,
+            "clients": client_count,
+        },
+        "prices": SUBSCRIPTION_PRICES,
+        "trial_days": TRIAL_DAYS
+    }
+
+@api_router.post("/subscription/start-trial")
+async def start_trial(current_user: dict = Depends(get_current_user)):
+    """Start 14-day premium trial"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    subscription = await db.subscriptions.find_one({"user_id": current_user['id']})
+    
+    if subscription and subscription.get('trial_ends_at'):
+        raise HTTPException(status_code=400, detail="Trial already used")
+    
+    trial_end = datetime.now(timezone.utc) + timedelta(days=TRIAL_DAYS)
+    
+    update_data = {
+        "tier": "premium",
+        "status": "trialing",
+        "trial_ends_at": trial_end.isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if subscription:
+        await db.subscriptions.update_one(
+            {"user_id": current_user['id']},
+            {"$set": update_data}
+        )
+    else:
+        await db.subscriptions.insert_one({
+            "id": str(uuid4()),
+            "user_id": current_user['id'],
+            **update_data,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    return {"message": "Trial started", "trial_ends_at": trial_end.isoformat()}
+
+@api_router.post("/subscription/upgrade")
+async def upgrade_subscription(plan_type: str = "monthly", current_user: dict = Depends(get_current_user)):
+    """Create Stripe checkout for premium subscription"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    if plan_type not in ["monthly", "yearly"]:
+        raise HTTPException(status_code=400, detail="Invalid plan type")
+    
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+    
+    api_key = os.environ.get('STRIPE_API_KEY')
+    if not api_key:
+        raise HTTPException(status_code=400, detail="Stripe not configured")
+    
+    origin_url = os.environ.get('ORIGIN_URL', 'http://localhost:3000')
+    webhook_url = f"{origin_url}/api/webhook/stripe-subscription"
+    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url=webhook_url)
+    
+    price = SUBSCRIPTION_PRICES[plan_type]
+    
+    checkout_request = CheckoutSessionRequest(
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "unit_amount": int(price * 100),
+                "product_data": {
+                    "name": f"WagWalk Premium ({plan_type.capitalize()})",
+                    "description": f"Premium subscription - {'$14.99/month' if plan_type == 'monthly' else '$149/year (save $30!)'}",
+                },
+                "recurring": {
+                    "interval": "month" if plan_type == "monthly" else "year"
+                }
+            },
+            "quantity": 1,
+        }],
+        mode="subscription",
+        success_url=f"{origin_url}/subscription?success=true",
+        cancel_url=f"{origin_url}/subscription?canceled=true",
+        metadata={"user_id": current_user['id'], "plan_type": plan_type}
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    return {"checkout_url": session.url, "session_id": session.session_id}
+
+@api_router.post("/subscription/cancel")
+async def cancel_subscription(current_user: dict = Depends(get_current_user)):
+    """Cancel premium subscription"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    subscription = await db.subscriptions.find_one({"user_id": current_user['id']})
+    
+    if not subscription or subscription.get('tier') == 'free':
+        raise HTTPException(status_code=400, detail="No active subscription")
+    
+    # Downgrade to free
+    await db.subscriptions.update_one(
+        {"user_id": current_user['id']},
+        {"$set": {
+            "tier": "free",
+            "status": "canceled",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Subscription canceled. You'll retain premium features until the end of your billing period."}
+
+@api_router.post("/webhook/stripe-subscription")
+async def stripe_subscription_webhook(request: Request):
+    """Handle Stripe subscription webhooks"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    body = await request.body()
+    api_key = os.environ.get('STRIPE_API_KEY')
+    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url="")
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, request.headers.get("Stripe-Signature"))
+        
+        if webhook_response.event_type in ["checkout.session.completed", "customer.subscription.created"]:
+            user_id = webhook_response.metadata.get("user_id")
+            plan_type = webhook_response.metadata.get("plan_type", "monthly")
+            
+            if user_id:
+                await db.subscriptions.update_one(
+                    {"user_id": user_id},
+                    {"$set": {
+                        "tier": "premium",
+                        "status": "active",
+                        "plan_type": plan_type,
+                        "stripe_subscription_id": webhook_response.session_id,
+                        "current_period_start": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }},
+                    upsert=True
+                )
+        
+        return {"status": "success"}
+    except Exception as e:
+        logging.error(f"Subscription webhook error: {e}")
+        return {"status": "error", "message": str(e)}
+
+@api_router.get("/subscription/check-feature/{feature}")
+async def check_feature_access(feature: str, current_user: dict = Depends(get_current_user)):
+    """Check if user has access to a specific feature"""
+    subscription = await db.subscriptions.find_one({"user_id": current_user['id']}, {"_id": 0})
+    tier = subscription.get('tier', 'free') if subscription else 'free'
+    
+    limits = FREEMIUM_LIMITS.get(tier, FREEMIUM_LIMITS['free'])
+    
+    has_access = limits.get(feature, False)
+    
+    return {
+        "feature": feature,
+        "has_access": has_access,
+        "tier": tier,
+        "upgrade_required": not has_access and tier == "free"
+    }
+
 # Root
 @api_router.get("/")
 async def root():
