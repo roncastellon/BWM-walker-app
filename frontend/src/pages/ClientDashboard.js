@@ -491,6 +491,82 @@ const ClientDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Appointment Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Appointment</DialogTitle>
+            <DialogDescription>
+              Update the date, time, or add notes for this appointment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-date">Date</Label>
+              <Input
+                id="edit-date"
+                type="date"
+                value={editForm.scheduled_date}
+                onChange={(e) => setEditForm({ ...editForm, scheduled_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-time">Time</Label>
+              <Input
+                id="edit-time"
+                type="time"
+                value={editForm.scheduled_time}
+                onChange={(e) => setEditForm({ ...editForm, scheduled_time: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">Notes (optional)</Label>
+              <Input
+                id="edit-notes"
+                placeholder="Special instructions..."
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditSubmit} disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Appointment Modal */}
+      <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <Trash2 className="w-5 h-5" />
+              Cancel Appointment
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this appointment? There is no cancellation fee.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAppt && (
+            <div className="p-4 rounded-lg bg-muted/50 my-4">
+              <p className="font-medium capitalize">{selectedAppt.service_type?.replace('_', ' ')}</p>
+              <p className="text-sm text-muted-foreground">
+                {selectedAppt.scheduled_date} at {selectedAppt.scheduled_time}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelModalOpen(false)}>Keep Appointment</Button>
+            <Button variant="destructive" onClick={handleCancelAppointment} disabled={saving}>
+              {saving ? 'Cancelling...' : 'Yes, Cancel'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
