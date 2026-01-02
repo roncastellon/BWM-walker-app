@@ -695,24 +695,67 @@ const AdminBillingPage = () => {
                   <Send className="w-5 h-5 text-secondary" />
                   Invoice Delivery
                 </CardTitle>
+                <CardDescription>Choose how invoices are sent to clients</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className={`p-3 rounded-lg ${notificationConfig.sendgrid_configured ? 'bg-sky-50' : 'bg-yellow-50'}`}>
-                    <div className="flex items-center gap-3">
-                      <Mail className={`w-5 h-5 ${notificationConfig.sendgrid_configured ? 'text-sky-600' : 'text-yellow-600'}`} />
-                      <div>
-                        <p className="font-medium text-sm">Email (SendGrid)</p>
-                        <p className="text-xs text-muted-foreground">{notificationConfig.sendgrid_configured ? 'Configured' : 'Not configured'}</p>
+              <CardContent className="space-y-4">
+                {/* Delivery Preference Selector */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Delivery Method</Label>
+                  <Select 
+                    value={companyInfo.invoice_delivery_preference || 'both'} 
+                    onValueChange={(value) => setCompanyInfo({...companyInfo, invoice_delivery_preference: value})}
+                  >
+                    <SelectTrigger className="w-full md:w-64">
+                      <SelectValue placeholder="Select delivery method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="email">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-sky-500" />
+                          <span>Email Only</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="text">
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4 text-green-500" />
+                          <span>Text (SMS) Only</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="both">
+                        <div className="flex items-center gap-2">
+                          <Send className="w-4 h-4 text-orange-500" />
+                          <span>Both Email & Text</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {companyInfo.invoice_delivery_preference === 'email' && 'Invoices will be sent via email only'}
+                    {companyInfo.invoice_delivery_preference === 'text' && 'Invoices will be sent via text message only'}
+                    {(companyInfo.invoice_delivery_preference === 'both' || !companyInfo.invoice_delivery_preference) && 'Invoices will be sent via both email and text message'}
+                  </p>
+                </div>
+
+                {/* Service Status */}
+                <div className="pt-2 border-t">
+                  <p className="text-sm font-medium mb-3 text-muted-foreground">Service Status</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className={`p-3 rounded-lg ${notificationConfig.sendgrid_configured ? 'bg-sky-50' : 'bg-yellow-50'}`}>
+                      <div className="flex items-center gap-3">
+                        <Mail className={`w-5 h-5 ${notificationConfig.sendgrid_configured ? 'text-sky-600' : 'text-yellow-600'}`} />
+                        <div>
+                          <p className="font-medium text-sm">Email (SendGrid)</p>
+                          <p className="text-xs text-muted-foreground">{notificationConfig.sendgrid_configured ? 'Configured' : 'Not configured'}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className={`p-3 rounded-lg ${notificationConfig.twilio_configured ? 'bg-sky-50' : 'bg-yellow-50'}`}>
-                    <div className="flex items-center gap-3">
-                      <MessageSquare className={`w-5 h-5 ${notificationConfig.twilio_configured ? 'text-sky-600' : 'text-yellow-600'}`} />
-                      <div>
-                        <p className="font-medium text-sm">SMS (Twilio)</p>
-                        <p className="text-xs text-muted-foreground">{notificationConfig.twilio_configured ? 'Configured' : 'Not configured'}</p>
+                    <div className={`p-3 rounded-lg ${notificationConfig.twilio_configured ? 'bg-sky-50' : 'bg-yellow-50'}`}>
+                      <div className="flex items-center gap-3">
+                        <MessageSquare className={`w-5 h-5 ${notificationConfig.twilio_configured ? 'text-sky-600' : 'text-yellow-600'}`} />
+                        <div>
+                          <p className="font-medium text-sm">SMS (Twilio)</p>
+                          <p className="text-xs text-muted-foreground">{notificationConfig.twilio_configured ? 'Configured' : 'Not configured'}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
