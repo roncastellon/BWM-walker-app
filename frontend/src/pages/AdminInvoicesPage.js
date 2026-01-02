@@ -833,8 +833,8 @@ const AdminBillingPage = () => {
                         <ellipse cx="30" cy="46" rx="5" ry="4" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
                         
                         {/* Orange Cat - Smaller with oval head */}
-                        {/* Tail wrapping around body */}
-                        <path d="M 50 38 Q 44 44 47 48 Q 50 50 55 46" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2" strokeLinecap="round"/>
+                        {/* Tail - longer, wrapping around in front of paws */}
+                        <path d="M 72 34 Q 78 38 76 44 Q 74 50 66 48 Q 58 46 52 44" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2" strokeLinecap="round"/>
                         {/* Body - smaller */}
                         <ellipse cx="60" cy="34" rx="12" ry="10" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
                         {/* Head - oval shape */}
