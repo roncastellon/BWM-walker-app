@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { PawPrint, Plus, Trash2, Dog, Cat, Bird, Edit, Camera, Loader2 } from 'lucide-react';
+import { PawPrint, Plus, Trash2, Dog, Cat, Bird, Edit, Camera, Loader2, Phone, User, Stethoscope, AlertTriangle, Pill, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PetsPage = () => {
@@ -29,6 +29,12 @@ const PetsPage = () => {
     age: '',
     weight: '',
     notes: '',
+    vet_name: '',
+    vet_phone: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    prescriptions: '',
+    things_to_know: '',
   };
   
   const [formData, setFormData] = useState(emptyForm);
