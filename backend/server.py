@@ -1024,39 +1024,6 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
     await db.appointments.insert_one(appt_dict)
     return appointment
 
-# Get available time slots for a date
-@api_router.get("/appointments/available-slots")
-async def get_available_slots(date: str, current_user: dict = Depends(get_current_user)):
-    """Get available time slots and walker availability for a given date"""
-    time_slots = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00']
-    
-    # Get all appointments for this date
-    appointments = await db.appointments.find({
-        "scheduled_date": date,
-        "status": {"$nin": ["cancelled"]}
-    }, {"_id": 0}).to_list(100)
-    
-    # Get all walkers
-    walkers = await db.users.find({"role": "walker", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
-    
-    slot_info = []
-    for slot in time_slots:
-        appts_at_slot = [a for a in appointments if a.get('scheduled_time') == slot]
-        slot_count = len(appts_at_slot)
-        
-        # Find available walkers for this slot
-        booked_walker_ids = [a.get('walker_id') for a in appts_at_slot if a.get('walker_id')]
-        available_walkers = [w for w in walkers if w['id'] not in booked_walker_ids]
-        
-        slot_info.append({
-            "time": slot,
-            "booked_count": slot_count,
-            "is_full": slot_count >= 3,
-            "available_walkers": available_walkers
-        })
-    
-    return {"date": date, "slots": slot_info}
-
 @api_router.post("/appointments/{appt_id}/start")
 async def start_walk(appt_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] not in ['admin', 'walker']:
