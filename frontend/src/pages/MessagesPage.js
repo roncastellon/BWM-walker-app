@@ -313,20 +313,27 @@ const ContactsList = memo(({
                   )}
                 </div>
                 <div className="text-left flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <p className={`font-medium truncate ${contact.unread_count > 0 ? 'font-bold' : ''}`}>
                       {contact.full_name}
                     </p>
+                    {contact.has_messages && (
+                      <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" title="Active chat" />
+                    )}
                   </div>
-                  <div className={`text-xs ${
+                  <div className={`text-xs truncate ${
                     selectedContact?.id === contact.id && !isGroupChat
                       ? 'text-primary-foreground/70'
-                      : ''
+                      : 'text-muted-foreground'
                   }`}>
-                    {selectedContact?.id === contact.id && !isGroupChat ? (
-                      <span className="capitalize">{contact.type}</span>
+                    {contact.last_message_preview ? (
+                      <span className="italic">{contact.last_message_preview}...</span>
                     ) : (
-                      getContactTypeBadge(contact.type)
+                      selectedContact?.id === contact.id && !isGroupChat ? (
+                        <span className="capitalize">{contact.type}</span>
+                      ) : (
+                        getContactTypeBadge(contact.type)
+                      )
                     )}
                   </div>
                 </div>
