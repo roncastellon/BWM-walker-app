@@ -687,15 +687,20 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Global location permission prompt on app load"
-    - "Walker profile picture upload"
-    - "Admin profile picture upload"
-    - "Company Info tab accessibility"
+    - "Client appointment edit/cancel"
+    - "Walker trade requests"
+    - "Walker time-off requests"
+    - "Auto-invoice generation"
+    - "Walker cancel appointment"
+    - "Client edit/cancel appointments UI"
+    - "Walker trade and cancel UI"
+    - "Walker time-off request UI"
+    - "Auto-invoice admin UI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-  backend_testing_complete: true
-  frontend_testing_complete: true
+  backend_testing_complete: false
+  frontend_testing_complete: false
 
 agent_communication:
   - agent: "main"
