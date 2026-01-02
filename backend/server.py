@@ -561,6 +561,88 @@ async def login(credentials: UserLogin):
 async def get_me(current_user: dict = Depends(get_current_user)):
     return UserResponse(**current_user)
 
+# First-time Admin Setup
+@api_router.get("/auth/setup-status")
+async def get_setup_status():
+    """Check if initial admin setup is needed"""
+    admin_count = await db.users.count_documents({"role": "admin"})
+    return {
+        "setup_required": admin_count == 0,
+        "admin_exists": admin_count > 0
+    }
+
+class AdminSetupRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+    full_name: str
+    company_name: Optional[str] = None
+    phone: Optional[str] = None
+
+@api_router.post("/auth/setup-admin")
+async def setup_first_admin(request: AdminSetupRequest):
+    """Create the first admin account - only works if no admin exists"""
+    # Check if any admin already exists
+    admin_count = await db.users.count_documents({"role": "admin"})
+    if admin_count > 0:
+        raise HTTPException(status_code=400, detail="Admin already exists. Please login instead.")
+    
+    # Check if username or email already taken
+    existing = await db.users.find_one({"$or": [{"username": request.username}, {"email": request.email}]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Username or email already taken")
+    
+    # Create admin user
+    password_hash = pwd_context.hash(request.password)
+    admin_user = {
+        "id": str(uuid.uuid4()),
+        "username": request.username,
+        "email": request.email,
+        "password_hash": password_hash,
+        "full_name": request.full_name,
+        "phone": request.phone,
+        "role": "admin",
+        "is_active": True,
+        "billing_cycle": "monthly",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(admin_user)
+    
+    # Save company info if provided
+    if request.company_name:
+        await db.settings.update_one(
+            {"type": "company_info"},
+            {"$set": {"company_name": request.company_name, "email": request.email, "phone": request.phone}},
+            upsert=True
+        )
+    
+    # Create free subscription for the admin
+    subscription = {
+        "id": str(uuid.uuid4()),
+        "user_id": admin_user["id"],
+        "tier": "free",
+        "status": "active",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.subscriptions.insert_one(subscription)
+    
+    # Generate token
+    token = create_access_token(admin_user["id"], admin_user["role"])
+    
+    return {
+        "message": "Admin account created successfully",
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": admin_user["id"],
+            "username": admin_user["username"],
+            "email": admin_user["email"],
+            "full_name": admin_user["full_name"],
+            "role": admin_user["role"]
+        }
+    }
+
 # User Routes
 @api_router.get("/users/walkers", response_model=List[UserResponse])
 async def get_walkers():
