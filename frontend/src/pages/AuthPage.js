@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dog, PawPrint } from 'lucide-react';
 import { toast } from 'sonner';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const AuthPage = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -21,8 +24,26 @@ const AuthPage = () => {
     role: 'client',
   });
   const [loading, setLoading] = useState(false);
+  const [checkingSetup, setCheckingSetup] = useState(true);
   const { login, register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    checkSetupStatus();
+  }, []);
+
+  const checkSetupStatus = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/auth/setup-status`);
+      if (response.data.setup_required) {
+        navigate('/setup');
+      }
+    } catch (error) {
+      console.error('Failed to check setup status:', error);
+    } finally {
+      setCheckingSetup(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
