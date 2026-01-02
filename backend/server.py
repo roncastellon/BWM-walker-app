@@ -288,6 +288,7 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     phone: Optional[str] = None
+    address: Optional[str] = None
     role: str
     bio: Optional[str] = None
     profile_image: Optional[str] = None
