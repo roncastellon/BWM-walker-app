@@ -1894,7 +1894,7 @@ async def send_mass_text(request: MassTextRequest, current_user: dict = Depends(
     
     # Log the mass text
     await db.mass_texts.insert_one({
-        "id": str(uuid4()),
+        "id": str(uuid.uuid4()),
         "sender_id": current_user['id'],
         "sender_name": current_user['full_name'],
         "recipient_group": request.recipient_group,
@@ -2758,7 +2758,7 @@ async def start_trial(current_user: dict = Depends(get_current_user)):
         )
     else:
         await db.subscriptions.insert_one({
-            "id": str(uuid4()),
+            "id": str(uuid.uuid4()),
             "user_id": current_user['id'],
             **update_data,
             "created_at": datetime.now(timezone.utc).isoformat()
