@@ -903,7 +903,11 @@ async def get_calendar_appointments(current_user: dict = Depends(get_current_use
 @api_router.get("/appointments/available-slots")
 async def get_available_slots(date: str, current_user: dict = Depends(get_current_user)):
     """Get available time slots and walker availability for a given date"""
-    time_slots = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00']
+    # Generate 15-minute increment time slots from 6:00 AM to 8:00 PM
+    time_slots = []
+    for hour in range(6, 21):  # 6 AM to 8 PM
+        for minute in [0, 15, 30, 45]:
+            time_slots.append(f"{hour:02d}:{minute:02d}")
     
     # Get all appointments for this date
     appointments = await db.appointments.find({
