@@ -754,120 +754,144 @@ const AdminBillingPage = () => {
 
         {/* Invoice Detail Modal */}
         <Dialog open={!!selectedInvoice} onOpenChange={closeInvoiceDetail}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary" />
-                Invoice Details
-              </DialogTitle>
-              <DialogDescription>
-                Invoice #{selectedInvoice?.id?.slice(0, 8)}
-              </DialogDescription>
-            </DialogHeader>
-            
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
             {detailLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
               </div>
             ) : invoiceDetail ? (
-              <div className="space-y-6">
-                {/* Company Header (if set) */}
-                {invoiceDetail.company_info?.company_name && (
-                  <div className="p-4 rounded-xl bg-primary/10 text-center">
-                    {invoiceDetail.company_info.logo_url && (
-                      <img 
-                        src={invoiceDetail.company_info.logo_url} 
-                        alt="Logo" 
-                        className="h-12 mx-auto mb-2 object-contain"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold">{invoiceDetail.company_info.company_name}</h2>
-                    {invoiceDetail.company_info.address && (
-                      <p className="text-sm text-muted-foreground whitespace-pre-line">{invoiceDetail.company_info.address}</p>
-                    )}
-                    {(invoiceDetail.company_info.phone || invoiceDetail.company_info.email) && (
-                      <p className="text-sm text-muted-foreground">
-                        {invoiceDetail.company_info.phone} {invoiceDetail.company_info.phone && invoiceDetail.company_info.email && '|'} {invoiceDetail.company_info.email}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Invoice Summary */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-muted/50">
-                    <p className="text-sm text-muted-foreground">Amount Due</p>
-                    <p className="text-3xl font-bold text-primary">${invoiceDetail.amount?.toFixed(2)}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-muted/50">
-                    <p className="text-sm text-muted-foreground">Status</p>
-                    <Badge className={`mt-1 rounded-full ${
-                      invoiceDetail.status === 'paid' ? 'bg-sky-100 text-sky-800' :
-                      invoiceDetail.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {invoiceDetail.status?.toUpperCase()}
-                    </Badge>
+              <div className="invoice-container">
+                {/* Invoice Header - Matches Business Card Design */}
+                <div className="bg-white p-6 border-b-4 border-orange-500">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {/* Blue Dog & Orange Cat Icons */}
+                      <div className="flex items-center">
+                        <svg viewBox="0 0 60 50" className="w-16 h-14">
+                          {/* Blue Dog */}
+                          <ellipse cx="18" cy="30" rx="12" ry="10" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                          <circle cx="12" cy="22" r="8" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                          <ellipse cx="8" cy="14" rx="4" ry="6" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                          <ellipse cx="16" cy="14" rx="4" ry="6" fill="#38bdf8" stroke="#1e3a5f" strokeWidth="2"/>
+                          <circle cx="10" cy="21" r="1.5" fill="#1e3a5f"/>
+                          <circle cx="14" cy="21" r="1.5" fill="#1e3a5f"/>
+                          <ellipse cx="12" cy="25" rx="2" ry="1" fill="#1e3a5f"/>
+                          {/* Orange Cat */}
+                          <ellipse cx="42" cy="30" rx="10" ry="8" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                          <circle cx="46" cy="22" r="7" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                          <polygon points="40,16 42,8 46,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                          <polygon points="48,16 52,8 54,16" fill="#fb923c" stroke="#1e3a5f" strokeWidth="2"/>
+                          <circle cx="44" cy="21" r="1.5" fill="#1e3a5f"/>
+                          <circle cx="48" cy="21" r="1.5" fill="#1e3a5f"/>
+                          <ellipse cx="46" cy="25" rx="1.5" ry="1" fill="#1e3a5f"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Lace</p>
+                        <p className="text-xs text-gray-500">Dog Walking & Pet Sitting</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <h1 className="text-2xl font-bold text-gray-800">INVOICE</h1>
+                      <p className="text-sm text-gray-500">#{invoiceDetail.id?.slice(0, 8).toUpperCase()}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Client Info */}
-                {invoiceDetail.client && (
-                  <div className="p-4 rounded-xl bg-muted/30">
-                    <h4 className="font-medium mb-2">Bill To:</h4>
-                    <p className="font-medium">{invoiceDetail.client.full_name}</p>
-                    {invoiceDetail.client.email && (
-                      <p className="text-sm text-muted-foreground">{invoiceDetail.client.email}</p>
-                    )}
-                    {invoiceDetail.client.phone && (
-                      <p className="text-sm text-muted-foreground">{invoiceDetail.client.phone}</p>
-                    )}
-                  </div>
-                )}
-
-                {/* Due Date */}
-                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                  <span className="text-muted-foreground">Due Date:</span>
-                  <span className="font-medium">{invoiceDetail.due_date}</span>
+                {/* Teal/Blue Section - Company Info */}
+                <div className="bg-sky-500 text-white p-6">
+                  <h2 className="text-2xl font-bold mb-1">Bow Wow Meow</h2>
+                  <p className="text-sky-100">Fort Lauderdale, Florida</p>
+                  <p className="text-sky-100">(954) 594-2164 Text or Call</p>
                 </div>
 
-                {/* Services/Appointments */}
-                {invoiceDetail.appointments && invoiceDetail.appointments.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Services</h4>
-                    <div className="border rounded-lg overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-muted/50">
-                          <tr>
-                            <th className="text-left p-3 text-sm font-medium">Service</th>
-                            <th className="text-left p-3 text-sm font-medium">Date</th>
-                            <th className="text-right p-3 text-sm font-medium">Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {invoiceDetail.appointments.map((appt, idx) => (
-                            <tr key={idx} className="border-t">
-                              <td className="p-3">
-                                <p className="font-medium">{appt.service_name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {appt.pet_names?.join(', ')} • Walker: {appt.walker_name}
-                                </p>
-                              </td>
-                              <td className="p-3 text-sm">
-                                {appt.scheduled_date} {appt.scheduled_time}
-                              </td>
-                              <td className="p-3 text-right font-medium">
-                                ${appt.service_price?.toFixed(2)}
-                              </td>
+                {/* Invoice Content */}
+                <div className="p-6 space-y-6">
+                  {/* Amount and Status */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-sky-50 to-sky-100 border border-sky-200">
+                      <p className="text-sm text-sky-600 font-medium">Amount Due</p>
+                      <p className="text-3xl font-bold text-sky-700">${invoiceDetail.amount?.toFixed(2)}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200">
+                      <p className="text-sm text-orange-600 font-medium">Status</p>
+                      <Badge className={`mt-1 rounded-full text-sm px-3 py-1 ${
+                        invoiceDetail.status === 'paid' ? 'bg-sky-500 text-white' :
+                        invoiceDetail.status === 'overdue' ? 'bg-red-500 text-white' :
+                        'bg-orange-500 text-white'
+                      }`}>
+                        {invoiceDetail.status?.toUpperCase()}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Bill To */}
+                  {invoiceDetail.client && (
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                      <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <User className="w-4 h-4 text-sky-500" />
+                        Bill To:
+                      </h4>
+                      <p className="font-medium text-gray-800">{invoiceDetail.client.full_name}</p>
+                      {invoiceDetail.client.email && (
+                        <p className="text-sm text-gray-600">{invoiceDetail.client.email}</p>
+                      )}
+                      {invoiceDetail.client.phone && (
+                        <p className="text-sm text-gray-600">{invoiceDetail.client.phone}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Due Date */}
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-orange-50 border border-orange-200">
+                    <span className="text-orange-700 font-medium">Due Date:</span>
+                    <span className="font-bold text-orange-800">{invoiceDetail.due_date}</span>
+                  </div>
+
+                  {/* Services Table */}
+                  {invoiceDetail.appointments && invoiceDetail.appointments.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                        <PawPrint className="w-4 h-4 text-orange-500" />
+                        Services
+                      </h4>
+                      <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-sky-500 text-white">
+                            <tr>
+                              <th className="text-left p-3 text-sm font-semibold">Service</th>
+                              <th className="text-left p-3 text-sm font-semibold">Date</th>
+                              <th className="text-right p-3 text-sm font-semibold">Amount</th>
                             </tr>
-                          ))}
-                        </tbody>
-                        <tfoot className="bg-muted/30">
-                          <tr>
-                            <td colSpan="2" className="p-3 text-right font-bold">Total:</td>
-                            <td className="p-3 text-right font-bold text-primary">${invoiceDetail.amount?.toFixed(2)}</td>
-                          </tr>
-                        </tfoot>
+                          </thead>
+                          <tbody>
+                            {invoiceDetail.appointments.map((appt, idx) => (
+                              <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-sky-50'}>
+                                <td className="p-3">
+                                  <p className="font-medium text-gray-800">{appt.service_name}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {appt.pet_names?.join(', ')} • Walker: {appt.walker_name}
+                                  </p>
+                                </td>
+                                <td className="p-3 text-sm text-gray-600">
+                                  {appt.scheduled_date} {appt.scheduled_time}
+                                </td>
+                                <td className="p-3 text-right font-medium text-gray-800">
+                                  ${appt.service_price?.toFixed(2)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot className="bg-orange-500 text-white">
+                            <tr>
+                              <td colSpan="2" className="p-3 text-right font-bold">Total:</td>
+                              <td className="p-3 text-right font-bold text-lg">${invoiceDetail.amount?.toFixed(2)}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                       </table>
                     </div>
                   </div>
