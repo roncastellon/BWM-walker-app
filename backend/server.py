@@ -257,6 +257,7 @@ class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     phone: Optional[str] = None
+    address: Optional[str] = None
     role: UserRole = UserRole.CLIENT
     bio: Optional[str] = None
     profile_image: Optional[str] = None
