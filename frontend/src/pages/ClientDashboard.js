@@ -141,12 +141,12 @@ const ClientDashboard = () => {
     <Layout>
       <div className="space-y-6" data-testid="client-dashboard">
         {/* Welcome Header */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/90 to-primary p-6 text-primary-foreground">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 p-6 text-white">
           <div className="relative z-10">
             <h1 className="text-2xl lg:text-3xl font-heading font-bold mb-1">
               Welcome, {user?.full_name?.split(' ')[0]}!
             </h1>
-            <p className="text-primary-foreground/80">
+            <p className="text-white/80">
               Your pets are in great hands
             </p>
           </div>
@@ -158,19 +158,19 @@ const ClientDashboard = () => {
         {/* Main Tabs */}
         <Tabs defaultValue="schedule" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 h-auto p-1">
-            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="schedule" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="billing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <CreditCard className="w-5 h-5" />
               <span className="text-xs">Billing</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <User className="w-5 h-5" />
               <span className="text-xs">Profile</span>
             </TabsTrigger>
