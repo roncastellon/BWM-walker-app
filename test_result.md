@@ -380,15 +380,18 @@ backend:
 
   - task: "Client appointment edit/cancel"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added PUT /appointments/{appt_id}/client-edit and POST /appointments/{appt_id}/client-cancel endpoints. Clients can edit date/time/notes or cancel scheduled appointments. No cancellation charge."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Client appointment edit/cancel working correctly. Successfully tested with demo_client credentials: 1) Client Edit Appointment (PUT /appointments/{id}/client-edit) - Successfully updated appointment time from 11:00 to 12:00 and notes, 2) Client Cancel Appointment (POST /appointments/{id}/client-cancel) - Successfully cancelled appointment with no charge. Both endpoints working as expected."
 
   - task: "Walker trade requests"
     implemented: true
