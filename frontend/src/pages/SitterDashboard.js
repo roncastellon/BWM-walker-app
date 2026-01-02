@@ -239,15 +239,15 @@ const SitterDashboard = () => {
                       <div
                         key={stay.id}
                         className={`flex items-center justify-between p-3 rounded-lg ${
-                          stay.status === 'in_progress' ? 'bg-purple-100 border border-purple-300' :
-                          stay.status === 'completed' ? 'bg-green-50' : 'bg-muted/50'
+                          stay.status === 'in_progress' ? 'bg-orange-100 border border-orange-300' :
+                          stay.status === 'completed' ? 'bg-sky-50' : 'bg-muted/50'
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            stay.status === 'in_progress' ? 'bg-purple-500 text-white' :
-                            stay.status === 'completed' ? 'bg-green-100 text-green-600' :
-                            'bg-purple-100 text-purple-600'
+                            stay.status === 'in_progress' ? 'bg-orange-500 text-white' :
+                            stay.status === 'completed' ? 'bg-sky-100 text-sky-600' :
+                            'bg-sky-100 text-sky-600'
                           }`}>
                             {stay.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : <Bed className="w-5 h-5" />}
                           </div>
@@ -280,8 +280,8 @@ const SitterDashboard = () => {
               <Link to="/sitter/payroll">
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">Completed Stays</p>
@@ -308,14 +308,14 @@ const SitterDashboard = () => {
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-purple-600" />
+                  <CreditCard className="w-5 h-5 text-sky-600" />
                   This Week
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 rounded-lg bg-purple-50">
-                    <p className="text-2xl font-bold text-purple-600">{stats.completed_walks || 0}</p>
+                  <div className="text-center p-3 rounded-lg bg-sky-50">
+                    <p className="text-2xl font-bold text-sky-600">{stats.completed_walks || 0}</p>
                     <p className="text-xs text-muted-foreground">Stays Done</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-muted/50">
