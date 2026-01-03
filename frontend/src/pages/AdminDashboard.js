@@ -167,9 +167,9 @@ const AdminDashboard = () => {
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <Link to="/admin/billing" className="flex flex-col py-3 gap-1 items-center justify-center rounded-md hover:bg-orange-100 transition-colors">
+            <Link to="/admin/billing" className="flex flex-col py-3 gap-1 items-center justify-center text-center rounded-md hover:bg-orange-100 transition-colors">
               <CreditCard className="w-5 h-5" />
-              <span className="text-xs">Billing & Payroll</span>
+              <span className="text-xs leading-tight">Billing &<br/>Payroll</span>
             </Link>
             <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <MessageCircle className="w-5 h-5" />
