@@ -78,6 +78,8 @@ const AdminBillingPage = () => {
   const [loadingTimesheets, setLoadingTimesheets] = useState(false);
   const [selectedTimesheet, setSelectedTimesheet] = useState(null);
   const [timesheetModalOpen, setTimesheetModalOpen] = useState(false);
+  const [walkerPaymentInfo, setWalkerPaymentInfo] = useState(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     fetchAllData();
