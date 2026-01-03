@@ -1126,71 +1126,73 @@ const WalkerDashboard = () => {
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             {tradeRequests
               .filter(t => t.target_walker_id === user?.id && t.status === 'pending')
-              .map((trade) => (
-                <Card key={trade.id} className="rounded-xl border-2 border-red-200">
-                  <CardContent className="p-4">
-                    {/* Requester Info */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={trade.requester?.profile_image} />
-                        <AvatarFallback className="bg-orange-100 text-orange-600">
-                          {trade.requester?.full_name?.charAt(0) || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{trade.requester?.full_name || 'Unknown Walker'}</p>
-                        <p className="text-xs text-muted-foreground">wants to trade with you</p>
-                      </div>
-                    </div>
-                    
-                    {/* Appointment Details */}
-                    {trade.appointment && (
-                      <div className="p-3 rounded-lg bg-gray-50 mb-3">
-                        <p className="font-medium capitalize text-sm">
-                          {trade.appointment.service_type?.replace('_', ' ')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          📅 {trade.appointment.scheduled_date}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          🕐 {trade.appointment.scheduled_time}
-                        </p>
-                        {trade.appointment.client_name && (
-                          <p className="text-sm text-muted-foreground">
-                            👤 {trade.appointment.client_name}
+              .map((trade) => {
+                const appt = trade.appointment;
+                const requesterName = trade.requester?.full_name || 'A walker';
+                const petNames = appt?.pet_names?.join(', ') || appt?.pets?.map(p => p.name).join(', ') || 'a pet';
+                const timeStr = appt?.scheduled_time || '';
+                const dateStr = appt?.scheduled_date || '';
+                const isToday = dateStr === new Date().toISOString().split('T')[0];
+                const dateDisplay = isToday ? 'today' : dateStr;
+                
+                // Format time to 12-hour format
+                let formattedTime = timeStr;
+                if (timeStr) {
+                  const [hours, minutes] = timeStr.split(':');
+                  const hour = parseInt(hours);
+                  const ampm = hour >= 12 ? 'pm' : 'am';
+                  const hour12 = hour % 12 || 12;
+                  formattedTime = `${hour12}:${minutes} ${ampm}`;
+                }
+                
+                return (
+                  <Card key={trade.id} className="rounded-xl border-2 border-red-200">
+                    <CardContent className="p-4">
+                      {/* Trade Request Message */}
+                      <div className="flex items-start gap-3 mb-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={trade.requester?.profile_image} />
+                          <AvatarFallback className="bg-orange-100 text-orange-600">
+                            {trade.requester?.full_name?.charAt(0) || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-base leading-relaxed">
+                            <span className="font-bold text-gray-900">{requesterName}</span>
+                            {' '}would like to trade their{' '}
+                            <span className="font-bold text-blue-600">{formattedTime}</span>
+                            {' '}walk {dateDisplay} with{' '}
+                            <span className="font-bold text-orange-600">{petNames}</span>.
                           </p>
-                        )}
+                        </div>
                       </div>
-                    )}
-                    
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
+                      
+                      {/* Confirm Request Button */}
                       <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleTradeResponse(trade.id, false)} 
-                        disabled={saving}
-                        className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        Decline
-                      </Button>
-                      <Button 
-                        size="sm" 
+                        size="lg" 
                         onClick={() => {
                           handleTradeResponse(trade.id, true);
                           setIncomingTradesModalOpen(false);
                         }} 
                         disabled={saving}
-                        className="flex-1 bg-green-500 hover:bg-green-600"
+                        className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3"
                       >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Accept Trade
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Confirm Request
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      
+                      {/* Decline link */}
+                      <button 
+                        onClick={() => handleTradeResponse(trade.id, false)} 
+                        disabled={saving}
+                        className="w-full mt-2 text-sm text-red-500 hover:text-red-700 hover:underline"
+                      >
+                        Decline this request
+                      </button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             
             {tradeRequests.filter(t => t.target_walker_id === user?.id && t.status === 'pending').length === 0 && (
               <div className="text-center py-6 text-muted-foreground">
