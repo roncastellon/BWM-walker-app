@@ -1171,6 +1171,117 @@ const AdminBillingPage = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Staff 1099 Detail Modal */}
+        <Dialog open={!!selectedStaffDetail} onOpenChange={closeStaffDetail}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            {staffDetailLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
+              </div>
+            ) : selectedStaffDetail ? (
+              <div className="space-y-6">
+                <DialogHeader>
+                  <DialogTitle className="text-xl">1099 Detail - {selectedStaffDetail.staff.full_name}</DialogTitle>
+                  <DialogDescription>
+                    Tax year {selectedStaffDetail.year} earnings breakdown
+                  </DialogDescription>
+                </DialogHeader>
+
+                {/* Staff Info */}
+                <div className="p-4 rounded-xl bg-muted/50">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Name</p>
+                      <p className="font-medium">{selectedStaffDetail.staff.full_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Role</p>
+                      <p className="font-medium capitalize">{selectedStaffDetail.staff.role}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Email</p>
+                      <p className="font-medium">{selectedStaffDetail.staff.email || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Phone</p>
+                      <p className="font-medium">{selectedStaffDetail.staff.phone || 'N/A'}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Address</p>
+                      <p className="font-medium">{selectedStaffDetail.staff.address || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Totals */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Card className="rounded-xl bg-sky-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-2xl font-bold text-sky-600">${selectedStaffDetail.totals.year_earnings.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">Year Total</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl bg-green-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-2xl font-bold text-green-600">{selectedStaffDetail.totals.total_walks}</p>
+                      <p className="text-xs text-muted-foreground">Total Walks</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl bg-orange-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-2xl font-bold text-orange-600">{selectedStaffDetail.totals.total_hours.toFixed(1)}</p>
+                      <p className="text-xs text-muted-foreground">Total Hours</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl">
+                    <CardContent className="p-4 text-center">
+                      {selectedStaffDetail.totals.requires_1099 ? (
+                        <Badge className="bg-red-100 text-red-700 rounded-full text-lg px-4 py-1">1099 Required</Badge>
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-600 rounded-full text-lg px-4 py-1">No 1099</Badge>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-2">≥$600 threshold</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Monthly Breakdown */}
+                {selectedStaffDetail.monthly_breakdown.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-3">Monthly Breakdown</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b bg-muted/50">
+                            <th className="text-left p-2 font-medium">Month</th>
+                            <th className="text-right p-2 font-medium">Earnings</th>
+                            <th className="text-right p-2 font-medium">Walks</th>
+                            <th className="text-right p-2 font-medium">Hours</th>
+                            <th className="text-right p-2 font-medium">Timesheets</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedStaffDetail.monthly_breakdown.map((month) => (
+                            <tr key={month.month} className="border-b">
+                              <td className="p-2 font-medium">{month.month}</td>
+                              <td className="p-2 text-right text-sky-600 font-medium">${month.earnings.toLocaleString()}</td>
+                              <td className="p-2 text-right">{month.walks}</td>
+                              <td className="p-2 text-right">{month.hours.toFixed(1)}</td>
+                              <td className="p-2 text-right">{month.timesheets}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground">No details available</p>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
