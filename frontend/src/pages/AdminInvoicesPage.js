@@ -426,7 +426,7 @@ const AdminBillingPage = () => {
           {/* INVOICES TAB */}
           <TabsContent value="invoices" className="space-y-4">
             {/* Auto-Generate Invoices */}
-            <Card className="rounded-xl border-sky-200 bg-sky-50">
+            <Card className="rounded-xl border-orange-200 bg-orange-50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2 text-sky-800">
                   <Zap className="w-5 h-5" />
