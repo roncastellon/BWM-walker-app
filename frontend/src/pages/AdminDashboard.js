@@ -167,10 +167,10 @@ const AdminDashboard = () => {
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <Link to="/admin/billing" className="flex flex-col py-3 gap-1 items-center justify-center rounded-md hover:bg-orange-100 transition-colors">
               <CreditCard className="w-5 h-5" />
-              <span className="text-xs">Billing</span>
-            </TabsTrigger>
+              <span className="text-xs">Billing & Payroll</span>
+            </Link>
             <TabsTrigger value="chat" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs">Chat</span>
