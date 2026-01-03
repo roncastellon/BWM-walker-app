@@ -3971,6 +3971,9 @@ async def create_dog_park_post(
     
     await db.dog_park_posts.insert_one(post_dict)
     
+    # Remove _id added by MongoDB before returning
+    post_dict.pop("_id", None)
+    
     # Send notifications to tagged pet owners and users
     notified_users = set()
     
