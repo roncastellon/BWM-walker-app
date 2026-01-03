@@ -65,6 +65,13 @@ const AdminBillingPage = () => {
   const [pendingReviewInvoices, setPendingReviewInvoices] = useState([]);
   const [generatingInvoices, setGeneratingInvoices] = useState(false);
   const [sendingAllInvoices, setSendingAllInvoices] = useState(false);
+  
+  // 1099 Report state
+  const [payrollReport, setPayrollReport] = useState(null);
+  const [reportYear, setReportYear] = useState(new Date().getFullYear());
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [selectedStaffDetail, setSelectedStaffDetail] = useState(null);
+  const [staffDetailLoading, setStaffDetailLoading] = useState(false);
 
   useEffect(() => {
     fetchAllData();
