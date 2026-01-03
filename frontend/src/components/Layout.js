@@ -29,6 +29,7 @@ import {
   Bell,
   Crown,
   Bed,
+  Trees,
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
