@@ -103,25 +103,25 @@ const AdminDashboard = () => {
         {/* Quick Stats - Clickable */}
         <div className="grid grid-cols-4 gap-3">
           <Link to="/admin/clients">
-            <Card className="rounded-xl hover:shadow-md hover:bg-primary/5 transition-all cursor-pointer">
+            <Card className="rounded-xl hover:shadow-md hover:bg-sky-50 transition-all cursor-pointer">
               <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-primary">{stats.total_clients || 0}</p>
+                <p className="text-2xl font-bold text-sky-600">{stats.total_clients || 0}</p>
                 <p className="text-xs text-muted-foreground">Clients</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/admin/walkers">
-            <Card className="rounded-xl hover:shadow-md hover:bg-secondary/5 transition-all cursor-pointer">
+            <Card className="rounded-xl hover:shadow-md hover:bg-orange-50 transition-all cursor-pointer">
               <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-secondary">{(stats.total_walkers || 0) + sitters.length}</p>
+                <p className="text-2xl font-bold text-orange-500">{(stats.total_walkers || 0) + sitters.length}</p>
                 <p className="text-xs text-muted-foreground">Staff</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/admin/calendar">
-            <Card className="rounded-xl hover:shadow-md hover:bg-accent/5 transition-all cursor-pointer">
+            <Card className="rounded-xl hover:shadow-md hover:bg-sky-50 transition-all cursor-pointer">
               <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-accent">{todayAppts.length}</p>
+                <p className="text-2xl font-bold text-sky-600">{todayAppts.length}</p>
                 <p className="text-xs text-muted-foreground">Today</p>
               </CardContent>
             </Card>
@@ -129,7 +129,7 @@ const AdminDashboard = () => {
           <Link to="/admin/billing">
             <Card className="rounded-xl hover:shadow-md hover:bg-orange-50 transition-all cursor-pointer">
               <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-orange-600">${(stats.month_revenue || 0).toFixed(0)}</p>
+                <p className="text-2xl font-bold text-orange-500">${(stats.month_revenue || 0).toFixed(0)}</p>
                 <p className="text-xs text-muted-foreground">MTD Revenue</p>
               </CardContent>
             </Card>
