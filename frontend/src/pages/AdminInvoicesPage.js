@@ -592,6 +592,132 @@ const AdminBillingPage = () => {
             </Card>
           </TabsContent>
 
+          {/* 1099 REPORTS TAB */}
+          <TabsContent value="reports" className="space-y-4">
+            {/* Report Controls */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  1099 Payroll Reports
+                </CardTitle>
+                <CardDescription>Generate tax reports for walkers and sitters</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Label>Year:</Label>
+                    <Select value={reportYear.toString()} onValueChange={(v) => setReportYear(parseInt(v))}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[2024, 2025, 2026].map(y => (
+                          <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={() => fetch1099Report(reportYear)} disabled={loadingReport} className="rounded-full">
+                    {loadingReport ? (
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <FileText className="w-4 h-4 mr-2" />
+                    )}
+                    Generate Report
+                  </Button>
+                </div>
+
+                {payrollReport && (
+                  <div className="space-y-4 pt-4 border-t">
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <Card className="rounded-xl bg-sky-50">
+                        <CardContent className="p-4 text-center">
+                          <p className="text-2xl font-bold text-sky-600">{payrollReport.summary.total_staff}</p>
+                          <p className="text-xs text-muted-foreground">Total Staff</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="rounded-xl bg-green-50">
+                        <CardContent className="p-4 text-center">
+                          <p className="text-2xl font-bold text-green-600">${payrollReport.summary.total_year_to_date.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">Year to Date</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="rounded-xl bg-orange-50">
+                        <CardContent className="p-4 text-center">
+                          <p className="text-2xl font-bold text-orange-600">${payrollReport.summary.total_month_to_date.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">Month to Date</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="rounded-xl bg-purple-50">
+                        <CardContent className="p-4 text-center">
+                          <p className="text-2xl font-bold text-purple-600">{payrollReport.summary.staff_requiring_1099}</p>
+                          <p className="text-xs text-muted-foreground">Require 1099 (≥$600)</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Staff Table */}
+                    <Card className="rounded-xl">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg">Individual Staff Earnings - {reportYear}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b bg-muted/50">
+                                <th className="text-left p-3 font-medium">Name</th>
+                                <th className="text-left p-3 font-medium">Role</th>
+                                <th className="text-right p-3 font-medium">Month to Date</th>
+                                <th className="text-right p-3 font-medium">Year to Date</th>
+                                <th className="text-center p-3 font-medium">1099 Required</th>
+                                <th className="text-center p-3 font-medium">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {payrollReport.staff.map((member) => (
+                                <tr key={member.id} className="border-b hover:bg-muted/30">
+                                  <td className="p-3">
+                                    <div>
+                                      <p className="font-medium">{member.full_name}</p>
+                                      <p className="text-xs text-muted-foreground">{member.email}</p>
+                                    </div>
+                                  </td>
+                                  <td className="p-3">
+                                    <Badge variant="outline" className="capitalize rounded-full">
+                                      {member.role}
+                                    </Badge>
+                                  </td>
+                                  <td className="p-3 text-right font-medium">${member.month_total.toLocaleString()}</td>
+                                  <td className="p-3 text-right font-bold text-sky-600">${member.year_total.toLocaleString()}</td>
+                                  <td className="p-3 text-center">
+                                    {member.year_total >= 600 ? (
+                                      <Badge className="bg-red-100 text-red-700 rounded-full">Yes</Badge>
+                                    ) : (
+                                      <Badge className="bg-gray-100 text-gray-600 rounded-full">No</Badge>
+                                    )}
+                                  </td>
+                                  <td className="p-3 text-center">
+                                    <Button size="sm" variant="outline" onClick={() => fetchStaffDetail(member.id)} className="rounded-full">
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      Details
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* PRICING TAB */}
           <TabsContent value="pricing" className="space-y-4">
             {/* Service Pricing */}
