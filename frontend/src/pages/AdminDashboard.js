@@ -24,7 +24,7 @@ const AdminDashboard = () => {
   const [sitters, setSitters] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [timesheets, setTimesheets] = useState([]);
+  const [paysheets, setPaysheets] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -32,7 +32,7 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes, timesheetsRes] = await Promise.all([
+      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes, paysheetsRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/appointments/calendar'),
         api.get('/invoices'),
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
         api.get('/users/walkers'),
         api.get('/sitters').catch(() => ({ data: [] })),
         api.get('/messages/contacts'),
-        api.get('/timesheets'),
+        api.get('/paysheets'),
       ]);
       setStats(statsRes.data);
       setAppointments(apptsRes.data);
@@ -49,7 +49,7 @@ const AdminDashboard = () => {
       setWalkers(walkersRes.data || []);
       setSitters(sittersRes.data || []);
       setContacts(contactsRes.data || []);
-      setTimesheets(timesheetsRes.data || []);
+      setPaysheets(paysheetsRes.data || []);
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {
@@ -57,23 +57,23 @@ const AdminDashboard = () => {
     }
   };
 
-  const approveTimesheet = async (timesheetId) => {
+  const approvePaysheet = async (paysheetId) => {
     try {
-      await api.put(`/timesheets/${timesheetId}/approve`);
-      toast.success('Timesheet approved');
+      await api.put(`/paysheets/${paysheetId}/approve`);
+      toast.success('Paysheet approved');
       fetchData();
     } catch (error) {
-      toast.error('Failed to approve timesheet');
+      toast.error('Failed to approve paysheet');
     }
   };
 
-  const markTimesheetPaid = async (timesheetId) => {
+  const markPaysheetPaid = async (paysheetId) => {
     try {
-      await api.put(`/timesheets/${timesheetId}/mark-paid`);
-      toast.success('Timesheet marked as paid');
+      await api.put(`/paysheets/${paysheetId}/mark-paid`);
+      toast.success('Paysheet marked as paid');
       fetchData();
     } catch (error) {
-      toast.error('Failed to mark timesheet as paid');
+      toast.error('Failed to mark paysheet as paid');
     }
   };
 
@@ -92,7 +92,7 @@ const AdminDashboard = () => {
     return a.scheduled_date === today;
   });
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
-  const pendingTimesheets = timesheets.filter(ts => !ts.paid);
+  const pendingPaysheets = paysheets.filter(ts => !ts.paid);
   const walkerContacts = contacts.filter(c => c.role === 'walker');
   const clientContacts = contacts.filter(c => c.role === 'client');
 
