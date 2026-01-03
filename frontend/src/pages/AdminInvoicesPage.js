@@ -73,11 +73,11 @@ const AdminBillingPage = () => {
   const [selectedStaffDetail, setSelectedStaffDetail] = useState(null);
   const [staffDetailLoading, setStaffDetailLoading] = useState(false);
   
-  // Timesheets state
-  const [timesheets, setTimesheets] = useState([]);
-  const [loadingTimesheets, setLoadingTimesheets] = useState(false);
-  const [selectedTimesheet, setSelectedTimesheet] = useState(null);
-  const [timesheetModalOpen, setTimesheetModalOpen] = useState(false);
+  // Paysheets state
+  const [paysheets, setPaysheets] = useState([]);
+  const [loadingPaysheets, setLoadingPaysheets] = useState(false);
+  const [selectedPaysheet, setSelectedPaysheet] = useState(null);
+  const [paysheetModalOpen, setPaysheetModalOpen] = useState(false);
   const [walkerPaymentInfo, setWalkerPaymentInfo] = useState(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
@@ -316,66 +316,66 @@ const AdminBillingPage = () => {
     setSelectedStaffDetail(null);
   };
 
-  // Timesheets functions
-  const fetchTimesheets = async () => {
-    setLoadingTimesheets(true);
+  // Paysheets functions
+  const fetchPaysheets = async () => {
+    setLoadingPaysheets(true);
     try {
-      const response = await api.get('/timesheets');
-      setTimesheets(response.data);
+      const response = await api.get('/paysheets');
+      setPaysheets(response.data);
     } catch (error) {
-      toast.error('Failed to load timesheets');
+      toast.error('Failed to load paysheets');
     } finally {
-      setLoadingTimesheets(false);
+      setLoadingPaysheets(false);
     }
   };
 
-  const openTimesheetReview = (timesheet) => {
-    setSelectedTimesheet(timesheet);
-    setTimesheetModalOpen(true);
+  const openPaysheetReview = (paysheet) => {
+    setSelectedPaysheet(paysheet);
+    setPaysheetModalOpen(true);
   };
 
-  const closeTimesheetReview = () => {
-    setSelectedTimesheet(null);
-    setTimesheetModalOpen(false);
+  const closePaysheetReview = () => {
+    setSelectedPaysheet(null);
+    setPaysheetModalOpen(false);
   };
 
-  const approveTimesheet = async (timesheetId) => {
+  const approvePaysheet = async (paysheetId) => {
     try {
-      await api.put(`/timesheets/${timesheetId}/approve`);
-      toast.success('Timesheet approved');
-      fetchTimesheets();
-      // Update the selected timesheet if it's open
-      if (selectedTimesheet && selectedTimesheet.id === timesheetId) {
-        setSelectedTimesheet({...selectedTimesheet, approved: true});
+      await api.put(`/paysheets/${paysheetId}/approve`);
+      toast.success('Paysheet approved');
+      fetchPaysheets();
+      // Update the selected paysheet if it's open
+      if (selectedPaysheet && selectedPaysheet.id === paysheetId) {
+        setSelectedPaysheet({...selectedPaysheet, approved: true});
       }
     } catch (error) {
-      toast.error('Failed to approve timesheet');
+      toast.error('Failed to approve paysheet');
     }
   };
 
-  const openPaymentModal = async (timesheet) => {
+  const openPaymentModal = async (paysheet) => {
     try {
       // Fetch walker's payment info
-      const response = await api.get(`/users/${timesheet.walker_id}`);
+      const response = await api.get(`/users/${paysheet.walker_id}`);
       setWalkerPaymentInfo(response.data);
-      setSelectedTimesheet(timesheet);
-      setTimesheetModalOpen(false);
+      setSelectedPaysheet(paysheet);
+      setPaysheetModalOpen(false);
       setPaymentModalOpen(true);
     } catch (error) {
       toast.error('Failed to load payment info');
     }
   };
 
-  const markTimesheetPaid = async (timesheetId, paymentMethod) => {
+  const markPaysheetPaid = async (paysheetId, paymentMethod) => {
     try {
-      await api.put(`/timesheets/${timesheetId}/mark-paid`);
-      toast.success(`Timesheet marked as paid via ${paymentMethod}`);
-      fetchTimesheets();
+      await api.put(`/paysheets/${paysheetId}/mark-paid`);
+      toast.success(`Paysheet marked as paid via ${paymentMethod}`);
+      fetchPaysheets();
       setPaymentModalOpen(false);
-      setSelectedTimesheet(null);
+      setSelectedPaysheet(null);
       setWalkerPaymentInfo(null);
     } catch (error) {
-      toast.error('Failed to mark timesheet as paid');
+      toast.error('Failed to mark paysheet as paid');
     }
   };
 
@@ -415,7 +415,7 @@ const AdminBillingPage = () => {
               <FileText className="w-5 h-5" />
               <span className="text-xs">Invoices</span>
             </TabsTrigger>
-            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white" data-testid="tab-payroll" onClick={fetchTimesheets}>
+            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white" data-testid="tab-payroll" onClick={fetchPaysheets}>
               <CreditCard className="w-5 h-5" />
               <span className="text-xs">Payroll</span>
             </TabsTrigger>
@@ -667,30 +667,30 @@ const AdminBillingPage = () => {
             </Card>
           </TabsContent>
 
-          {/* PAYROLL TAB - Timesheets */}
+          {/* PAYROLL TAB - Paysheets */}
           <TabsContent value="payroll" className="space-y-4">
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-sky-600" />
-                  Submitted Timesheets
+                  Submitted Paysheets
                 </CardTitle>
-                <CardDescription>Review and approve timesheets from walkers and sitters</CardDescription>
+                <CardDescription>Review and approve paysheets from walkers and sitters</CardDescription>
               </CardHeader>
               <CardContent>
-                {loadingTimesheets ? (
+                {loadingPaysheets ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
                   </div>
-                ) : timesheets.length === 0 ? (
+                ) : paysheets.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No timesheets submitted yet</p>
-                    <p className="text-sm mt-1">Timesheets will appear here when staff submit them</p>
+                    <p>No paysheets submitted yet</p>
+                    <p className="text-sm mt-1">Paysheets will appear here when staff submit them</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {timesheets.map((ts) => (
+                    {paysheets.map((ts) => (
                       <div
                         key={ts.id}
                         className="p-4 rounded-xl border bg-card hover:shadow-md transition-all"
@@ -720,7 +720,7 @@ const AdminBillingPage = () => {
                             {!ts.approved && !ts.paid && (
                               <Button 
                                 size="sm" 
-                                onClick={() => openTimesheetReview(ts)} 
+                                onClick={() => openPaysheetReview(ts)} 
                                 className="rounded-full bg-orange-500 hover:bg-orange-600"
                               >
                                 <Eye className="w-4 h-4 mr-1" />
@@ -1419,7 +1419,7 @@ const AdminBillingPage = () => {
                             <th className="text-right p-2 font-medium">Earnings</th>
                             <th className="text-right p-2 font-medium">Walks</th>
                             <th className="text-right p-2 font-medium">Hours</th>
-                            <th className="text-right p-2 font-medium">Timesheets</th>
+                            <th className="text-right p-2 font-medium">Paysheets</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1429,7 +1429,7 @@ const AdminBillingPage = () => {
                               <td className="p-2 text-right text-sky-600 font-medium">${month.earnings.toLocaleString()}</td>
                               <td className="p-2 text-right">{month.walks}</td>
                               <td className="p-2 text-right">{month.hours.toFixed(1)}</td>
-                              <td className="p-2 text-right">{month.timesheets}</td>
+                              <td className="p-2 text-right">{month.paysheets}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1444,40 +1444,40 @@ const AdminBillingPage = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Timesheet Review Modal */}
-        <Dialog open={timesheetModalOpen} onOpenChange={setTimesheetModalOpen}>
+        {/* Paysheet Review Modal */}
+        <Dialog open={paysheetModalOpen} onOpenChange={setPaysheetModalOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            {selectedTimesheet ? (
+            {selectedPaysheet ? (
               <div className="space-y-6">
                 <DialogHeader>
                   <DialogTitle className="text-xl flex items-center gap-2">
                     <FileText className="w-5 h-5 text-sky-600" />
-                    Review Timesheet
+                    Review Paysheet
                   </DialogTitle>
                   <DialogDescription>
-                    Review timesheet details before approving and paying
+                    Review paysheet details before approving and paying
                   </DialogDescription>
                 </DialogHeader>
 
                 {/* Status Banner */}
                 <div className={`p-4 rounded-xl ${
-                  selectedTimesheet.paid ? 'bg-green-50 border border-green-200' :
-                  selectedTimesheet.approved ? 'bg-sky-50 border border-sky-200' :
+                  selectedPaysheet.paid ? 'bg-green-50 border border-green-200' :
+                  selectedPaysheet.approved ? 'bg-sky-50 border border-sky-200' :
                   'bg-orange-50 border border-orange-200'
                 }`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-lg">{selectedTimesheet.walker_name || 'Staff Member'}</p>
+                      <p className="font-medium text-lg">{selectedPaysheet.walker_name || 'Staff Member'}</p>
                       <p className="text-sm text-muted-foreground">
-                        Period: {selectedTimesheet.period_start} to {selectedTimesheet.period_end}
+                        Period: {selectedPaysheet.period_start} to {selectedPaysheet.period_end}
                       </p>
                     </div>
                     <Badge className={`rounded-full text-sm px-3 py-1 ${
-                      selectedTimesheet.paid ? 'bg-green-500 text-white' :
-                      selectedTimesheet.approved ? 'bg-sky-500 text-white' :
+                      selectedPaysheet.paid ? 'bg-green-500 text-white' :
+                      selectedPaysheet.approved ? 'bg-sky-500 text-white' :
                       'bg-orange-500 text-white'
                     }`}>
-                      {selectedTimesheet.paid ? 'Paid' : selectedTimesheet.approved ? 'Approved' : 'Pending Review'}
+                      {selectedPaysheet.paid ? 'Paid' : selectedPaysheet.approved ? 'Approved' : 'Pending Review'}
                     </Badge>
                   </div>
                 </div>
@@ -1486,26 +1486,26 @@ const AdminBillingPage = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <Card className="rounded-xl bg-sky-50">
                     <CardContent className="p-4 text-center">
-                      <p className="text-3xl font-bold text-sky-600">{selectedTimesheet.total_walks}</p>
+                      <p className="text-3xl font-bold text-sky-600">{selectedPaysheet.total_walks}</p>
                       <p className="text-sm text-muted-foreground">Total Walks</p>
                     </CardContent>
                   </Card>
                   <Card className="rounded-xl bg-orange-50">
                     <CardContent className="p-4 text-center">
-                      <p className="text-3xl font-bold text-orange-600">{selectedTimesheet.total_hours?.toFixed(1) || '0.0'}</p>
+                      <p className="text-3xl font-bold text-orange-600">{selectedPaysheet.total_hours?.toFixed(1) || '0.0'}</p>
                       <p className="text-sm text-muted-foreground">Total Hours</p>
                     </CardContent>
                   </Card>
                   <Card className="rounded-xl bg-green-50">
                     <CardContent className="p-4 text-center">
-                      <p className="text-3xl font-bold text-green-600">${selectedTimesheet.total_earnings?.toFixed(2) || '0.00'}</p>
+                      <p className="text-3xl font-bold text-green-600">${selectedPaysheet.total_earnings?.toFixed(2) || '0.00'}</p>
                       <p className="text-sm text-muted-foreground">Total Earnings</p>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Walk Details */}
-                {selectedTimesheet.walk_details && selectedTimesheet.walk_details.length > 0 && (
+                {selectedPaysheet.walk_details && selectedPaysheet.walk_details.length > 0 && (
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                       <Clock className="w-4 h-4" />
@@ -1522,7 +1522,7 @@ const AdminBillingPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {selectedTimesheet.walk_details.map((walk, idx) => (
+                          {selectedPaysheet.walk_details.map((walk, idx) => (
                             <tr key={idx} className="border-t">
                               <td className="p-3">{walk.date}</td>
                               <td className="p-3 capitalize">{walk.service_type?.replace('_', ' ')}</td>
@@ -1546,37 +1546,37 @@ const AdminBillingPage = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4 border-t">
-                  {!selectedTimesheet.approved && !selectedTimesheet.paid && (
+                  {!selectedPaysheet.approved && !selectedPaysheet.paid && (
                     <>
-                      <Button variant="outline" onClick={closeTimesheetReview} className="flex-1 rounded-full">
+                      <Button variant="outline" onClick={closePaysheetReview} className="flex-1 rounded-full">
                         Cancel
                       </Button>
-                      <Button onClick={() => approveTimesheet(selectedTimesheet.id)} className="flex-1 rounded-full bg-sky-500 hover:bg-sky-600">
+                      <Button onClick={() => approvePaysheet(selectedPaysheet.id)} className="flex-1 rounded-full bg-sky-500 hover:bg-sky-600">
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Approve Timesheet
+                        Approve Paysheet
                       </Button>
                     </>
                   )}
-                  {selectedTimesheet.approved && !selectedTimesheet.paid && (
+                  {selectedPaysheet.approved && !selectedPaysheet.paid && (
                     <>
-                      <Button variant="outline" onClick={closeTimesheetReview} className="flex-1 rounded-full">
+                      <Button variant="outline" onClick={closePaysheetReview} className="flex-1 rounded-full">
                         Close
                       </Button>
-                      <Button onClick={() => openPaymentModal(selectedTimesheet)} className="flex-1 rounded-full bg-green-500 hover:bg-green-600">
+                      <Button onClick={() => openPaymentModal(selectedPaysheet)} className="flex-1 rounded-full bg-green-500 hover:bg-green-600">
                         <DollarSign className="w-4 h-4 mr-2" />
                         Pay
                       </Button>
                     </>
                   )}
-                  {selectedTimesheet.paid && (
-                    <Button variant="outline" onClick={closeTimesheetReview} className="w-full rounded-full">
+                  {selectedPaysheet.paid && (
+                    <Button variant="outline" onClick={closePaysheetReview} className="w-full rounded-full">
                       Close
                     </Button>
                   )}
                 </div>
               </div>
             ) : (
-              <p className="text-center py-8 text-muted-foreground">No timesheet selected</p>
+              <p className="text-center py-8 text-muted-foreground">No paysheet selected</p>
             )}
           </DialogContent>
         </Dialog>
@@ -1590,7 +1590,7 @@ const AdminBillingPage = () => {
                 Pay {walkerPaymentInfo?.full_name || 'Staff'}
               </DialogTitle>
               <DialogDescription>
-                Amount: <span className="font-bold text-lg text-green-600">${selectedTimesheet?.total_earnings?.toFixed(2) || '0.00'}</span>
+                Amount: <span className="font-bold text-lg text-green-600">${selectedPaysheet?.total_earnings?.toFixed(2) || '0.00'}</span>
               </DialogDescription>
             </DialogHeader>
 
@@ -1600,7 +1600,7 @@ const AdminBillingPage = () => {
               {/* Zelle Option */}
               <div 
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.zelle_email ? 'hover:border-purple-400 hover:bg-purple-50' : 'opacity-50 cursor-not-allowed'}`}
-                onClick={() => walkerPaymentInfo?.zelle_email && markTimesheetPaid(selectedTimesheet.id, 'Zelle')}
+                onClick={() => walkerPaymentInfo?.zelle_email && markPaysheetPaid(selectedPaysheet.id, 'Zelle')}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
@@ -1625,7 +1625,7 @@ const AdminBillingPage = () => {
               {/* Venmo Option */}
               <div 
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.venmo_username ? 'hover:border-sky-400 hover:bg-sky-50' : 'opacity-50 cursor-not-allowed'}`}
-                onClick={() => walkerPaymentInfo?.venmo_username && markTimesheetPaid(selectedTimesheet.id, 'Venmo')}
+                onClick={() => walkerPaymentInfo?.venmo_username && markPaysheetPaid(selectedPaysheet.id, 'Venmo')}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center">
@@ -1650,7 +1650,7 @@ const AdminBillingPage = () => {
               {/* CashApp Option */}
               <div 
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.cashapp_tag ? 'hover:border-green-400 hover:bg-green-50' : 'opacity-50 cursor-not-allowed'}`}
-                onClick={() => walkerPaymentInfo?.cashapp_tag && markTimesheetPaid(selectedTimesheet.id, 'CashApp')}
+                onClick={() => walkerPaymentInfo?.cashapp_tag && markPaysheetPaid(selectedPaysheet.id, 'CashApp')}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
