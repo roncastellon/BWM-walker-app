@@ -94,6 +94,7 @@ const AdminBillingPage = () => {
 
   useEffect(() => {
     fetchAllData();
+    fetchBillingPlans();
   }, []);
 
   const fetchAllData = async () => {
