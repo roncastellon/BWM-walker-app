@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 const PayrollPage = () => {
   const { api } = useAuth();
   const [currentPayroll, setCurrentPayroll] = useState(null);
-  const [timesheets, setTimesheets] = useState([]);
+  const [paysheets, setPaysheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -24,10 +24,10 @@ const PayrollPage = () => {
     try {
       const [payrollRes, tsRes] = await Promise.all([
         api.get('/payroll/current'),
-        api.get('/timesheets'),
+        api.get('/paysheets'),
       ]);
       setCurrentPayroll(payrollRes.data);
-      setTimesheets(tsRes.data);
+      setPaysheets(tsRes.data);
     } catch (error) {
       toast.error('Failed to load payroll data');
     } finally {
@@ -35,7 +35,7 @@ const PayrollPage = () => {
     }
   };
 
-  const submitTimesheet = async () => {
+  const submitPaysheet = async () => {
     if (!currentPayroll || currentPayroll.total_walks === 0) {
       toast.error('No walks to submit');
       return;
@@ -43,11 +43,11 @@ const PayrollPage = () => {
 
     setSubmitting(true);
     try {
-      await api.post('/timesheets/submit');
-      toast.success('Timesheet submitted successfully!');
-      fetchData(); // Refresh to show reset and new timesheet
+      await api.post('/paysheets/submit');
+      toast.success('Paysheet submitted successfully!');
+      fetchData(); // Refresh to show reset and new paysheet
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to submit timesheet');
+      toast.error(error.response?.data?.detail || 'Failed to submit paysheet');
     } finally {
       setSubmitting(false);
     }
@@ -88,7 +88,7 @@ const PayrollPage = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-heading font-bold">Time Sheets & Payroll</h1>
-            <p className="text-muted-foreground">Track your hours and submit timesheets</p>
+            <p className="text-muted-foreground">Track your hours and submit paysheets</p>
           </div>
           <Button variant="outline" className="rounded-full" onClick={fetchData}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -167,17 +167,17 @@ const PayrollPage = () => {
             <div>
               <CardTitle>Pending Walks</CardTitle>
               <CardDescription>
-                Walks accumulated since last timesheet submission
+                Walks accumulated since last paysheet submission
               </CardDescription>
             </div>
             <Button
-              onClick={submitTimesheet}
+              onClick={submitPaysheet}
               disabled={submitting || !currentPayroll || currentPayroll.total_walks === 0}
               className="rounded-full"
-              data-testid="submit-timesheet-btn"
+              data-testid="submit-paysheet-btn"
             >
               <Send className="w-4 h-4 mr-2" />
-              {submitting ? 'Submitting...' : 'Submit Timesheet'}
+              {submitting ? 'Submitting...' : 'Submit Paysheet'}
             </Button>
           </CardHeader>
           <CardContent>
@@ -185,7 +185,7 @@ const PayrollPage = () => {
               <div className="text-center py-12 text-muted-foreground">
                 <CheckCircle className="w-16 h-16 mx-auto mb-4 opacity-30 text-green-500" />
                 <p className="text-lg">All caught up!</p>
-                <p className="text-sm">Complete walks to add hours to your timesheet</p>
+                <p className="text-sm">Complete walks to add hours to your paysheet</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -242,25 +242,25 @@ const PayrollPage = () => {
           </CardContent>
         </Card>
 
-        {/* Previous Timesheets */}
+        {/* Previous Paysheets */}
         <Card className="rounded-2xl shadow-sm">
           <CardHeader>
-            <CardTitle>Submitted Timesheets</CardTitle>
+            <CardTitle>Submitted Paysheets</CardTitle>
             <CardDescription>Your payment history</CardDescription>
           </CardHeader>
           <CardContent>
-            {timesheets.length === 0 ? (
+            {paysheets.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No timesheets submitted yet</p>
+                <p>No paysheets submitted yet</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {timesheets.map((ts) => (
+                {paysheets.map((ts) => (
                   <div
                     key={ts.id}
                     className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-muted/30 gap-3"
-                    data-testid={`timesheet-${ts.id}`}
+                    data-testid={`paysheet-${ts.id}`}
                   >
                     <div>
                       <p className="font-medium">
