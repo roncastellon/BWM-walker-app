@@ -81,6 +81,17 @@ const AdminBillingPage = () => {
   const [walkerPaymentInfo, setWalkerPaymentInfo] = useState(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
+  // New product/service state
+  const [showNewServiceForm, setShowNewServiceForm] = useState(false);
+  const [newService, setNewService] = useState({ name: '', price: '', description: '', duration: '' });
+
+  // Custom billing plans state
+  const [billingPlans, setBillingPlans] = useState([]);
+  const [showNewPlanForm, setShowNewPlanForm] = useState(false);
+  const [newPlan, setNewPlan] = useState({ name: '', description: '', discount_percent: 0, services: [] });
+  const [assignPlanModalOpen, setAssignPlanModalOpen] = useState(false);
+  const [selectedClientForPlan, setSelectedClientForPlan] = useState(null);
+
   useEffect(() => {
     fetchAllData();
   }, []);
