@@ -1412,6 +1412,143 @@ const AdminBillingPage = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Timesheet Review Modal */}
+        <Dialog open={timesheetModalOpen} onOpenChange={setTimesheetModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            {selectedTimesheet ? (
+              <div className="space-y-6">
+                <DialogHeader>
+                  <DialogTitle className="text-xl flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-sky-600" />
+                    Review Timesheet
+                  </DialogTitle>
+                  <DialogDescription>
+                    Review timesheet details before approving and paying
+                  </DialogDescription>
+                </DialogHeader>
+
+                {/* Status Banner */}
+                <div className={`p-4 rounded-xl ${
+                  selectedTimesheet.paid ? 'bg-green-50 border border-green-200' :
+                  selectedTimesheet.approved ? 'bg-sky-50 border border-sky-200' :
+                  'bg-orange-50 border border-orange-200'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-lg">{selectedTimesheet.walker_name || 'Staff Member'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Period: {selectedTimesheet.period_start} to {selectedTimesheet.period_end}
+                      </p>
+                    </div>
+                    <Badge className={`rounded-full text-sm px-3 py-1 ${
+                      selectedTimesheet.paid ? 'bg-green-500 text-white' :
+                      selectedTimesheet.approved ? 'bg-sky-500 text-white' :
+                      'bg-orange-500 text-white'
+                    }`}>
+                      {selectedTimesheet.paid ? 'Paid' : selectedTimesheet.approved ? 'Approved' : 'Pending Review'}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Summary Stats */}
+                <div className="grid grid-cols-3 gap-4">
+                  <Card className="rounded-xl bg-sky-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-3xl font-bold text-sky-600">{selectedTimesheet.total_walks}</p>
+                      <p className="text-sm text-muted-foreground">Total Walks</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl bg-orange-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-3xl font-bold text-orange-600">{selectedTimesheet.total_hours?.toFixed(1) || '0.0'}</p>
+                      <p className="text-sm text-muted-foreground">Total Hours</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl bg-green-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-3xl font-bold text-green-600">${selectedTimesheet.total_earnings?.toFixed(2) || '0.00'}</p>
+                      <p className="text-sm text-muted-foreground">Total Earnings</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Walk Details */}
+                {selectedTimesheet.walk_details && selectedTimesheet.walk_details.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Walk Details
+                    </h4>
+                    <div className="border rounded-lg overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50">
+                          <tr>
+                            <th className="text-left p-3 font-medium">Date</th>
+                            <th className="text-left p-3 font-medium">Service</th>
+                            <th className="text-right p-3 font-medium">Duration</th>
+                            <th className="text-right p-3 font-medium">Pay</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedTimesheet.walk_details.map((walk, idx) => (
+                            <tr key={idx} className="border-t">
+                              <td className="p-3">{walk.date}</td>
+                              <td className="p-3 capitalize">{walk.service_type?.replace('_', ' ')}</td>
+                              <td className="p-3 text-right">{walk.duration || '-'} min</td>
+                              <td className="p-3 text-right font-medium">${walk.pay?.toFixed(2) || '0.00'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Payment Method Info */}
+                <div className="p-4 rounded-xl bg-muted/50">
+                  <h4 className="font-semibold mb-2">Payment Method</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Pay via Zelle, Venmo, or CashApp (check staff profile for details)
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t">
+                  {!selectedTimesheet.approved && !selectedTimesheet.paid && (
+                    <>
+                      <Button variant="outline" onClick={closeTimesheetReview} className="flex-1 rounded-full">
+                        Cancel
+                      </Button>
+                      <Button onClick={() => approveTimesheet(selectedTimesheet.id)} className="flex-1 rounded-full bg-sky-500 hover:bg-sky-600">
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Approve Timesheet
+                      </Button>
+                    </>
+                  )}
+                  {selectedTimesheet.approved && !selectedTimesheet.paid && (
+                    <>
+                      <Button variant="outline" onClick={closeTimesheetReview} className="flex-1 rounded-full">
+                        Close
+                      </Button>
+                      <Button onClick={() => markTimesheetPaid(selectedTimesheet.id)} className="flex-1 rounded-full bg-green-500 hover:bg-green-600">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Mark as Paid
+                      </Button>
+                    </>
+                  )}
+                  {selectedTimesheet.paid && (
+                    <Button variant="outline" onClick={closeTimesheetReview} className="w-full rounded-full">
+                      Close
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground">No timesheet selected</p>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
