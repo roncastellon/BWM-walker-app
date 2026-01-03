@@ -297,7 +297,7 @@ const AdminBillingPage = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="revenue" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-5 h-auto p-1">
             <TabsTrigger value="revenue" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-revenue">
               <TrendingUp className="w-5 h-5" />
               <span className="text-xs">Revenue</span>
@@ -305,6 +305,10 @@ const AdminBillingPage = () => {
             <TabsTrigger value="invoices" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-invoices">
               <FileText className="w-5 h-5" />
               <span className="text-xs">Invoices</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-reports">
+              <Users className="w-5 h-5" />
+              <span className="text-xs">1099 Reports</span>
             </TabsTrigger>
             <TabsTrigger value="pricing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-pricing">
               <DollarSign className="w-5 h-5" />
