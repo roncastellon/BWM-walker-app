@@ -153,6 +153,91 @@ const AdminBillingPage = () => {
     }
   };
 
+  // Create new service/product
+  const createNewService = async () => {
+    if (!newService.name || !newService.price) {
+      toast.error('Name and price are required');
+      return;
+    }
+    try {
+      await api.post('/services', {
+        name: newService.name,
+        price: parseFloat(newService.price),
+        description: newService.description || '',
+        duration: newService.duration ? parseInt(newService.duration) : null
+      });
+      toast.success('New service created');
+      setNewService({ name: '', price: '', description: '', duration: '' });
+      setShowNewServiceForm(false);
+      fetchAllData();
+    } catch (error) {
+      toast.error('Failed to create service');
+    }
+  };
+
+  // Delete service
+  const deleteService = async (serviceId) => {
+    if (!window.confirm('Are you sure you want to delete this service?')) return;
+    try {
+      await api.delete(`/services/${serviceId}`);
+      toast.success('Service deleted');
+      fetchAllData();
+    } catch (error) {
+      toast.error('Failed to delete service');
+    }
+  };
+
+  // Fetch billing plans
+  const fetchBillingPlans = async () => {
+    try {
+      const res = await api.get('/billing-plans');
+      setBillingPlans(res.data || []);
+    } catch (error) {
+      // Plans endpoint might not exist yet
+    }
+  };
+
+  // Create billing plan
+  const createBillingPlan = async () => {
+    if (!newPlan.name) {
+      toast.error('Plan name is required');
+      return;
+    }
+    try {
+      await api.post('/billing-plans', newPlan);
+      toast.success('Billing plan created');
+      setNewPlan({ name: '', description: '', discount_percent: 0, services: [] });
+      setShowNewPlanForm(false);
+      fetchBillingPlans();
+    } catch (error) {
+      toast.error('Failed to create billing plan');
+    }
+  };
+
+  // Assign billing plan to client
+  const assignPlanToClient = async (clientId, planId) => {
+    try {
+      await api.put(`/users/${clientId}/billing-plan?plan_id=${planId}`);
+      toast.success('Billing plan assigned to client');
+      setAssignPlanModalOpen(false);
+      fetchAllData();
+    } catch (error) {
+      toast.error('Failed to assign billing plan');
+    }
+  };
+
+  // Delete billing plan
+  const deleteBillingPlan = async (planId) => {
+    if (!window.confirm('Are you sure you want to delete this billing plan?')) return;
+    try {
+      await api.delete(`/billing-plans/${planId}`);
+      toast.success('Billing plan deleted');
+      fetchBillingPlans();
+    } catch (error) {
+      toast.error('Failed to delete billing plan');
+    }
+  };
+
   const updateBillingCycle = async (clientId, cycle) => {
     try {
       await api.put(`/users/${clientId}/billing-cycle?billing_cycle=${cycle}`);
