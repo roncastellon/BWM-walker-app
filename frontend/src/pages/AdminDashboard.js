@@ -92,6 +92,7 @@ const AdminDashboard = () => {
     return a.scheduled_date === today;
   });
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
+  const pendingTimesheets = timesheets.filter(ts => !ts.paid);
   const walkerContacts = contacts.filter(c => c.role === 'walker');
   const clientContacts = contacts.filter(c => c.role === 'client');
 
