@@ -2339,7 +2339,12 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
         
         if last_message:
             contact['has_messages'] = True
-            contact['last_message_at'] = last_message.get('created_at', '')
+            # Ensure last_message_at is always a string
+            last_msg_time = last_message.get('created_at', '')
+            if hasattr(last_msg_time, 'isoformat'):
+                contact['last_message_at'] = last_msg_time.isoformat()
+            else:
+                contact['last_message_at'] = str(last_msg_time) if last_msg_time else ''
             contact['last_message_preview'] = last_message.get('content', '')[:50]
         else:
             contact['has_messages'] = False
