@@ -72,6 +72,10 @@ const AdminBillingPage = () => {
   const [loadingReport, setLoadingReport] = useState(false);
   const [selectedStaffDetail, setSelectedStaffDetail] = useState(null);
   const [staffDetailLoading, setStaffDetailLoading] = useState(false);
+  
+  // Timesheets state
+  const [timesheets, setTimesheets] = useState([]);
+  const [loadingTimesheets, setLoadingTimesheets] = useState(false);
 
   useEffect(() => {
     fetchAllData();
