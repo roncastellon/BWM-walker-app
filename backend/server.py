@@ -3485,6 +3485,14 @@ async def get_trade_requests(current_user: dict = Depends(get_current_user)):
     for trade in trades:
         appt = await db.appointments.find_one({"id": trade["appointment_id"]}, {"_id": 0})
         if appt:
+            # Get pet names for the appointment
+            pet_ids = appt.get("pet_ids", [])
+            pet_names = []
+            for pet_id in pet_ids:
+                pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+                if pet:
+                    pet_names.append(pet["name"])
+            appt["pet_names"] = pet_names
             trade["appointment"] = appt
         requester = await db.users.find_one({"id": trade["requesting_walker_id"]}, {"_id": 0, "password_hash": 0})
         target = await db.users.find_one({"id": trade["target_walker_id"]}, {"_id": 0, "password_hash": 0})
