@@ -390,7 +390,7 @@ class MessageCreate(BaseModel):
     is_group_message: bool = False
     content: str
 
-class Timesheet(BaseModel):
+class Paysheet(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     walker_id: str
@@ -2521,25 +2521,25 @@ async def mark_messages_read(sender_id: Optional[str] = None, mark_group: bool =
     
     return {"message": "Messages marked as read"}
 
-# Timesheet Routes
-@api_router.get("/timesheets")
-async def get_timesheets(current_user: dict = Depends(get_current_user)):
+# Paysheet Routes
+@api_router.get("/paysheets")
+async def get_paysheets(current_user: dict = Depends(get_current_user)):
     query = {}
     if current_user['role'] == 'walker':
         query['walker_id'] = current_user['id']
     
-    timesheets = await db.timesheets.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    paysheets = await db.paysheets.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     
     # Get walker names for admin view
     walker_names = {}
     if current_user['role'] == 'admin':
-        walker_ids = list(set([ts.get('walker_id') for ts in timesheets if ts.get('walker_id')]))
+        walker_ids = list(set([ts.get('walker_id') for ts in paysheets if ts.get('walker_id')]))
         walkers = await db.users.find({"id": {"$in": walker_ids}}, {"_id": 0, "id": 1, "full_name": 1}).to_list(100)
         walker_names = {w['id']: w.get('full_name', 'Unknown') for w in walkers}
     
-    # Normalize old and new timesheet formats
+    # Normalize old and new paysheet formats
     normalized = []
-    for ts in timesheets:
+    for ts in paysheets:
         normalized.append({
             "id": ts.get("id"),
             "walker_id": ts.get("walker_id"),
@@ -2565,14 +2565,14 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'walker':
         raise HTTPException(status_code=403, detail="Walkers only")
     
-    # Get IDs of walks already included in submitted timesheets
-    submitted_timesheets = await db.timesheets.find(
+    # Get IDs of walks already included in submitted paysheets
+    submitted_paysheets = await db.paysheets.find(
         {"walker_id": current_user['id'], "submitted": True},
         {"_id": 0, "appointment_ids": 1}
     ).to_list(500)
     
     submitted_appointment_ids = set()
-    for ts in submitted_timesheets:
+    for ts in submitted_paysheets:
         submitted_appointment_ids.update(ts.get('appointment_ids', []))
     
     # Get completed appointments NOT yet submitted
@@ -2626,9 +2626,9 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
         "pay_rates": WALKER_PAY_RATES
     }
 
-@api_router.post("/timesheets/submit")
-async def submit_timesheet(current_user: dict = Depends(get_current_user)):
-    """Submit accumulated walks as a timesheet"""
+@api_router.post("/paysheets/submit")
+async def submit_paysheet(current_user: dict = Depends(get_current_user)):
+    """Submit accumulated walks as a paysheet"""
     if current_user['role'] != 'walker':
         raise HTTPException(status_code=403, detail="Walkers only")
     
@@ -2645,7 +2645,7 @@ async def submit_timesheet(current_user: dict = Depends(get_current_user)):
     period_start = min(dates) if dates else datetime.now(timezone.utc).strftime("%Y-%m-%d")
     period_end = max(dates) if dates else datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    timesheet = Timesheet(
+    paysheet = Paysheet(
         walker_id=current_user['id'],
         period_start=period_start,
         period_end=period_end,
@@ -2657,33 +2657,33 @@ async def submit_timesheet(current_user: dict = Depends(get_current_user)):
         submitted=True
     )
     
-    ts_dict = timesheet.model_dump()
+    ts_dict = paysheet.model_dump()
     ts_dict['created_at'] = ts_dict['created_at'].isoformat()
-    await db.timesheets.insert_one(ts_dict)
+    await db.paysheets.insert_one(ts_dict)
     
     return {
-        "message": "Timesheet submitted successfully",
-        "timesheet_id": timesheet.id,
-        "total_hours": timesheet.total_hours,
-        "total_earnings": timesheet.total_earnings,
-        "total_walks": timesheet.total_walks
+        "message": "Paysheet submitted successfully",
+        "paysheet_id": paysheet.id,
+        "total_hours": paysheet.total_hours,
+        "total_earnings": paysheet.total_earnings,
+        "total_walks": paysheet.total_walks
     }
 
-@api_router.put("/timesheets/{timesheet_id}/approve")
-async def approve_timesheet(timesheet_id: str, current_user: dict = Depends(get_current_user)):
+@api_router.put("/paysheets/{paysheet_id}/approve")
+async def approve_paysheet(paysheet_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
-    await db.timesheets.update_one({"id": timesheet_id}, {"$set": {"approved": True}})
-    return {"message": "Timesheet approved"}
+    await db.paysheets.update_one({"id": paysheet_id}, {"$set": {"approved": True}})
+    return {"message": "Paysheet approved"}
 
-@api_router.put("/timesheets/{timesheet_id}/mark-paid")
-async def mark_timesheet_paid(timesheet_id: str, current_user: dict = Depends(get_current_user)):
+@api_router.put("/paysheets/{paysheet_id}/mark-paid")
+async def mark_paysheet_paid(paysheet_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
-    await db.timesheets.update_one({"id": timesheet_id}, {"$set": {"paid": True}})
-    return {"message": "Timesheet marked as paid"}
+    await db.paysheets.update_one({"id": paysheet_id}, {"$set": {"paid": True}})
+    return {"message": "Paysheet marked as paid"}
 
 # 1099 Payroll Reports
 @api_router.get("/reports/payroll/1099")
@@ -2707,8 +2707,8 @@ async def get_1099_payroll_report(year: int = None, current_user: dict = Depends
         {"_id": 0, "password_hash": 0}
     ).to_list(500)
     
-    # Get all paid timesheets for the year
-    timesheets = await db.timesheets.find(
+    # Get all paid paysheets for the year
+    paysheets = await db.paysheets.find(
         {"paid": True},
         {"_id": 0}
     ).to_list(10000)
@@ -2729,10 +2729,10 @@ async def get_1099_payroll_report(year: int = None, current_user: dict = Depends
             "address": member.get('address', ''),
             "year_total": 0.0,
             "month_total": 0.0,
-            "timesheets_count": 0
+            "paysheets_count": 0
         }
     
-    for ts in timesheets:
+    for ts in paysheets:
         walker_id = ts.get('walker_id')
         if not walker_id:
             continue
@@ -2740,11 +2740,11 @@ async def get_1099_payroll_report(year: int = None, current_user: dict = Depends
         earnings = ts.get('total_earnings', 0)
         period_end = ts.get('period_end', '')
         
-        # Check if this timesheet falls within the report year
+        # Check if this paysheet falls within the report year
         if period_end and period_end >= year_start and period_end <= year_end:
             if walker_id in staff_earnings:
                 staff_earnings[walker_id]['year_total'] += earnings
-                staff_earnings[walker_id]['timesheets_count'] += 1
+                staff_earnings[walker_id]['paysheets_count'] += 1
                 total_ytd += earnings
                 
                 # Check if it's in current month
@@ -2777,7 +2777,7 @@ async def get_1099_payroll_report(year: int = None, current_user: dict = Depends
 async def get_staff_1099_detail(staff_id: str, year: int = None, current_user: dict = Depends(get_current_user)):
     """
     Get detailed 1099 report for a specific walker/sitter.
-    Includes all paid timesheets and earnings breakdown.
+    Includes all paid paysheets and earnings breakdown.
     """
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
@@ -2796,8 +2796,8 @@ async def get_staff_1099_detail(staff_id: str, year: int = None, current_user: d
     if not staff_member:
         raise HTTPException(status_code=404, detail="Staff member not found")
     
-    # Get all paid timesheets for this staff member in the year
-    timesheets = await db.timesheets.find(
+    # Get all paid paysheets for this staff member in the year
+    paysheets = await db.paysheets.find(
         {
             "walker_id": staff_id,
             "paid": True,
@@ -2812,7 +2812,7 @@ async def get_staff_1099_detail(staff_id: str, year: int = None, current_user: d
     total_walks = 0
     total_hours = 0.0
     
-    for ts in timesheets:
+    for ts in paysheets:
         earnings = ts.get('total_earnings', 0)
         walks = ts.get('total_walks', 0)
         hours = ts.get('total_hours', 0)
@@ -2831,12 +2831,12 @@ async def get_staff_1099_detail(staff_id: str, year: int = None, current_user: d
                     "earnings": 0.0,
                     "walks": 0,
                     "hours": 0.0,
-                    "timesheets": 0
+                    "paysheets": 0
                 }
             monthly_breakdown[month_key]['earnings'] += earnings
             monthly_breakdown[month_key]['walks'] += walks
             monthly_breakdown[month_key]['hours'] += hours
-            monthly_breakdown[month_key]['timesheets'] += 1
+            monthly_breakdown[month_key]['paysheets'] += 1
     
     # Convert monthly breakdown to sorted list
     months_list = list(monthly_breakdown.values())
@@ -2865,7 +2865,7 @@ async def get_staff_1099_detail(staff_id: str, year: int = None, current_user: d
             "requires_1099": total_earnings >= 600
         },
         "monthly_breakdown": months_list,
-        "timesheets": timesheets
+        "paysheets": paysheets
     }
 
 # Revenue & Billing Routes
