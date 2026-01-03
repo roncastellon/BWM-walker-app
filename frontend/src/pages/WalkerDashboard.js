@@ -727,6 +727,58 @@ const WalkerDashboard = () => {
               </Card>
             </Link>
 
+            {/* Payment Methods */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-orange-500" />
+                  Payment Methods
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                        <span className="text-purple-600 font-bold text-xs">Z</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Zelle</p>
+                        <p className="text-xs text-muted-foreground">{user?.zelle_email || 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center">
+                        <span className="text-sky-600 font-bold text-xs">V</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Venmo</p>
+                        <p className="text-xs text-muted-foreground">{user?.venmo_username ? `@${user.venmo_username}` : 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <span className="text-green-600 font-bold text-xs">$</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Cash App</p>
+                        <p className="text-xs text-muted-foreground">{user?.cashapp_tag ? `$${user.cashapp_tag}` : 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <Link to="/walker/profile">
+                  <Button variant="outline" size="sm" className="w-full mt-3 rounded-full">
+                    Edit Payment Methods
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             {/* Stats */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
