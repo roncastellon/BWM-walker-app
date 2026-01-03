@@ -338,6 +338,16 @@ function AppRoutes() {
         }
       />
 
+      {/* Dog Park - Available to all authenticated users */}
+      <Route
+        path="/dog-park"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'walker', 'sitter', 'client']}>
+            <DogParkPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
