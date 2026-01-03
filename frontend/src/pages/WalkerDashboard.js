@@ -386,8 +386,22 @@ const WalkerDashboard = () => {
                         const petNames = appt?.pet_names?.join(', ') || appt?.pets?.map(p => p.name).join(', ') || 'a pet';
                         const timeStr = appt?.scheduled_time || '';
                         const dateStr = appt?.scheduled_date || '';
-                        const isToday = dateStr === new Date().toISOString().split('T')[0];
-                        const dateDisplay = isToday ? 'today' : dateStr;
+                        const todayStr = new Date().toISOString().split('T')[0];
+                        const tomorrowDate = new Date();
+                        tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+                        const tomorrowStr = tomorrowDate.toISOString().split('T')[0];
+                        
+                        // Format date nicely
+                        let dateDisplay = dateStr;
+                        if (dateStr === todayStr) {
+                          dateDisplay = 'today';
+                        } else if (dateStr === tomorrowStr) {
+                          dateDisplay = 'tomorrow';
+                        } else if (dateStr) {
+                          const date = new Date(dateStr + 'T00:00:00');
+                          const options = { month: 'long', day: 'numeric' };
+                          dateDisplay = 'on ' + date.toLocaleDateString('en-US', options);
+                        }
                         
                         // Format time to 12-hour format
                         let formattedTime = timeStr;
