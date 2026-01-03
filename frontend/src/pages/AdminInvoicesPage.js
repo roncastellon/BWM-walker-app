@@ -327,11 +327,25 @@ const AdminBillingPage = () => {
     }
   };
 
+  const openTimesheetReview = (timesheet) => {
+    setSelectedTimesheet(timesheet);
+    setTimesheetModalOpen(true);
+  };
+
+  const closeTimesheetReview = () => {
+    setSelectedTimesheet(null);
+    setTimesheetModalOpen(false);
+  };
+
   const approveTimesheet = async (timesheetId) => {
     try {
       await api.put(`/timesheets/${timesheetId}/approve`);
       toast.success('Timesheet approved');
       fetchTimesheets();
+      // Update the selected timesheet if it's open
+      if (selectedTimesheet && selectedTimesheet.id === timesheetId) {
+        setSelectedTimesheet({...selectedTimesheet, approved: true});
+      }
     } catch (error) {
       toast.error('Failed to approve timesheet');
     }
@@ -342,6 +356,7 @@ const AdminBillingPage = () => {
       await api.put(`/timesheets/${timesheetId}/mark-paid`);
       toast.success('Timesheet marked as paid');
       fetchTimesheets();
+      closeTimesheetReview();
     } catch (error) {
       toast.error('Failed to mark timesheet as paid');
     }
