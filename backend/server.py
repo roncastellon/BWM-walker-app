@@ -2540,10 +2540,15 @@ async def get_paysheets(current_user: dict = Depends(get_current_user)):
     # Normalize old and new paysheet formats
     normalized = []
     for ts in paysheets:
+        # Use existing walker_name if present, otherwise look up
+        existing_name = ts.get("walker_name")
+        looked_up_name = walker_names.get(ts.get("walker_id"), "Staff")
+        final_name = existing_name if existing_name else looked_up_name
+        
         normalized.append({
             "id": ts.get("id"),
             "walker_id": ts.get("walker_id"),
-            "walker_name": walker_names.get(ts.get("walker_id"), "Staff"),
+            "walker_name": final_name,
             "period_start": ts.get("period_start") or ts.get("week_start", ""),
             "period_end": ts.get("period_end") or ts.get("week_end", ""),
             "total_hours": ts.get("total_hours", 0),
