@@ -177,8 +177,11 @@ def calculate_petsit_price(service_type: str, num_dogs: int, start_date: str, en
     from datetime import date
     
     base_prices = {
-        "petsit_our_location": 50.00,     # per night
+        "petsit_our_location": 50.00,     # per night - boarding at our location
+        "petsit_your_location": 50.00,    # per night - pet sitting at client's home
     }
+    
+    holiday_upcharge = 10.00  # $10 upcharge for holidays (day before, day of, day after)
     
     if service_type not in base_prices:
         return {"total": 0, "breakdown": []}
@@ -191,8 +194,8 @@ def calculate_petsit_price(service_type: str, num_dogs: int, start_date: str, en
     start = date.fromisoformat(start_date)
     end = date.fromisoformat(end_date) if end_date else start
     
-    if service_type == "petsit_our_location":
-        # For boarding, count nights (end_date - start_date)
+    if service_type in ["petsit_our_location", "petsit_your_location"]:
+        # For both pet sitting types, count nights (end_date - start_date)
         num_nights = max(1, (end - start).days)
         
         # Calculate for each night
@@ -201,24 +204,24 @@ def calculate_petsit_price(service_type: str, num_dogs: int, start_date: str, en
             night_date = (current + timedelta(days=i)).strftime("%Y-%m-%d")
             night_price = base_price
             
-            # Add 2nd dog at half price
-            if num_dogs > 1:
+            # Add 2nd dog at half price (only for our location/boarding)
+            if service_type == "petsit_our_location" and num_dogs > 1:
                 night_price += (num_dogs - 1) * (base_price / 2)
             
-            # Check for holiday surcharge
+            # Check for holiday surcharge (day before, day of, day after holidays)
             is_holiday = is_holiday_date(night_date)
-            holiday_surcharge = 10.00 * num_dogs if is_holiday else 0
+            holiday_surcharge_amount = holiday_upcharge * num_dogs if is_holiday else 0
             
-            night_total = night_price + holiday_surcharge
+            night_total = night_price + holiday_surcharge_amount
             total += night_total
             
             breakdown.append({
                 "date": night_date,
                 "base": base_price,
                 "dogs": num_dogs,
-                "dog_surcharge": (num_dogs - 1) * (base_price / 2) if num_dogs > 1 else 0,
+                "dog_surcharge": (num_dogs - 1) * (base_price / 2) if (service_type == "petsit_our_location" and num_dogs > 1) else 0,
                 "holiday": is_holiday,
-                "holiday_surcharge": holiday_surcharge,
+                "holiday_surcharge": holiday_surcharge_amount,
                 "subtotal": night_total
             })
     
