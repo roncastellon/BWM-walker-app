@@ -1647,6 +1647,310 @@ class WagWalkAPITester:
         self.test_pet_image_upload()
         self.test_serve_uploaded_images()
 
+    def test_dog_park_social_feed(self):
+        """Test Dog Park social feed functionality"""
+        print("\n" + "=" * 70)
+        print("🐕 TESTING DOG PARK SOCIAL FEED FUNCTIONALITY")
+        print("=" * 70)
+        
+        # Test with demo credentials
+        self.test_demo_user_login()
+        
+        if not self.tokens.get('demo_client'):
+            print("⚠️  Skipping Dog Park tests - no demo client token")
+            return
+        
+        # Test GET /api/dog-park/posts with filters
+        self.test_dog_park_get_posts()
+        
+        # Test POST /api/dog-park/posts - create new post
+        self.test_dog_park_create_post()
+        
+        # Test POST /api/dog-park/posts/{post_id}/like - like/unlike
+        self.test_dog_park_like_post()
+        
+        # Test DELETE /api/dog-park/posts/{post_id} - delete post
+        self.test_dog_park_delete_post()
+        
+        # Test GET /api/dog-park/featured - get featured pet images
+        self.test_dog_park_featured_images()
+        
+        # Test GET /api/dog-park/pets-to-tag - get available pets to tag
+        self.test_dog_park_pets_to_tag()
+        
+        # Test GET /api/dog-park/users-to-tag - get available users to tag
+        self.test_dog_park_users_to_tag()
+        
+        # Test GET /api/dog-park/notifications - get tag notifications
+        self.test_dog_park_notifications()
+
+    def test_dog_park_get_posts(self):
+        """Test GET /api/dog-park/posts with different filters"""
+        print("\n🔍 Testing Dog Park Get Posts with Filters...")
+        
+        # Test filter=recent (posts from last 2 months)
+        success, response = self.run_test(
+            "Get Recent Posts", "GET", "dog-park/posts?filter=recent", 200,
+            token=self.tokens['demo_client'],
+            description="Get posts from last 2 months"
+        )
+        
+        # Test filter=older (posts 2+ months old)
+        success, response = self.run_test(
+            "Get Older Posts", "GET", "dog-park/posts?filter=older", 200,
+            token=self.tokens['demo_client'],
+            description="Get posts 2+ months old"
+        )
+        
+        # Test filter=my_pet (posts with user's pets tagged)
+        success, response = self.run_test(
+            "Get My Pet Posts", "GET", "dog-park/posts?filter=my_pet", 200,
+            token=self.tokens['demo_client'],
+            description="Get posts with user's pets tagged"
+        )
+        
+        # Test search_name parameter (search by pet/owner name)
+        success, response = self.run_test(
+            "Search Posts by Name", "GET", "dog-park/posts?search_name=buddy", 200,
+            token=self.tokens['demo_client'],
+            description="Search posts by pet/owner name"
+        )
+        
+        # Test getting all posts (no filter)
+        success, response = self.run_test(
+            "Get All Posts", "GET", "dog-park/posts", 200,
+            token=self.tokens['demo_client'],
+            description="Get all dog park posts"
+        )
+
+    def test_dog_park_create_post(self):
+        """Test POST /api/dog-park/posts - create new post"""
+        print("\n🔍 Testing Dog Park Create Post...")
+        
+        # Test creating post with just content
+        post_data = {
+            "content": "Beautiful day at the dog park! My pup is having so much fun playing with other dogs. 🐕"
+        }
+        
+        success, response = self.run_test(
+            "Create Post (Content Only)", "POST", "dog-park/posts", 200,
+            data=post_data, token=self.tokens['demo_client'],
+            description="Create post with just content"
+        )
+        
+        if success:
+            self.dog_park_post_id = response.get('id')
+            print(f"✅ Post created with ID: {self.dog_park_post_id}")
+        
+        # Get user's pets for tagging
+        success, pets = self.run_test(
+            "Get Pets for Tagging", "GET", "pets", 200,
+            token=self.tokens['demo_client'],
+            description="Get user's pets for post tagging"
+        )
+        
+        pet_ids = []
+        if success and pets:
+            pet_ids = [pet['id'] for pet in pets[:2]]  # Use first 2 pets
+        
+        # Get users for tagging
+        success, users = self.run_test(
+            "Get Users for Tagging", "GET", "dog-park/users-to-tag", 200,
+            token=self.tokens['demo_client'],
+            description="Get available users for tagging"
+        )
+        
+        user_ids = []
+        if success and users:
+            user_ids = [user['id'] for user in users[:1]]  # Use first user
+        
+        # Test creating post with content and tagged pets
+        post_data_with_pets = {
+            "content": "Look at these adorable pups playing together! 🐾",
+            "tagged_pet_ids": pet_ids
+        }
+        
+        success, response = self.run_test(
+            "Create Post (With Pet Tags)", "POST", "dog-park/posts", 200,
+            data=post_data_with_pets, token=self.tokens['demo_client'],
+            description="Create post with content and tagged pets"
+        )
+        
+        if success:
+            self.dog_park_post_with_pets_id = response.get('id')
+            print(f"✅ Post with pet tags created with ID: {self.dog_park_post_with_pets_id}")
+        
+        # Test creating post with content, tagged pets, and tagged users
+        post_data_full = {
+            "content": "Great meetup at the dog park today! Thanks everyone for coming out. 🎾",
+            "tagged_pet_ids": pet_ids,
+            "tagged_user_ids": user_ids
+        }
+        
+        success, response = self.run_test(
+            "Create Post (With Pet & User Tags)", "POST", "dog-park/posts", 200,
+            data=post_data_full, token=self.tokens['demo_client'],
+            description="Create post with content, tagged pets, and tagged users"
+        )
+        
+        if success:
+            self.dog_park_post_full_id = response.get('id')
+            print(f"✅ Post with full tags created with ID: {self.dog_park_post_full_id}")
+
+    def test_dog_park_like_post(self):
+        """Test POST /api/dog-park/posts/{post_id}/like - like/unlike post"""
+        print("\n🔍 Testing Dog Park Like/Unlike Post...")
+        
+        if not hasattr(self, 'dog_park_post_id') or not self.dog_park_post_id:
+            print("⚠️  No post ID available for like test")
+            return
+        
+        # Test liking a post
+        success, response = self.run_test(
+            "Like Post", "POST", f"dog-park/posts/{self.dog_park_post_id}/like", 200,
+            token=self.tokens['demo_client'],
+            description="Like a dog park post"
+        )
+        
+        if success:
+            print("✅ Post liked successfully")
+        
+        # Test unliking (toggling like off)
+        success, response = self.run_test(
+            "Unlike Post", "POST", f"dog-park/posts/{self.dog_park_post_id}/like", 200,
+            token=self.tokens['demo_client'],
+            description="Unlike a dog park post (toggle off)"
+        )
+        
+        if success:
+            print("✅ Post unliked successfully")
+
+    def test_dog_park_delete_post(self):
+        """Test DELETE /api/dog-park/posts/{post_id} - delete post"""
+        print("\n🔍 Testing Dog Park Delete Post...")
+        
+        if not hasattr(self, 'dog_park_post_id') or not self.dog_park_post_id:
+            print("⚠️  No post ID available for delete test")
+            return
+        
+        # Test author can delete their own post
+        success, response = self.run_test(
+            "Delete Own Post", "DELETE", f"dog-park/posts/{self.dog_park_post_id}", 200,
+            token=self.tokens['demo_client'],
+            description="Author deletes their own post"
+        )
+        
+        if success:
+            print("✅ Post deleted by author successfully")
+        
+        # Test admin can delete any post (if we have another post)
+        if hasattr(self, 'dog_park_post_with_pets_id') and self.dog_park_post_with_pets_id and self.tokens.get('demo_admin'):
+            success, response = self.run_test(
+                "Admin Delete Post", "DELETE", f"dog-park/posts/{self.dog_park_post_with_pets_id}", 200,
+                token=self.tokens['demo_admin'],
+                description="Admin deletes any post"
+            )
+            
+            if success:
+                print("✅ Post deleted by admin successfully")
+        
+        # Test non-author non-admin cannot delete (use walker token if available)
+        if hasattr(self, 'dog_park_post_full_id') and self.dog_park_post_full_id and self.tokens.get('demo_walker'):
+            success, response = self.run_test(
+                "Non-Author Delete Post (Should Fail)", "DELETE", f"dog-park/posts/{self.dog_park_post_full_id}", 403,
+                token=self.tokens['demo_walker'],
+                description="Non-author non-admin tries to delete post (should fail)"
+            )
+            
+            if success:
+                print("✅ Non-author delete properly blocked")
+
+    def test_dog_park_featured_images(self):
+        """Test GET /api/dog-park/featured - get random featured pet images"""
+        print("\n🔍 Testing Dog Park Featured Images...")
+        
+        success, response = self.run_test(
+            "Get Featured Pet Images", "GET", "dog-park/featured", 200,
+            token=self.tokens['demo_client'],
+            description="Get random featured pet images for dog park"
+        )
+        
+        if success:
+            if isinstance(response, list):
+                print(f"✅ Featured images returned: {len(response)} images")
+            else:
+                print("✅ Featured images endpoint working")
+
+    def test_dog_park_pets_to_tag(self):
+        """Test GET /api/dog-park/pets-to-tag - get available pets to tag"""
+        print("\n🔍 Testing Dog Park Pets to Tag...")
+        
+        # Test as client (should only see own pets)
+        success, response = self.run_test(
+            "Get Pets to Tag (Client)", "GET", "dog-park/pets-to-tag", 200,
+            token=self.tokens['demo_client'],
+            description="Client gets available pets to tag (should only see own pets)"
+        )
+        
+        if success:
+            print(f"✅ Client pets to tag: {len(response) if isinstance(response, list) else 'N/A'} pets")
+        
+        # Test as walker/admin (should see all pets)
+        if self.tokens.get('demo_walker'):
+            success, response = self.run_test(
+                "Get Pets to Tag (Walker)", "GET", "dog-park/pets-to-tag", 200,
+                token=self.tokens['demo_walker'],
+                description="Walker gets available pets to tag (should see all pets)"
+            )
+            
+            if success:
+                print(f"✅ Walker pets to tag: {len(response) if isinstance(response, list) else 'N/A'} pets")
+        
+        if self.tokens.get('demo_admin'):
+            success, response = self.run_test(
+                "Get Pets to Tag (Admin)", "GET", "dog-park/pets-to-tag", 200,
+                token=self.tokens['demo_admin'],
+                description="Admin gets available pets to tag (should see all pets)"
+            )
+            
+            if success:
+                print(f"✅ Admin pets to tag: {len(response) if isinstance(response, list) else 'N/A'} pets")
+
+    def test_dog_park_users_to_tag(self):
+        """Test GET /api/dog-park/users-to-tag - get available users to tag"""
+        print("\n🔍 Testing Dog Park Users to Tag...")
+        
+        success, response = self.run_test(
+            "Get Users to Tag", "GET", "dog-park/users-to-tag", 200,
+            token=self.tokens['demo_client'],
+            description="Get available users to tag in posts"
+        )
+        
+        if success:
+            if isinstance(response, list):
+                print(f"✅ Users to tag returned: {len(response)} users")
+                # Check if response contains expected user fields
+                if response and 'id' in response[0] and 'full_name' in response[0]:
+                    print("✅ User data contains required fields (id, full_name)")
+            else:
+                print("✅ Users to tag endpoint working")
+
+    def test_dog_park_notifications(self):
+        """Test GET /api/dog-park/notifications - get tag notifications"""
+        print("\n🔍 Testing Dog Park Notifications...")
+        
+        success, response = self.run_test(
+            "Get Tag Notifications", "GET", "dog-park/notifications", 200,
+            token=self.tokens['demo_client'],
+            description="Get notifications when pets/users are tagged in posts"
+        )
+        
+        if success:
+            if isinstance(response, list):
+                print(f"✅ Tag notifications returned: {len(response)} notifications")
+            else:
+                print("✅ Tag notifications endpoint working")
+
 def main():
     print("🐕 Starting WagWalk API Tests...")
     print("=" * 50)
