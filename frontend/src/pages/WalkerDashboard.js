@@ -50,6 +50,9 @@ const WalkerDashboard = () => {
   const [timeOffModalOpen, setTimeOffModalOpen] = useState(false);
   const [timeOffForm, setTimeOffForm] = useState({ start_date: '', end_date: '', reason: '' });
   const [saving, setSaving] = useState(false);
+  
+  // Incoming Trade Requests Review Modal
+  const [incomingTradesModalOpen, setIncomingTradesModalOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
