@@ -351,6 +351,43 @@ const WalkerDashboard = () => {
   return (
     <Layout>
       <div className="space-y-6" data-testid="walker-dashboard">
+        {/* Incoming Trade Requests - Red Octagon Notification */}
+        {tradeRequests.filter(t => t.target_walker_id === user?.id && t.status === 'pending').length > 0 && (
+          <div 
+            className="cursor-pointer"
+            onClick={() => setIncomingTradesModalOpen(true)}
+            data-testid="trade-request-notification"
+          >
+            <Card className="rounded-xl border-2 border-red-500 bg-red-50 hover:bg-red-100 transition-all">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  {/* Red Octagon Icon */}
+                  <div className="relative">
+                    <div 
+                      className="w-14 h-14 bg-red-500 flex items-center justify-center shadow-lg"
+                      style={{
+                        clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
+                      }}
+                    >
+                      <ArrowLeftRight className="w-7 h-7 text-white" />
+                    </div>
+                    <span className="absolute -top-1 -right-1 w-6 h-6 bg-white text-red-600 rounded-full flex items-center justify-center text-sm font-bold border-2 border-red-500">
+                      {tradeRequests.filter(t => t.target_walker_id === user?.id && t.status === 'pending').length}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-red-800 text-lg">Trade Request{tradeRequests.filter(t => t.target_walker_id === user?.id && t.status === 'pending').length > 1 ? 's' : ''} Pending!</h3>
+                    <p className="text-red-600 text-sm">
+                      Another walker wants to trade a walk with you. Click to review and respond.
+                    </p>
+                  </div>
+                  <ArrowRight className="w-6 h-6 text-red-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Welcome Header */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary/90 to-secondary p-6 text-secondary-foreground">
           <div className="relative z-10">
