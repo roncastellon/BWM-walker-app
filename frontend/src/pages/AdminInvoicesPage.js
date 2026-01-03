@@ -633,6 +633,91 @@ const AdminBillingPage = () => {
             </Card>
           </TabsContent>
 
+          {/* PAYROLL TAB - Timesheets */}
+          <TabsContent value="payroll" className="space-y-4">
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-sky-600" />
+                  Submitted Timesheets
+                </CardTitle>
+                <CardDescription>Review and approve timesheets from walkers and sitters</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loadingTimesheets ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
+                  </div>
+                ) : timesheets.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No timesheets submitted yet</p>
+                    <p className="text-sm mt-1">Timesheets will appear here when staff submit them</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-muted/50">
+                          <th className="text-left p-3 font-medium">Staff Member</th>
+                          <th className="text-left p-3 font-medium">Period</th>
+                          <th className="text-right p-3 font-medium">Walks</th>
+                          <th className="text-right p-3 font-medium">Hours</th>
+                          <th className="text-right p-3 font-medium">Earnings</th>
+                          <th className="text-center p-3 font-medium">Status</th>
+                          <th className="text-center p-3 font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {timesheets.map((ts) => (
+                          <tr key={ts.id} className="border-b hover:bg-muted/30">
+                            <td className="p-3">
+                              <p className="font-medium">{ts.walker_name || 'Staff'}</p>
+                            </td>
+                            <td className="p-3">
+                              <p className="text-sm">{ts.period_start} to {ts.period_end}</p>
+                            </td>
+                            <td className="p-3 text-right">{ts.total_walks}</td>
+                            <td className="p-3 text-right">{ts.total_hours?.toFixed(1) || '0.0'}</td>
+                            <td className="p-3 text-right font-medium text-sky-600">${ts.total_earnings?.toFixed(2) || '0.00'}</td>
+                            <td className="p-3 text-center">
+                              {ts.paid ? (
+                                <Badge className="bg-green-100 text-green-700 rounded-full">Paid</Badge>
+                              ) : ts.approved ? (
+                                <Badge className="bg-sky-100 text-sky-700 rounded-full">Approved</Badge>
+                              ) : (
+                                <Badge className="bg-orange-100 text-orange-700 rounded-full">Pending</Badge>
+                              )}
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                {!ts.approved && !ts.paid && (
+                                  <Button size="sm" variant="outline" onClick={() => approveTimesheet(ts.id)} className="rounded-full">
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    Approve
+                                  </Button>
+                                )}
+                                {ts.approved && !ts.paid && (
+                                  <Button size="sm" onClick={() => markTimesheetPaid(ts.id)} className="rounded-full bg-green-500 hover:bg-green-600">
+                                    <DollarSign className="w-4 h-4 mr-1" />
+                                    Mark Paid
+                                  </Button>
+                                )}
+                                {ts.paid && (
+                                  <span className="text-green-600 text-xs">✓ Complete</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* 1099 REPORTS TAB */}
           <TabsContent value="reports" className="space-y-4">
             {/* Report Controls */}
