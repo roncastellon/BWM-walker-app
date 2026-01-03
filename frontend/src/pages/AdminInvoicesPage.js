@@ -1542,9 +1542,9 @@ const AdminBillingPage = () => {
                       <Button variant="outline" onClick={closeTimesheetReview} className="flex-1 rounded-full">
                         Close
                       </Button>
-                      <Button onClick={() => markTimesheetPaid(selectedTimesheet.id)} className="flex-1 rounded-full bg-green-500 hover:bg-green-600">
+                      <Button onClick={() => openPaymentModal(selectedTimesheet)} className="flex-1 rounded-full bg-green-500 hover:bg-green-600">
                         <DollarSign className="w-4 h-4 mr-2" />
-                        Mark as Paid
+                        Pay
                       </Button>
                     </>
                   )}
@@ -1558,6 +1558,114 @@ const AdminBillingPage = () => {
             ) : (
               <p className="text-center py-8 text-muted-foreground">No timesheet selected</p>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Payment Modal */}
+        <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-green-600" />
+                Pay {walkerPaymentInfo?.full_name || 'Staff'}
+              </DialogTitle>
+              <DialogDescription>
+                Amount: <span className="font-bold text-lg text-green-600">${selectedTimesheet?.total_earnings?.toFixed(2) || '0.00'}</span>
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-4">
+              <p className="text-sm text-muted-foreground mb-4">Select payment method and confirm once paid:</p>
+              
+              {/* Zelle Option */}
+              <div 
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.zelle_email ? 'hover:border-purple-400 hover:bg-purple-50' : 'opacity-50 cursor-not-allowed'}`}
+                onClick={() => walkerPaymentInfo?.zelle_email && markTimesheetPaid(selectedTimesheet.id, 'Zelle')}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                    <span className="text-purple-600 font-bold text-lg">Z</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">Zelle</p>
+                    {walkerPaymentInfo?.zelle_email ? (
+                      <p className="text-sm text-purple-600">{walkerPaymentInfo.zelle_email}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Not configured</p>
+                    )}
+                  </div>
+                  {walkerPaymentInfo?.zelle_email && (
+                    <Button size="sm" className="rounded-full bg-purple-500 hover:bg-purple-600">
+                      Pay & Mark Paid
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Venmo Option */}
+              <div 
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.venmo_username ? 'hover:border-sky-400 hover:bg-sky-50' : 'opacity-50 cursor-not-allowed'}`}
+                onClick={() => walkerPaymentInfo?.venmo_username && markTimesheetPaid(selectedTimesheet.id, 'Venmo')}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center">
+                    <span className="text-sky-600 font-bold text-lg">V</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">Venmo</p>
+                    {walkerPaymentInfo?.venmo_username ? (
+                      <p className="text-sm text-sky-600">@{walkerPaymentInfo.venmo_username}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Not configured</p>
+                    )}
+                  </div>
+                  {walkerPaymentInfo?.venmo_username && (
+                    <Button size="sm" className="rounded-full bg-sky-500 hover:bg-sky-600">
+                      Pay & Mark Paid
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* CashApp Option */}
+              <div 
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.cashapp_tag ? 'hover:border-green-400 hover:bg-green-50' : 'opacity-50 cursor-not-allowed'}`}
+                onClick={() => walkerPaymentInfo?.cashapp_tag && markTimesheetPaid(selectedTimesheet.id, 'CashApp')}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <span className="text-green-600 font-bold text-lg">$</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">Cash App</p>
+                    {walkerPaymentInfo?.cashapp_tag ? (
+                      <p className="text-sm text-green-600">${walkerPaymentInfo.cashapp_tag}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Not configured</p>
+                    )}
+                  </div>
+                  {walkerPaymentInfo?.cashapp_tag && (
+                    <Button size="sm" className="rounded-full bg-green-500 hover:bg-green-600">
+                      Pay & Mark Paid
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {!walkerPaymentInfo?.zelle_email && !walkerPaymentInfo?.venmo_username && !walkerPaymentInfo?.cashapp_tag && (
+                <div className="p-4 rounded-xl bg-orange-50 border border-orange-200">
+                  <p className="text-sm text-orange-700">
+                    <strong>No payment methods configured.</strong> Ask {walkerPaymentInfo?.full_name || 'the staff member'} to add their Zelle, Venmo, or CashApp info to their profile.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setPaymentModalOpen(false)} className="flex-1 rounded-full">
+                Cancel
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
