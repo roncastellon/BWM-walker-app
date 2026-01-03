@@ -2368,7 +2368,14 @@ async def get_message_contacts(contact_type: str = "all", current_user: dict = D
     inactive_contacts = [c for c in contacts if not c.get('has_messages')]
     
     # Sort active chats by last_message_at descending (most recent first)
-    active_chats.sort(key=lambda c: c.get('last_message_at', ''), reverse=True)
+    # Ensure we compare strings consistently (handle both datetime and string formats)
+    def get_last_message_sort_key(c):
+        last_msg = c.get('last_message_at', '')
+        if hasattr(last_msg, 'isoformat'):
+            return last_msg.isoformat()
+        return str(last_msg) if last_msg else ''
+    
+    active_chats.sort(key=lambda c: get_last_message_sort_key(c), reverse=True)
     # Sort inactive by unread then name
     inactive_contacts.sort(key=lambda c: (-c.get('unread_count', 0), c.get('full_name', '').lower()))
     
