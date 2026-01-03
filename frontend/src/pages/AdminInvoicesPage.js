@@ -981,13 +981,62 @@ const AdminBillingPage = () => {
             {/* Service Pricing */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-primary" />
-                  Service Pricing
-                </CardTitle>
-                <CardDescription>Configure pricing for all services</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-sky-600" />
+                      Services & Pricing
+                    </CardTitle>
+                    <CardDescription>Configure pricing for all services</CardDescription>
+                  </div>
+                  <Button size="sm" onClick={() => setShowNewServiceForm(!showNewServiceForm)} className="rounded-full bg-orange-500 hover:bg-orange-600">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Service
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
+                {/* New Service Form */}
+                {showNewServiceForm && (
+                  <div className="p-4 mb-4 rounded-xl bg-orange-50 border border-orange-200">
+                    <h4 className="font-semibold mb-3">Create New Service</h4>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <Input 
+                        value={newService.name} 
+                        onChange={(e) => setNewService({...newService, name: e.target.value})} 
+                        placeholder="Service name (e.g., Weekend Walk)" 
+                      />
+                      <Input 
+                        type="number" 
+                        value={newService.price} 
+                        onChange={(e) => setNewService({...newService, price: e.target.value})} 
+                        placeholder="Price ($)" 
+                      />
+                      <Input 
+                        value={newService.description} 
+                        onChange={(e) => setNewService({...newService, description: e.target.value})} 
+                        placeholder="Description" 
+                      />
+                      <Input 
+                        type="number" 
+                        value={newService.duration} 
+                        onChange={(e) => setNewService({...newService, duration: e.target.value})} 
+                        placeholder="Duration (minutes)" 
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={createNewService} className="rounded-full bg-orange-500 hover:bg-orange-600">
+                        <Save className="w-4 h-4 mr-1" />
+                        Create Service
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setShowNewServiceForm(false)} className="rounded-full">
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Existing Services */}
                 <div className="space-y-3">
                   {services.map((service) => (
                     <div key={service.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50" data-testid={`service-${service.id}`}>
@@ -999,14 +1048,14 @@ const AdminBillingPage = () => {
                         </div>
                       ) : (
                         <div className="flex items-center gap-3 flex-1">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <DollarSign className="w-5 h-5 text-primary" />
+                          <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                            <DollarSign className="w-5 h-5 text-sky-600" />
                           </div>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{service.name}</p>
                             <p className="text-xs text-muted-foreground">{service.description}</p>
                           </div>
-                          <p className="text-lg font-bold text-primary">${service.price.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-sky-600">${service.price.toFixed(2)}</p>
                         </div>
                       )}
                       <div className="flex gap-2 ml-3">
@@ -1016,7 +1065,10 @@ const AdminBillingPage = () => {
                             <Button size="sm" variant="outline" onClick={() => setEditingService(null)} className="rounded-full">Cancel</Button>
                           </>
                         ) : (
-                          <Button size="sm" variant="outline" onClick={() => startEditing(service)} className="rounded-full" data-testid={`edit-service-${service.id}`}><Edit2 className="w-3 h-3 mr-1" /> Edit</Button>
+                          <>
+                            <Button size="sm" variant="outline" onClick={() => startEditing(service)} className="rounded-full" data-testid={`edit-service-${service.id}`}><Edit2 className="w-3 h-3" /></Button>
+                            <Button size="sm" variant="outline" onClick={() => deleteService(service.id)} className="rounded-full text-red-500 hover:text-red-600"><Trash2 className="w-3 h-3" /></Button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -1025,13 +1077,100 @@ const AdminBillingPage = () => {
               </CardContent>
             </Card>
 
-            {/* Client Billing Cycles */}
+            {/* Custom Billing Plans */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-orange-500" />
+                      Custom Billing Plans
+                    </CardTitle>
+                    <CardDescription>Create pricing packages for clients</CardDescription>
+                  </div>
+                  <Button size="sm" onClick={() => setShowNewPlanForm(!showNewPlanForm)} className="rounded-full bg-sky-500 hover:bg-sky-600">
+                    <Plus className="w-4 h-4 mr-1" />
+                    New Plan
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* New Plan Form */}
+                {showNewPlanForm && (
+                  <div className="p-4 mb-4 rounded-xl bg-sky-50 border border-sky-200">
+                    <h4 className="font-semibold mb-3">Create Billing Plan</h4>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <Input 
+                        value={newPlan.name} 
+                        onChange={(e) => setNewPlan({...newPlan, name: e.target.value})} 
+                        placeholder="Plan name (e.g., Premium Package)" 
+                      />
+                      <Input 
+                        type="number" 
+                        value={newPlan.discount_percent} 
+                        onChange={(e) => setNewPlan({...newPlan, discount_percent: parseFloat(e.target.value) || 0})} 
+                        placeholder="Discount %" 
+                      />
+                      <Input 
+                        className="col-span-2"
+                        value={newPlan.description} 
+                        onChange={(e) => setNewPlan({...newPlan, description: e.target.value})} 
+                        placeholder="Description (e.g., 10% off all walks)" 
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={createBillingPlan} className="rounded-full bg-sky-500 hover:bg-sky-600">
+                        <Save className="w-4 h-4 mr-1" />
+                        Create Plan
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setShowNewPlanForm(false)} className="rounded-full">
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Existing Plans */}
+                {billingPlans.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No billing plans yet</p>
+                    <p className="text-xs">Create a plan to offer discounts to clients</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {billingPlans.map((plan) => (
+                      <div key={plan.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-orange-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{plan.name}</p>
+                            <p className="text-xs text-muted-foreground">{plan.description}</p>
+                          </div>
+                          {plan.discount_percent > 0 && (
+                            <Badge className="bg-green-100 text-green-700 rounded-full">{plan.discount_percent}% off</Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-2 ml-3">
+                          <Button size="sm" variant="outline" onClick={() => deleteBillingPlan(plan.id)} className="rounded-full text-red-500 hover:text-red-600"><Trash2 className="w-3 h-3" /></Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Client Billing Plans & Cycles */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-secondary" />
-                  Client Billing Cycles
+                  <Users className="w-5 h-5 text-sky-600" />
+                  Client Billing Settings
                 </CardTitle>
+                <CardDescription>Assign billing plans and cycles to clients</CardDescription>
               </CardHeader>
               <CardContent>
                 {clients.length === 0 ? (
@@ -1040,18 +1179,32 @@ const AdminBillingPage = () => {
                   <div className="space-y-2">
                     {clients.slice(0, 10).map((client) => (
                       <div key={client.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30" data-testid={`client-billing-${client.id}`}>
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-sm">{client.full_name}</p>
                           <p className="text-xs text-muted-foreground">{client.email}</p>
+                          {client.billing_plan_name && (
+                            <Badge className="mt-1 bg-orange-100 text-orange-700 rounded-full text-xs">{client.billing_plan_name}</Badge>
+                          )}
                         </div>
-                        <Select value={client.billing_cycle || 'weekly'} onValueChange={(value) => updateBillingCycle(client.id, value)}>
-                          <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          <Select value={client.billing_plan_id || 'none'} onValueChange={(value) => assignPlanToClient(client.id, value === 'none' ? null : value)}>
+                            <SelectTrigger className="w-32"><SelectValue placeholder="No plan" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No plan</SelectItem>
+                              {billingPlans.map(plan => (
+                                <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={client.billing_cycle || 'weekly'} onValueChange={(value) => updateBillingCycle(client.id, value)}>
+                            <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="daily">Daily</SelectItem>
+                              <SelectItem value="weekly">Weekly</SelectItem>
+                              <SelectItem value="monthly">Monthly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     ))}
                   </div>
