@@ -3019,6 +3019,79 @@ async def update_service_pricing(service_id: str, name: Optional[str] = None, pr
     
     return {"message": "Service updated successfully"}
 
+@api_router.delete("/services/{service_id}")
+async def delete_service(service_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    result = await db.services.delete_one({"id": service_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    return {"message": "Service deleted successfully"}
+
+# Billing Plans
+@api_router.get("/billing-plans")
+async def get_billing_plans(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    plans = await db.billing_plans.find({}, {"_id": 0}).to_list(100)
+    return plans
+
+@api_router.post("/billing-plans")
+async def create_billing_plan(plan: dict, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    new_plan = {
+        "id": str(uuid.uuid4()),
+        "name": plan.get("name", ""),
+        "description": plan.get("description", ""),
+        "discount_percent": plan.get("discount_percent", 0),
+        "services": plan.get("services", []),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.billing_plans.insert_one(new_plan)
+    return new_plan
+
+@api_router.delete("/billing-plans/{plan_id}")
+async def delete_billing_plan(plan_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    result = await db.billing_plans.delete_one({"id": plan_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Billing plan not found")
+    
+    # Remove plan from any clients that have it assigned
+    await db.users.update_many({"billing_plan_id": plan_id}, {"$unset": {"billing_plan_id": "", "billing_plan_name": ""}})
+    
+    return {"message": "Billing plan deleted successfully"}
+
+@api_router.put("/users/{user_id}/billing-plan")
+async def assign_billing_plan(user_id: str, plan_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    if plan_id:
+        plan = await db.billing_plans.find_one({"id": plan_id}, {"_id": 0})
+        if not plan:
+            raise HTTPException(status_code=404, detail="Billing plan not found")
+        
+        await db.users.update_one(
+            {"id": user_id}, 
+            {"$set": {"billing_plan_id": plan_id, "billing_plan_name": plan.get("name", "")}}
+        )
+    else:
+        await db.users.update_one(
+            {"id": user_id}, 
+            {"$unset": {"billing_plan_id": "", "billing_plan_name": ""}}
+        )
+    
+    return {"message": "Billing plan updated"}
+
 # Dashboard Stats
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
