@@ -24,6 +24,7 @@ const AdminDashboard = () => {
   const [sitters, setSitters] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [timesheets, setTimesheets] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -31,7 +32,7 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes] = await Promise.all([
+      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes, timesheetsRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/appointments/calendar'),
         api.get('/invoices'),
@@ -39,6 +40,7 @@ const AdminDashboard = () => {
         api.get('/users/walkers'),
         api.get('/sitters').catch(() => ({ data: [] })),
         api.get('/messages/contacts'),
+        api.get('/timesheets'),
       ]);
       setStats(statsRes.data);
       setAppointments(apptsRes.data);
@@ -47,10 +49,31 @@ const AdminDashboard = () => {
       setWalkers(walkersRes.data || []);
       setSitters(sittersRes.data || []);
       setContacts(contactsRes.data || []);
+      setTimesheets(timesheetsRes.data || []);
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const approveTimesheet = async (timesheetId) => {
+    try {
+      await api.put(`/timesheets/${timesheetId}/approve`);
+      toast.success('Timesheet approved');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to approve timesheet');
+    }
+  };
+
+  const markTimesheetPaid = async (timesheetId) => {
+    try {
+      await api.put(`/timesheets/${timesheetId}/mark-paid`);
+      toast.success('Timesheet marked as paid');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to mark timesheet as paid');
     }
   };
 
