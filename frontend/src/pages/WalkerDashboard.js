@@ -1070,6 +1070,111 @@ const WalkerDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Incoming Trade Requests Review Modal */}
+      <Dialog open={incomingTradesModalOpen} onOpenChange={setIncomingTradesModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div 
+                className="w-10 h-10 bg-red-500 flex items-center justify-center"
+                style={{
+                  clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
+                }}
+              >
+                <ArrowLeftRight className="w-5 h-5 text-white" />
+              </div>
+              Review Trade Requests
+            </DialogTitle>
+            <DialogDescription>
+              Another walker wants you to take their appointment. Review and respond below.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            {tradeRequests
+              .filter(t => t.target_walker_id === user?.id && t.status === 'pending')
+              .map((trade) => (
+                <Card key={trade.id} className="rounded-xl border-2 border-red-200">
+                  <CardContent className="p-4">
+                    {/* Requester Info */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={trade.requester?.profile_image} />
+                        <AvatarFallback className="bg-orange-100 text-orange-600">
+                          {trade.requester?.full_name?.charAt(0) || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{trade.requester?.full_name || 'Unknown Walker'}</p>
+                        <p className="text-xs text-muted-foreground">wants to trade with you</p>
+                      </div>
+                    </div>
+                    
+                    {/* Appointment Details */}
+                    {trade.appointment && (
+                      <div className="p-3 rounded-lg bg-gray-50 mb-3">
+                        <p className="font-medium capitalize text-sm">
+                          {trade.appointment.service_type?.replace('_', ' ')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          📅 {trade.appointment.scheduled_date}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          🕐 {trade.appointment.scheduled_time}
+                        </p>
+                        {trade.appointment.client_name && (
+                          <p className="text-sm text-muted-foreground">
+                            👤 {trade.appointment.client_name}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleTradeResponse(trade.id, false)} 
+                        disabled={saving}
+                        className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Decline
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={() => {
+                          handleTradeResponse(trade.id, true);
+                          setIncomingTradesModalOpen(false);
+                        }} 
+                        disabled={saving}
+                        className="flex-1 bg-green-500 hover:bg-green-600"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Accept Trade
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            
+            {tradeRequests.filter(t => t.target_walker_id === user?.id && t.status === 'pending').length === 0 && (
+              <div className="text-center py-6 text-muted-foreground">
+                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-500" />
+                <p>No pending trade requests!</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIncomingTradesModalOpen(false)} className="w-full">
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
