@@ -2673,6 +2673,189 @@ async def mark_timesheet_paid(timesheet_id: str, current_user: dict = Depends(ge
     await db.timesheets.update_one({"id": timesheet_id}, {"$set": {"paid": True}})
     return {"message": "Timesheet marked as paid"}
 
+# 1099 Payroll Reports
+@api_router.get("/reports/payroll/1099")
+async def get_1099_payroll_report(year: int = None, current_user: dict = Depends(get_current_user)):
+    """
+    Get payroll report for 1099 purposes.
+    Returns total pay for each walker/sitter for the year, plus MTD and YTD totals.
+    """
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    now = datetime.now(timezone.utc)
+    report_year = year or now.year
+    year_start = f"{report_year}-01-01"
+    year_end = f"{report_year}-12-31"
+    month_start = now.replace(day=1).strftime("%Y-%m-%d")
+    
+    # Get all walkers and sitters
+    staff = await db.users.find(
+        {"role": {"$in": ["walker", "sitter"]}, "is_active": True},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(500)
+    
+    # Get all paid timesheets for the year
+    timesheets = await db.timesheets.find(
+        {"paid": True},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    # Calculate earnings per staff member
+    staff_earnings = {}
+    total_ytd = 0.0
+    total_mtd = 0.0
+    
+    for member in staff:
+        staff_id = member['id']
+        staff_earnings[staff_id] = {
+            "id": staff_id,
+            "full_name": member.get('full_name', 'Unknown'),
+            "email": member.get('email', ''),
+            "phone": member.get('phone', ''),
+            "role": member.get('role', 'walker'),
+            "address": member.get('address', ''),
+            "year_total": 0.0,
+            "month_total": 0.0,
+            "timesheets_count": 0
+        }
+    
+    for ts in timesheets:
+        walker_id = ts.get('walker_id')
+        if not walker_id:
+            continue
+            
+        earnings = ts.get('total_earnings', 0)
+        period_end = ts.get('period_end', '')
+        
+        # Check if this timesheet falls within the report year
+        if period_end and period_end >= year_start and period_end <= year_end:
+            if walker_id in staff_earnings:
+                staff_earnings[walker_id]['year_total'] += earnings
+                staff_earnings[walker_id]['timesheets_count'] += 1
+                total_ytd += earnings
+                
+                # Check if it's in current month
+                if period_end >= month_start:
+                    staff_earnings[walker_id]['month_total'] += earnings
+                    total_mtd += earnings
+    
+    # Convert to list and sort by year_total descending
+    staff_list = list(staff_earnings.values())
+    staff_list.sort(key=lambda x: x['year_total'], reverse=True)
+    
+    # Round all monetary values
+    for member in staff_list:
+        member['year_total'] = round(member['year_total'], 2)
+        member['month_total'] = round(member['month_total'], 2)
+    
+    return {
+        "year": report_year,
+        "generated_at": now.isoformat(),
+        "summary": {
+            "total_staff": len(staff_list),
+            "total_year_to_date": round(total_ytd, 2),
+            "total_month_to_date": round(total_mtd, 2),
+            "staff_requiring_1099": len([s for s in staff_list if s['year_total'] >= 600])
+        },
+        "staff": staff_list
+    }
+
+@api_router.get("/reports/payroll/1099/{staff_id}")
+async def get_staff_1099_detail(staff_id: str, year: int = None, current_user: dict = Depends(get_current_user)):
+    """
+    Get detailed 1099 report for a specific walker/sitter.
+    Includes all paid timesheets and earnings breakdown.
+    """
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    now = datetime.now(timezone.utc)
+    report_year = year or now.year
+    year_start = f"{report_year}-01-01"
+    year_end = f"{report_year}-12-31"
+    
+    # Get staff member info
+    staff_member = await db.users.find_one(
+        {"id": staff_id},
+        {"_id": 0, "password_hash": 0}
+    )
+    
+    if not staff_member:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    
+    # Get all paid timesheets for this staff member in the year
+    timesheets = await db.timesheets.find(
+        {
+            "walker_id": staff_id,
+            "paid": True,
+            "period_end": {"$gte": year_start, "$lte": year_end}
+        },
+        {"_id": 0}
+    ).sort("period_end", -1).to_list(1000)
+    
+    # Calculate totals by month
+    monthly_breakdown = {}
+    total_earnings = 0.0
+    total_walks = 0
+    total_hours = 0.0
+    
+    for ts in timesheets:
+        earnings = ts.get('total_earnings', 0)
+        walks = ts.get('total_walks', 0)
+        hours = ts.get('total_hours', 0)
+        period_end = ts.get('period_end', '')
+        
+        total_earnings += earnings
+        total_walks += walks
+        total_hours += hours
+        
+        # Group by month
+        if period_end:
+            month_key = period_end[:7]  # YYYY-MM
+            if month_key not in monthly_breakdown:
+                monthly_breakdown[month_key] = {
+                    "month": month_key,
+                    "earnings": 0.0,
+                    "walks": 0,
+                    "hours": 0.0,
+                    "timesheets": 0
+                }
+            monthly_breakdown[month_key]['earnings'] += earnings
+            monthly_breakdown[month_key]['walks'] += walks
+            monthly_breakdown[month_key]['hours'] += hours
+            monthly_breakdown[month_key]['timesheets'] += 1
+    
+    # Convert monthly breakdown to sorted list
+    months_list = list(monthly_breakdown.values())
+    months_list.sort(key=lambda x: x['month'])
+    
+    # Round values
+    for month in months_list:
+        month['earnings'] = round(month['earnings'], 2)
+        month['hours'] = round(month['hours'], 2)
+    
+    return {
+        "year": report_year,
+        "generated_at": now.isoformat(),
+        "staff": {
+            "id": staff_member['id'],
+            "full_name": staff_member.get('full_name', 'Unknown'),
+            "email": staff_member.get('email', ''),
+            "phone": staff_member.get('phone', ''),
+            "address": staff_member.get('address', ''),
+            "role": staff_member.get('role', 'walker')
+        },
+        "totals": {
+            "year_earnings": round(total_earnings, 2),
+            "total_walks": total_walks,
+            "total_hours": round(total_hours, 2),
+            "requires_1099": total_earnings >= 600
+        },
+        "monthly_breakdown": months_list,
+        "timesheets": timesheets
+    }
+
 # Revenue & Billing Routes
 @api_router.get("/revenue/summary")
 async def get_revenue_summary(current_user: dict = Depends(get_current_user)):
