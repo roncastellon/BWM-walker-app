@@ -3836,6 +3836,263 @@ async def walker_cancel_appointment(
     return {"message": "Appointment cancelled and flagged for reassignment"}
 
 
+# ============================================
+# DOG PARK - SOCIAL FEED
+# ============================================
+
+class DogParkPost(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    author_id: str
+    author_name: str
+    author_role: str
+    author_image: Optional[str] = None
+    content: str
+    image_data: Optional[str] = None  # Base64 encoded image
+    tagged_pets: List[Dict] = Field(default_factory=list)  # [{pet_id, pet_name, owner_id, owner_name}]
+    tagged_users: List[Dict] = Field(default_factory=list)  # [{user_id, user_name}]
+    likes: List[str] = Field(default_factory=list)  # List of user IDs who liked
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DogParkPostCreate(BaseModel):
+    content: str
+    image_data: Optional[str] = None
+    tagged_pet_ids: List[str] = Field(default_factory=list)
+    tagged_user_ids: List[str] = Field(default_factory=list)
+
+@api_router.get("/dog-park/posts")
+async def get_dog_park_posts(
+    filter: Optional[str] = "recent",  # recent, older, my_pet, search
+    search_name: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get Dog Park posts with filtering options"""
+    query = {}
+    
+    # Filter by time
+    if filter == "older":
+        # Posts from 2 months ago or older
+        two_months_ago = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
+        query["created_at"] = {"$lt": two_months_ago}
+    elif filter == "recent":
+        # Posts from last 2 months
+        two_months_ago = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
+        query["created_at"] = {"$gte": two_months_ago}
+    elif filter == "my_pet":
+        # Get user's pets
+        user_pets = await db.pets.find({"owner_id": current_user["id"]}, {"_id": 0, "id": 1}).to_list(100)
+        pet_ids = [p["id"] for p in user_pets]
+        if pet_ids:
+            query["tagged_pets.pet_id"] = {"$in": pet_ids}
+        else:
+            return []  # User has no pets
+    
+    # Search by pet or owner name
+    if search_name:
+        query["$or"] = [
+            {"tagged_pets.pet_name": {"$regex": search_name, "$options": "i"}},
+            {"tagged_pets.owner_name": {"$regex": search_name, "$options": "i"}},
+            {"author_name": {"$regex": search_name, "$options": "i"}}
+        ]
+    
+    posts = await db.dog_park_posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Convert datetime objects to ISO strings
+    for post in posts:
+        if isinstance(post.get("created_at"), datetime):
+            post["created_at"] = post["created_at"].isoformat()
+    
+    return posts
+
+@api_router.get("/dog-park/featured")
+async def get_featured_pet_images(current_user: dict = Depends(get_current_user)):
+    """Get random tagged pet pictures for the page entry"""
+    # Get posts with tagged pets that have images
+    posts_with_images = await db.dog_park_posts.find(
+        {"image_data": {"$ne": None}, "tagged_pets": {"$ne": []}},
+        {"_id": 0, "image_data": 1, "tagged_pets": 1, "author_name": 1, "created_at": 1}
+    ).to_list(50)
+    
+    import random
+    if len(posts_with_images) > 5:
+        posts_with_images = random.sample(posts_with_images, 5)
+    
+    # Convert datetime objects
+    for post in posts_with_images:
+        if isinstance(post.get("created_at"), datetime):
+            post["created_at"] = post["created_at"].isoformat()
+    
+    return posts_with_images
+
+@api_router.post("/dog-park/posts")
+async def create_dog_park_post(
+    post_data: DogParkPostCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new Dog Park post"""
+    # Build tagged pets with enriched data
+    tagged_pets = []
+    for pet_id in post_data.tagged_pet_ids:
+        pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
+        if pet:
+            owner = await db.users.find_one({"id": pet["owner_id"]}, {"_id": 0})
+            tagged_pets.append({
+                "pet_id": pet_id,
+                "pet_name": pet.get("name", "Unknown"),
+                "owner_id": pet["owner_id"],
+                "owner_name": owner.get("full_name", "Unknown") if owner else "Unknown"
+            })
+    
+    # Build tagged users
+    tagged_users = []
+    for user_id in post_data.tagged_user_ids:
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        if user:
+            tagged_users.append({
+                "user_id": user_id,
+                "user_name": user.get("full_name", "Unknown")
+            })
+    
+    post = DogParkPost(
+        author_id=current_user["id"],
+        author_name=current_user.get("full_name", "Unknown"),
+        author_role=current_user.get("role", "client"),
+        author_image=current_user.get("profile_image"),
+        content=post_data.content,
+        image_data=post_data.image_data,
+        tagged_pets=tagged_pets,
+        tagged_users=tagged_users
+    )
+    
+    post_dict = post.model_dump()
+    post_dict["created_at"] = post_dict["created_at"].isoformat()
+    
+    await db.dog_park_posts.insert_one(post_dict)
+    
+    # Send notifications to tagged pet owners and users
+    notified_users = set()
+    
+    # Notify pet owners
+    for pet_info in tagged_pets:
+        owner_id = pet_info["owner_id"]
+        if owner_id != current_user["id"] and owner_id not in notified_users:
+            notification = {
+                "id": str(uuid.uuid4()),
+                "user_id": owner_id,
+                "type": "dog_park_tag",
+                "message": f"{current_user.get('full_name', 'Someone')} tagged {pet_info['pet_name']} in a Dog Park post!",
+                "post_id": post.id,
+                "read": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.notifications.insert_one(notification)
+            notified_users.add(owner_id)
+    
+    # Notify tagged users
+    for user_info in tagged_users:
+        user_id = user_info["user_id"]
+        if user_id != current_user["id"] and user_id not in notified_users:
+            notification = {
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "type": "dog_park_tag",
+                "message": f"{current_user.get('full_name', 'Someone')} tagged you in a Dog Park post!",
+                "post_id": post.id,
+                "read": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.notifications.insert_one(notification)
+            notified_users.add(user_id)
+    
+    return post_dict
+
+@api_router.post("/dog-park/posts/{post_id}/like")
+async def like_dog_park_post(post_id: str, current_user: dict = Depends(get_current_user)):
+    """Like or unlike a Dog Park post"""
+    post = await db.dog_park_posts.find_one({"id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    likes = post.get("likes", [])
+    
+    if current_user["id"] in likes:
+        # Unlike
+        likes.remove(current_user["id"])
+        action = "unliked"
+    else:
+        # Like
+        likes.append(current_user["id"])
+        action = "liked"
+    
+    await db.dog_park_posts.update_one({"id": post_id}, {"$set": {"likes": likes}})
+    
+    return {"message": f"Post {action}", "likes_count": len(likes), "user_liked": current_user["id"] in likes}
+
+@api_router.delete("/dog-park/posts/{post_id}")
+async def delete_dog_park_post(post_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a Dog Park post (only author or admin)"""
+    post = await db.dog_park_posts.find_one({"id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    if post["author_id"] != current_user["id"] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post")
+    
+    await db.dog_park_posts.delete_one({"id": post_id})
+    
+    return {"message": "Post deleted"}
+
+@api_router.get("/dog-park/notifications")
+async def get_dog_park_notifications(current_user: dict = Depends(get_current_user)):
+    """Get Dog Park notifications for current user"""
+    notifications = await db.notifications.find(
+        {"user_id": current_user["id"], "type": "dog_park_tag"},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(50).to_list(50)
+    
+    return notifications
+
+@api_router.put("/dog-park/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a notification as read"""
+    await db.notifications.update_one(
+        {"id": notification_id, "user_id": current_user["id"]},
+        {"$set": {"read": True}}
+    )
+    return {"message": "Notification marked as read"}
+
+@api_router.get("/dog-park/pets-to-tag")
+async def get_pets_to_tag(current_user: dict = Depends(get_current_user)):
+    """Get all pets that can be tagged (for staff, all pets; for clients, their own pets)"""
+    if current_user["role"] in ["admin", "walker", "sitter"]:
+        # Staff can tag any pet
+        pets = await db.pets.find({}, {"_id": 0}).to_list(500)
+    else:
+        # Clients can only tag their own pets
+        pets = await db.pets.find({"owner_id": current_user["id"]}, {"_id": 0}).to_list(100)
+    
+    # Enrich with owner names
+    for pet in pets:
+        owner = await db.users.find_one({"id": pet["owner_id"]}, {"_id": 0, "full_name": 1})
+        pet["owner_name"] = owner.get("full_name", "Unknown") if owner else "Unknown"
+    
+    return pets
+
+@api_router.get("/dog-park/users-to-tag")
+async def get_users_to_tag(current_user: dict = Depends(get_current_user)):
+    """Get users that can be tagged"""
+    users = await db.users.find(
+        {"is_active": True},
+        {"_id": 0, "id": 1, "full_name": 1, "role": 1, "profile_image": 1}
+    ).to_list(500)
+    
+    # Don't include current user
+    users = [u for u in users if u["id"] != current_user["id"]]
+    
+    return users
+
 # Include router
 app.include_router(api_router)
 
