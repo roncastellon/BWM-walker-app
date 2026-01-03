@@ -2526,12 +2526,20 @@ async def get_timesheets(current_user: dict = Depends(get_current_user)):
     
     timesheets = await db.timesheets.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     
+    # Get walker names for admin view
+    walker_names = {}
+    if current_user['role'] == 'admin':
+        walker_ids = list(set([ts.get('walker_id') for ts in timesheets if ts.get('walker_id')]))
+        walkers = await db.users.find({"id": {"$in": walker_ids}}, {"_id": 0, "id": 1, "full_name": 1}).to_list(100)
+        walker_names = {w['id']: w.get('full_name', 'Unknown') for w in walkers}
+    
     # Normalize old and new timesheet formats
     normalized = []
     for ts in timesheets:
         normalized.append({
             "id": ts.get("id"),
             "walker_id": ts.get("walker_id"),
+            "walker_name": walker_names.get(ts.get("walker_id"), "Staff"),
             "period_start": ts.get("period_start") or ts.get("week_start", ""),
             "period_end": ts.get("period_end") or ts.get("week_end", ""),
             "total_hours": ts.get("total_hours", 0),
