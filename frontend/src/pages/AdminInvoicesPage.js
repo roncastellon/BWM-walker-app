@@ -353,12 +353,27 @@ const AdminBillingPage = () => {
     }
   };
 
-  const markTimesheetPaid = async (timesheetId) => {
+  const openPaymentModal = async (timesheet) => {
+    try {
+      // Fetch walker's payment info
+      const response = await api.get(`/users/${timesheet.walker_id}`);
+      setWalkerPaymentInfo(response.data);
+      setSelectedTimesheet(timesheet);
+      setTimesheetModalOpen(false);
+      setPaymentModalOpen(true);
+    } catch (error) {
+      toast.error('Failed to load payment info');
+    }
+  };
+
+  const markTimesheetPaid = async (timesheetId, paymentMethod) => {
     try {
       await api.put(`/timesheets/${timesheetId}/mark-paid`);
-      toast.success('Timesheet marked as paid');
+      toast.success(`Timesheet marked as paid via ${paymentMethod}`);
       fetchTimesheets();
-      closeTimesheetReview();
+      setPaymentModalOpen(false);
+      setSelectedTimesheet(null);
+      setWalkerPaymentInfo(null);
     } catch (error) {
       toast.error('Failed to mark timesheet as paid');
     }
