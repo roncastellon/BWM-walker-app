@@ -716,14 +716,34 @@ const AdminBillingPage = () => {
                               <span className="text-sky-600 font-bold">${ts.total_earnings?.toFixed(2) || '0.00'}</span>
                             </div>
                           </div>
-                          <Button 
-                            size="sm" 
-                            onClick={() => openTimesheetReview(ts)} 
-                            className="rounded-full bg-orange-500 hover:bg-orange-600 shrink-0"
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            Review
-                          </Button>
+                          <div className="flex gap-2 shrink-0">
+                            {!ts.approved && !ts.paid && (
+                              <Button 
+                                size="sm" 
+                                onClick={() => openTimesheetReview(ts)} 
+                                className="rounded-full bg-orange-500 hover:bg-orange-600"
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                Review
+                              </Button>
+                            )}
+                            {ts.approved && !ts.paid && (
+                              <Button 
+                                size="sm" 
+                                onClick={() => openPaymentModal(ts)} 
+                                className="rounded-full bg-green-500 hover:bg-green-600"
+                              >
+                                <DollarSign className="w-4 h-4 mr-1" />
+                                Pay
+                              </Button>
+                            )}
+                            {ts.paid && (
+                              <span className="text-green-600 font-medium text-sm flex items-center">
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Paid
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
