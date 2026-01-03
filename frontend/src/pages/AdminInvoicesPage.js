@@ -672,50 +672,44 @@ const AdminBillingPage = () => {
                     <p className="text-sm mt-1">Timesheets will appear here when staff submit them</p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/50">
-                          <th className="text-left p-3 font-medium">Staff Member</th>
-                          <th className="text-left p-3 font-medium">Period</th>
-                          <th className="text-right p-3 font-medium">Walks</th>
-                          <th className="text-right p-3 font-medium">Hours</th>
-                          <th className="text-right p-3 font-medium">Earnings</th>
-                          <th className="text-center p-3 font-medium">Status</th>
-                          <th className="text-center p-3 font-medium">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {timesheets.map((ts) => (
-                          <tr key={ts.id} className="border-b hover:bg-muted/30">
-                            <td className="p-3">
-                              <p className="font-medium">{ts.walker_name || 'Staff'}</p>
-                            </td>
-                            <td className="p-3">
-                              <p className="text-sm">{ts.period_start} to {ts.period_end}</p>
-                            </td>
-                            <td className="p-3 text-right">{ts.total_walks}</td>
-                            <td className="p-3 text-right">{ts.total_hours?.toFixed(1) || '0.0'}</td>
-                            <td className="p-3 text-right font-medium text-sky-600">${ts.total_earnings?.toFixed(2) || '0.00'}</td>
-                            <td className="p-3 text-center">
-                              {ts.paid ? (
-                                <Badge className="bg-green-100 text-green-700 rounded-full">Paid</Badge>
-                              ) : ts.approved ? (
-                                <Badge className="bg-sky-100 text-sky-700 rounded-full">Approved</Badge>
-                              ) : (
-                                <Badge className="bg-orange-100 text-orange-700 rounded-full">Pending Review</Badge>
-                              )}
-                            </td>
-                            <td className="p-3 text-center">
-                              <Button size="sm" variant="outline" onClick={() => openTimesheetReview(ts)} className="rounded-full">
-                                <Eye className="w-4 h-4 mr-1" />
-                                Review
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="space-y-3">
+                    {timesheets.map((ts) => (
+                      <div
+                        key={ts.id}
+                        className="p-4 rounded-xl border bg-card hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold">{ts.walker_name || 'Staff'}</p>
+                              <Badge className={`rounded-full text-xs ${
+                                ts.paid ? 'bg-green-100 text-green-700' :
+                                ts.approved ? 'bg-sky-100 text-sky-700' :
+                                'bg-orange-100 text-orange-700'
+                              }`}>
+                                {ts.paid ? 'Paid' : ts.approved ? 'Approved' : 'Pending Review'}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {ts.period_start} to {ts.period_end}
+                            </p>
+                            <div className="flex gap-4 mt-2 text-sm">
+                              <span><strong>{ts.total_walks}</strong> walks</span>
+                              <span><strong>{ts.total_hours?.toFixed(1) || '0.0'}</strong> hrs</span>
+                              <span className="text-sky-600 font-bold">${ts.total_earnings?.toFixed(2) || '0.00'}</span>
+                            </div>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            onClick={() => openTimesheetReview(ts)} 
+                            className="rounded-full bg-orange-500 hover:bg-orange-600 shrink-0"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Review
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
