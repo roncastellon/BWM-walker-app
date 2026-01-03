@@ -28,6 +28,7 @@ import LiveTrackingPage from "./pages/LiveTrackingPage";
 import MassTextPage from "./pages/MassTextPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import SetupPage from "./pages/SetupPage";
+import DogParkPage from "./pages/DogParkPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
