@@ -277,6 +277,37 @@ const AdminBillingPage = () => {
     }
   };
 
+  // 1099 Report functions
+  const fetch1099Report = async (year) => {
+    setLoadingReport(true);
+    try {
+      const response = await api.get(`/reports/payroll/1099?year=${year}`);
+      setPayrollReport(response.data);
+    } catch (error) {
+      toast.error('Failed to load 1099 report');
+      setPayrollReport(null);
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const fetchStaffDetail = async (staffId) => {
+    setStaffDetailLoading(true);
+    try {
+      const response = await api.get(`/reports/payroll/1099/${staffId}?year=${reportYear}`);
+      setSelectedStaffDetail(response.data);
+    } catch (error) {
+      toast.error('Failed to load staff details');
+      setSelectedStaffDetail(null);
+    } finally {
+      setStaffDetailLoading(false);
+    }
+  };
+
+  const closeStaffDetail = () => {
+    setSelectedStaffDetail(null);
+  };
+
   if (loading) {
     return (
       <Layout>
