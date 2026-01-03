@@ -274,8 +274,8 @@ const AdminDashboard = () => {
               <Link to="/admin/billing">
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-primary" />
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">Manage Invoices</p>
@@ -299,11 +299,75 @@ const AdminDashboard = () => {
               </Link>
             </div>
 
+            {/* Submitted Timesheets / Payroll */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-orange-500" />
+                  Submitted Payroll
+                  {pendingTimesheets.length > 0 && (
+                    <Badge className="bg-orange-100 text-orange-800 rounded-full ml-2">
+                      {pendingTimesheets.length} pending
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingTimesheets.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <CheckCircle className="w-10 h-10 mx-auto mb-2 text-sky-500 opacity-70" />
+                    <p className="text-sm">No pending timesheets</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingTimesheets.slice(0, 5).map((ts) => (
+                      <div
+                        key={ts.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{ts.walker_name || 'Staff'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {ts.period_start} to {ts.period_end} • {ts.total_walks} walks
+                          </p>
+                        </div>
+                        <div className="text-right mr-3">
+                          <p className="font-bold text-sky-600">${ts.total_earnings?.toFixed(2) || '0.00'}</p>
+                          <Badge className={`rounded-full text-xs ${ts.approved ? 'bg-sky-100 text-sky-700' : 'bg-orange-100 text-orange-700'}`}>
+                            {ts.paid ? 'Paid' : ts.approved ? 'Approved' : 'Pending'}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          {!ts.approved && !ts.paid && (
+                            <Button size="sm" variant="outline" onClick={() => approveTimesheet(ts.id)} className="rounded-full text-xs">
+                              Approve
+                            </Button>
+                          )}
+                          {ts.approved && !ts.paid && (
+                            <Button size="sm" onClick={() => markTimesheetPaid(ts.id)} className="rounded-full text-xs bg-green-500 hover:bg-green-600">
+                              Pay
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {pendingTimesheets.length > 5 && (
+                      <Link to="/admin/billing">
+                        <Button variant="ghost" size="sm" className="w-full rounded-full">
+                          View all {pendingTimesheets.length} timesheets
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Pending Invoices */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-primary" />
+                  <CreditCard className="w-5 h-5 text-sky-600" />
                   Open Invoices
                   {pendingInvoices.length > 0 && (
                     <Badge variant="destructive" className="rounded-full ml-2">
