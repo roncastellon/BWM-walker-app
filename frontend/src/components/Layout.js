@@ -139,13 +139,26 @@ const Layout = ({ children }) => {
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Dog className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="font-heading text-xl font-bold hidden sm:inline">BowWowMeow</span>
-          </Link>
+          {/* Logo and Dog Park Button */}
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                <Dog className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <span className="font-heading text-xl font-bold hidden sm:inline">BowWowMeow</span>
+            </Link>
+            
+            {/* Dog Park Icon - Green irregular oval with balloon font */}
+            <Link
+              to="/dog-park"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[50%_40%_45%_55%/40%_50%_45%_55%] bg-green-500 hover:bg-green-600 text-white transition-all shadow-md hover:shadow-lg hover:scale-105"
+              style={{ fontFamily: "'Comic Sans MS', cursive, sans-serif" }}
+              data-testid="dog-park-link"
+            >
+              <PawPrint className="w-4 h-4" />
+              <span className="text-sm font-bold hidden sm:inline">Dog Park</span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
