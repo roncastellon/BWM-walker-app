@@ -312,6 +312,39 @@ const AdminBillingPage = () => {
     setSelectedStaffDetail(null);
   };
 
+  // Timesheets functions
+  const fetchTimesheets = async () => {
+    setLoadingTimesheets(true);
+    try {
+      const response = await api.get('/timesheets');
+      setTimesheets(response.data);
+    } catch (error) {
+      toast.error('Failed to load timesheets');
+    } finally {
+      setLoadingTimesheets(false);
+    }
+  };
+
+  const approveTimesheet = async (timesheetId) => {
+    try {
+      await api.put(`/timesheets/${timesheetId}/approve`);
+      toast.success('Timesheet approved');
+      fetchTimesheets();
+    } catch (error) {
+      toast.error('Failed to approve timesheet');
+    }
+  };
+
+  const markTimesheetPaid = async (timesheetId) => {
+    try {
+      await api.put(`/timesheets/${timesheetId}/mark-paid`);
+      toast.success('Timesheet marked as paid');
+      fetchTimesheets();
+    } catch (error) {
+      toast.error('Failed to mark timesheet as paid');
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
