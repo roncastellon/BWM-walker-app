@@ -424,7 +424,7 @@ const WalkerDashboard = () => {
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
+            <TabsTrigger value="payroll" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <DollarSign className="w-5 h-5" />
               <span className="text-xs">Payroll</span>
             </TabsTrigger>
