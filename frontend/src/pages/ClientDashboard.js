@@ -162,7 +162,7 @@ const ClientDashboard = () => {
               <Calendar className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <TabsTrigger value="billing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <CreditCard className="w-5 h-5" />
               <span className="text-xs">Billing</span>
             </TabsTrigger>
@@ -170,7 +170,7 @@ const ClientDashboard = () => {
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <TabsTrigger value="profile" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white">
               <User className="w-5 h-5" />
               <span className="text-xs">Profile</span>
             </TabsTrigger>
