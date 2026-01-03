@@ -274,6 +274,10 @@ class UserResponse(BaseModel):
     is_active: bool
     billing_cycle: Optional[str] = "weekly"
     walker_color: Optional[str] = None
+    # Payment methods for walkers/sitters
+    zelle_email: Optional[str] = None
+    venmo_username: Optional[str] = None
+    cashapp_tag: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
