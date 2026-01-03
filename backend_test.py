@@ -2006,6 +2006,12 @@ def main():
         # NEW BOWWOWMEOW FEATURES TESTS
         tester.test_bowwowmeow_new_features()
         
+        # DOG PARK SOCIAL FEED TESTS
+        print("\n" + "=" * 70)
+        print("🐕 TESTING DOG PARK SOCIAL FEED FUNCTIONALITY")
+        print("=" * 70)
+        tester.test_dog_park_social_feed()
+        
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
     except Exception as e:
