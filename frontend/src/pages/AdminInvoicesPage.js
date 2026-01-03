@@ -703,27 +703,14 @@ const AdminBillingPage = () => {
                               ) : ts.approved ? (
                                 <Badge className="bg-sky-100 text-sky-700 rounded-full">Approved</Badge>
                               ) : (
-                                <Badge className="bg-orange-100 text-orange-700 rounded-full">Pending</Badge>
+                                <Badge className="bg-orange-100 text-orange-700 rounded-full">Pending Review</Badge>
                               )}
                             </td>
                             <td className="p-3 text-center">
-                              <div className="flex items-center justify-center gap-2">
-                                {!ts.approved && !ts.paid && (
-                                  <Button size="sm" variant="outline" onClick={() => approveTimesheet(ts.id)} className="rounded-full">
-                                    <CheckCircle className="w-4 h-4 mr-1" />
-                                    Approve
-                                  </Button>
-                                )}
-                                {ts.approved && !ts.paid && (
-                                  <Button size="sm" onClick={() => markTimesheetPaid(ts.id)} className="rounded-full bg-green-500 hover:bg-green-600">
-                                    <DollarSign className="w-4 h-4 mr-1" />
-                                    Mark Paid
-                                  </Button>
-                                )}
-                                {ts.paid && (
-                                  <span className="text-green-600 text-xs">✓ Complete</span>
-                                )}
-                              </div>
+                              <Button size="sm" variant="outline" onClick={() => openTimesheetReview(ts)} className="rounded-full">
+                                <Eye className="w-4 h-4 mr-1" />
+                                Review
+                              </Button>
                             </td>
                           </tr>
                         ))}
