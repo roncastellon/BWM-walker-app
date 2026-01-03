@@ -16,7 +16,7 @@ import {
   Calendar, CreditCard, PawPrint, Clock, ArrowRight, MessageCircle, 
   User, DollarSign, Play, Square, Navigation, MapPin, Smartphone,
   AlertTriangle, CheckCircle, Send, Users, FileText, RefreshCw, X,
-  CalendarOff, ArrowLeftRight
+  CalendarOff, ArrowLeftRight, Octagon
 } from 'lucide-react';
 import { toast } from 'sonner';
 
