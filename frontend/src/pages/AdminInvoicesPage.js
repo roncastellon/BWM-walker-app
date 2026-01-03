@@ -346,7 +346,7 @@ const AdminBillingPage = () => {
             </TabsTrigger>
             <TabsTrigger value="reports" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-reports">
               <Users className="w-5 h-5" />
-              <span className="text-xs">1099 Reports</span>
+              <span className="text-xs">Reports</span>
             </TabsTrigger>
             <TabsTrigger value="pricing" className="flex flex-col py-3 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-pricing">
               <DollarSign className="w-5 h-5" />
