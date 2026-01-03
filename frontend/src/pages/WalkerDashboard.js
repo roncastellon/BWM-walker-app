@@ -376,10 +376,42 @@ const WalkerDashboard = () => {
                     </span>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-red-800 text-lg">Trade Request{tradeRequests.filter(t => t.target_walker_id === user?.id && t.status === 'pending').length > 1 ? 's' : ''} Pending!</h3>
-                    <p className="text-red-600 text-sm">
-                      Another walker wants to trade a walk with you. Click to review and respond.
-                    </p>
+                    <h3 className="font-bold text-red-800 text-lg">Trade Request!</h3>
+                    {(() => {
+                      const pendingTrades = tradeRequests.filter(t => t.target_walker_id === user?.id && t.status === 'pending');
+                      const firstTrade = pendingTrades[0];
+                      if (firstTrade) {
+                        const appt = firstTrade.appointment;
+                        const requesterName = firstTrade.requester?.full_name || 'A walker';
+                        const petNames = appt?.pet_names?.join(', ') || appt?.pets?.map(p => p.name).join(', ') || 'a pet';
+                        const timeStr = appt?.scheduled_time || '';
+                        const dateStr = appt?.scheduled_date || '';
+                        const isToday = dateStr === new Date().toISOString().split('T')[0];
+                        const dateDisplay = isToday ? 'today' : dateStr;
+                        
+                        // Format time to 12-hour format
+                        let formattedTime = timeStr;
+                        if (timeStr) {
+                          const [hours, minutes] = timeStr.split(':');
+                          const hour = parseInt(hours);
+                          const ampm = hour >= 12 ? 'pm' : 'am';
+                          const hour12 = hour % 12 || 12;
+                          formattedTime = `${hour12}:${minutes} ${ampm}`;
+                        }
+                        
+                        return (
+                          <p className="text-red-700 text-sm">
+                            <span className="font-semibold">{requesterName}</span> would like to trade their{' '}
+                            <span className="font-semibold">{formattedTime}</span> walk {dateDisplay} with{' '}
+                            <span className="font-semibold">{petNames}</span>.
+                            {pendingTrades.length > 1 && (
+                              <span className="block mt-1 text-red-500">+ {pendingTrades.length - 1} more request{pendingTrades.length > 2 ? 's' : ''}</span>
+                            )}
+                          </p>
+                        );
+                      }
+                      return <p className="text-red-600 text-sm">Click to review and respond.</p>;
+                    })()}
                   </div>
                   <ArrowRight className="w-6 h-6 text-red-500" />
                 </div>
