@@ -8,6 +8,7 @@ import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
 import AuthPage from "./pages/AuthPage";
 import ClientDashboard from "./pages/ClientDashboard";
 import ClientProfilePage from "./pages/ClientProfilePage";
+import ClientOnboardingPage from "./pages/ClientOnboardingPage";
 import WalkerDashboard from "./pages/WalkerDashboard";
 import SitterDashboard from "./pages/SitterDashboard";
 import SitterProfilePage from "./pages/SitterProfilePage";
