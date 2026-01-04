@@ -56,11 +56,27 @@ const WalkerDashboard = () => {
   const [incomingTradesModalOpen, setIncomingTradesModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    checkOnboardingStatus();
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const res = await api.get('/staff/onboarding-status');
+      if (res.data.needs_onboarding) {
+        navigate('/walker/onboarding');
+        return;
+      }
+      setCheckingOnboarding(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to check onboarding status');
+      setCheckingOnboarding(false);
+      fetchData();
+    }
+  };
 
   useEffect(() => {
     if (activeWalk) {
