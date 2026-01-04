@@ -30,6 +30,7 @@ const WalkerDashboard = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [startingWalk, setStartingWalk] = useState(false);
   const timerRef = useRef(null);
   
