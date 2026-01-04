@@ -23,11 +23,28 @@ const SitterDashboard = () => {
   const [activeStays, setActiveStays] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [startingStay, setStartingStay] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    checkOnboardingStatus();
   }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const res = await api.get('/staff/onboarding-status');
+      if (res.data.needs_onboarding) {
+        navigate('/sitter/onboarding');
+        return;
+      }
+      setCheckingOnboarding(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to check onboarding status');
+      setCheckingOnboarding(false);
+      fetchData();
+    }
+  };
 
   const fetchData = async () => {
     try {
