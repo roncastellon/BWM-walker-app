@@ -149,6 +149,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/client/onboarding"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientOnboardingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/tracking"
         element={
           <ProtectedRoute allowedRoles={['client', 'walker', 'admin']}>
