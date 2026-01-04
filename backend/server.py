@@ -921,6 +921,39 @@ async def set_custom_pricing(user_id: str, pricing: Dict[str, float], current_us
     )
     return {"message": "Custom pricing saved"}
 
+@api_router.put("/users/{user_id}/pricing")
+async def setup_client_pricing(user_id: str, pricing_data: dict, current_user: dict = Depends(get_current_user)):
+    """Set up pricing for a client (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Update user with pricing info
+    update_data = {
+        "pricing_setup_completed": pricing_data.get("pricing_setup_completed", True),
+        "billing_plan_id": pricing_data.get("billing_plan_id"),
+        "custom_prices": pricing_data.get("custom_prices", {}),
+        "pricing_notes": pricing_data.get("pricing_notes", ""),
+        "pricing_setup_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.update_one({"id": user_id}, {"$set": update_data})
+    
+    # Also save to custom_pricing collection for compatibility
+    if pricing_data.get("custom_prices"):
+        await db.custom_pricing.update_one(
+            {"user_id": user_id},
+            {"$set": {"user_id": user_id, "pricing": pricing_data.get("custom_prices")}},
+            upsert=True
+        )
+    
+    # Dismiss any pending "new client pricing" notifications for this client
+    await db.notifications.update_many(
+        {"type": "new_client_pricing", "client_id": user_id},
+        {"$set": {"read": True}}
+    )
+    
+    return {"message": "Pricing setup completed"}
+
 @api_router.get("/users/{user_id}/custom-pricing")
 async def get_custom_pricing(user_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin' and current_user['id'] != user_id:
