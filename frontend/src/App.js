@@ -234,6 +234,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/sitter/onboarding"
+        element={
+          <ProtectedRoute allowedRoles={['sitter']}>
+            <StaffOnboardingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/sitter/schedule"
         element={
           <ProtectedRoute allowedRoles={['sitter']}>
