@@ -100,16 +100,33 @@ const AdminClientsPage = () => {
     fetchData();
   }, []);
 
+  // Auto-open highlighted client from URL params
+  useEffect(() => {
+    const highlightClientId = searchParams.get('highlight');
+    if (highlightClientId && clients.length > 0) {
+      const client = clients.find(c => c.id === highlightClientId);
+      if (client) {
+        setSelectedClient(client);
+        // If client needs pricing setup, open pricing mode
+        if (!client.pricing_setup_completed) {
+          setPricingMode(true);
+        }
+      }
+    }
+  }, [searchParams, clients]);
+
   const fetchData = async () => {
     try {
-      const [clientsRes, servicesRes, walkersRes] = await Promise.all([
+      const [clientsRes, servicesRes, walkersRes, plansRes] = await Promise.all([
         api.get('/users/clients'),
         api.get('/services'),
         api.get('/users/walkers'),
+        api.get('/billing-plans').catch(() => ({ data: [] })),
       ]);
       setClients(clientsRes.data);
       setServices(servicesRes.data);
       setWalkers(walkersRes.data);
+      setBillingPlans(plansRes.data || []);
       
       // Initialize custom pricing with default prices
       const defaultPricing = {};
