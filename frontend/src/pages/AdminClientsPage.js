@@ -932,13 +932,171 @@ const AdminClientsPage = () => {
         )}
 
         {/* Client Details/Edit Dialog */}
-        <Dialog open={!!selectedClient} onOpenChange={(open) => { if (!open) { setSelectedClient(null); setEditMode(false); } }}>
+        <Dialog open={!!selectedClient} onOpenChange={(open) => { if (!open) { setSelectedClient(null); setEditMode(false); setPricingMode(false); } }}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editMode ? 'Edit Customer' : 'Customer Details'}</DialogTitle>
+              <DialogTitle>{editMode ? 'Edit Customer' : pricingMode ? 'Set Up Pricing' : 'Customer Details'}</DialogTitle>
             </DialogHeader>
-            {selectedClient && !editMode && (
+            
+            {/* Pricing Setup Mode */}
+            {selectedClient && pricingMode && (
+              <div className="space-y-6">
+                {/* Client Info Summary */}
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 border border-blue-200">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={selectedClient.profile_image} />
+                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                      {selectedClient.full_name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-bold">{selectedClient.full_name}</h3>
+                    <p className="text-sm text-muted-foreground">{selectedClient.email}</p>
+                  </div>
+                </div>
+
+                {/* Onboarding Preferences Summary */}
+                {selectedClient.onboarding_data && (
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                    <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      Client's Requested Schedule
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Days per week:</span>
+                        <span className="ml-2 font-medium">{selectedClient.onboarding_data.days_per_week}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Walks per day:</span>
+                        <span className="ml-2 font-medium">{selectedClient.onboarding_data.walks_per_day}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground">Preferred days:</span>
+                        <span className="ml-2 font-medium">{selectedClient.onboarding_data.preferred_days?.join(', ')}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground">Preferred times:</span>
+                        <span className="ml-2 font-medium">
+                          {selectedClient.onboarding_data.preferred_walk_times?.map(t => {
+                            const [h, m] = t.split(':');
+                            const hour = parseInt(h);
+                            return `${hour % 12 || 12}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
+                          }).join(', ')}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Billing:</span>
+                        <span className="ml-2 font-medium capitalize">{selectedClient.onboarding_data.billing_frequency}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Payment:</span>
+                        <span className="ml-2 font-medium capitalize">{selectedClient.onboarding_data.payment_method?.replace('_', '/')}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pricing Plan Selection */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    Select Billing Plan
+                  </Label>
+                  <Select 
+                    value={clientPricing.billing_plan_id} 
+                    onValueChange={(v) => setClientPricing({...clientPricing, billing_plan_id: v})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a billing plan or set custom pricing" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Custom Pricing</SelectItem>
+                      {billingPlans.map(plan => (
+                        <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Custom Pricing per Service */}
+                {!clientPricing.billing_plan_id && (
+                  <div className="space-y-3">
+                    <Label className="text-base font-semibold flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      Custom Service Pricing
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {services.map(service => (
+                        <div key={service.service_type} className="flex items-center gap-2">
+                          <Label className="text-sm flex-1 capitalize">{service.service_type.replace(/_/g, ' ')}</Label>
+                          <div className="relative w-24">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={clientPricing.custom_prices[service.service_type] || ''}
+                              onChange={(e) => setClientPricing({
+                                ...clientPricing,
+                                custom_prices: {
+                                  ...clientPricing.custom_prices,
+                                  [service.service_type]: parseFloat(e.target.value) || 0
+                                }
+                              })}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pricing Notes */}
+                <div className="space-y-2">
+                  <Label>Pricing Notes (optional)</Label>
+                  <Textarea
+                    placeholder="Any special pricing arrangements or notes..."
+                    value={clientPricing.notes}
+                    onChange={(e) => setClientPricing({...clientPricing, notes: e.target.value})}
+                    rows={2}
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setPricingMode(false)} className="flex-1">
+                    Cancel
+                  </Button>
+                  <Button onClick={saveClientPricing} disabled={saving} className="flex-1 bg-green-500 hover:bg-green-600">
+                    {saving ? 'Saving...' : 'Save Pricing'}
+                    <CheckCircle className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {selectedClient && !editMode && !pricingMode && (
               <div className="space-y-4">
+                {/* Needs Pricing Setup Alert */}
+                {!selectedClient.pricing_setup_completed && selectedClient.onboarding_completed && (
+                  <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-400">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="w-6 h-6 text-amber-600" />
+                        <div>
+                          <p className="font-semibold text-amber-800">Pricing Setup Required</p>
+                          <p className="text-sm text-amber-600">This client completed onboarding and needs pricing configured.</p>
+                        </div>
+                      </div>
+                      <Button onClick={initPricingMode} className="bg-amber-500 hover:bg-amber-600">
+                        <DollarSign className="w-4 h-4 mr-1" />
+                        Set Pricing
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="w-16 h-16">
@@ -958,15 +1116,31 @@ const AdminClientsPage = () => {
                       )}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={startEditClient} data-testid="edit-client-btn">
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
+                  <div className="flex gap-2">
+                    {selectedClient.pricing_setup_completed && (
+                      <Button variant="outline" size="sm" onClick={initPricingMode}>
+                        <DollarSign className="w-4 h-4 mr-1" />
+                        Pricing
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={startEditClient} data-testid="edit-client-btn">
+                      <Edit className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Badge className="bg-blue-100 text-blue-800 rounded-full">Client</Badge>
                   <Badge variant="outline" className="rounded-full capitalize">{selectedClient.billing_cycle || 'weekly'} billing</Badge>
+                  {selectedClient.pricing_setup_completed && (
+                    <Badge className="bg-green-100 text-green-800 rounded-full">Pricing Set</Badge>
+                  )}
+                  {selectedClient.onboarding_data?.payment_method && (
+                    <Badge variant="outline" className="rounded-full capitalize">
+                      {selectedClient.onboarding_data.payment_method.replace('_', '/')}
+                    </Badge>
+                  )}
                 </div>
                 
                 {/* Walking Schedule */}
