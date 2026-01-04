@@ -43,15 +43,25 @@ const DAYS_OF_WEEK = [
 
 const AdminClientsPage = () => {
   const { api } = useAuth();
+  const [searchParams] = useSearchParams();
   const [clients, setClients] = useState([]);
   const [services, setServices] = useState([]);
   const [walkers, setWalkers] = useState([]);
+  const [billingPlans, setBillingPlans] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [pricingMode, setPricingMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Pricing setup state
+  const [clientPricing, setClientPricing] = useState({
+    billing_plan_id: '',
+    custom_prices: {},
+    notes: ''
+  });
   
   // Form state for new/edit customer
   const [customerForm, setCustomerForm] = useState({
