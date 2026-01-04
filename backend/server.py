@@ -747,11 +747,92 @@ async def update_user(user_id: str, update_data: dict, current_user: dict = Depe
     allowed_fields = ['full_name', 'phone', 'address', 'email', 'bio', 'profile_image']
     update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
     
+    # Admin can also update these fields
+    if current_user['role'] == 'admin':
+        admin_fields = ['is_active', 'onboarding_completed', 'role']
+        for field in admin_fields:
+            if field in update_data:
+                update_dict[field] = update_data[field]
+    
     await db.users.update_one({"id": user_id}, {"$set": update_dict})
     
     # Return updated user
     updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
     return updated_user
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a user (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Don't allow deleting yourself
+    if current_user['id'] == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    
+    # Check if user exists
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Delete user
+    await db.users.delete_one({"id": user_id})
+    
+    # Also delete related data
+    await db.pets.delete_many({"owner_id": user_id})
+    await db.appointments.delete_many({"$or": [{"client_id": user_id}, {"walker_id": user_id}]})
+    await db.messages.delete_many({"$or": [{"sender_id": user_id}, {"receiver_id": user_id}]})
+    await db.notifications.delete_many({"user_id": user_id})
+    await db.paysheets.delete_many({"walker_id": user_id})
+    
+    return {"message": f"User {user.get('full_name', user_id)} deleted successfully"}
+
+@api_router.put("/users/{user_id}/freeze")
+async def freeze_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Freeze/lock a user account (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Don't allow freezing yourself
+    if current_user['id'] == user_id:
+        raise HTTPException(status_code=400, detail="Cannot freeze your own account")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await db.users.update_one(
+        {"id": user_id}, 
+        {"$set": {"is_active": False, "frozen_at": datetime.now(timezone.utc).isoformat(), "frozen_by": current_user['id']}}
+    )
+    
+    return {"message": f"Account for {user.get('full_name', user_id)} has been frozen"}
+
+@api_router.put("/users/{user_id}/unfreeze")
+async def unfreeze_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Unfreeze/unlock a user account (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await db.users.update_one(
+        {"id": user_id}, 
+        {"$set": {"is_active": True}, "$unset": {"frozen_at": "", "frozen_by": ""}}
+    )
+    
+    return {"message": f"Account for {user.get('full_name', user_id)} has been unfrozen"}
+
+@api_router.get("/users/all")
+async def get_all_users(current_user: dict = Depends(get_current_user)):
+    """Get all users including frozen ones (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(500)
+    return users
 
 # File Upload Routes
 @api_router.post("/upload/profile")
