@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -19,11 +19,13 @@ import { toast } from 'sonner';
 
 const ClientDashboard = () => {
   const { user, api } = useAuth();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [pets, setPets] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   
   // Edit/Cancel appointment state
   const [selectedAppt, setSelectedAppt] = useState(null);
@@ -33,8 +35,24 @@ const ClientDashboard = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    checkOnboardingStatus();
   }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const res = await api.get('/client/onboarding-status');
+      if (res.data.needs_onboarding) {
+        navigate('/client/onboarding');
+        return;
+      }
+      setCheckingOnboarding(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to check onboarding status');
+      setCheckingOnboarding(false);
+      fetchData();
+    }
+  };
 
   const fetchData = async () => {
     try {
