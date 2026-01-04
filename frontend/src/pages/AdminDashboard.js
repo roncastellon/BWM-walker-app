@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -10,12 +10,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { 
   Calendar, CreditCard, PawPrint, Clock, ArrowRight, MessageCircle, 
   User, Plus, DollarSign, CalendarPlus, Users, Eye, Send,
-  TrendingUp, FileText, CheckCircle, Building2, UserPlus
+  TrendingUp, FileText, CheckCircle, Building2, UserPlus, Bell, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const AdminDashboard = () => {
   const { user, api } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({});
   const [appointments, setAppointments] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -25,10 +26,34 @@ const AdminDashboard = () => {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [paysheets, setPaysheets] = useState([]);
+  const [newClientNotifications, setNewClientNotifications] = useState([]);
 
   useEffect(() => {
     fetchData();
+    fetchNewClientNotifications();
   }, []);
+
+  const fetchNewClientNotifications = async () => {
+    try {
+      const res = await api.get('/admin/new-client-notifications');
+      setNewClientNotifications(res.data || []);
+    } catch (error) {
+      console.error('Failed to fetch new client notifications');
+    }
+  };
+
+  const dismissNotification = async (notificationId) => {
+    try {
+      await api.put(`/admin/new-client-notifications/${notificationId}/dismiss`);
+      setNewClientNotifications(prev => prev.filter(n => n.id !== notificationId));
+    } catch (error) {
+      toast.error('Failed to dismiss notification');
+    }
+  };
+
+  const goToClientPricing = (clientId) => {
+    navigate(`/admin/clients?highlight=${clientId}`);
+  };
 
   const fetchData = async () => {
     try {
