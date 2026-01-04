@@ -403,6 +403,42 @@ const AdminClientsPage = () => {
     }
   };
 
+  const saveClientPricing = async () => {
+    if (!selectedClient) return;
+    setSaving(true);
+    try {
+      await api.put(`/users/${selectedClient.id}/pricing`, {
+        billing_plan_id: clientPricing.billing_plan_id || null,
+        custom_prices: clientPricing.custom_prices,
+        pricing_notes: clientPricing.notes,
+        pricing_setup_completed: true
+      });
+      
+      toast.success('Pricing saved successfully!');
+      setPricingMode(false);
+      setSelectedClient(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save pricing');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const initPricingMode = () => {
+    // Initialize pricing form with default prices
+    const defaultPrices = {};
+    services.forEach(s => {
+      defaultPrices[s.service_type] = selectedClient?.custom_prices?.[s.service_type] || s.price;
+    });
+    setClientPricing({
+      billing_plan_id: selectedClient?.billing_plan_id || '',
+      custom_prices: defaultPrices,
+      notes: selectedClient?.pricing_notes || ''
+    });
+    setPricingMode(true);
+  };
+
   const filteredClients = clients.filter(client =>
     client.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase())
