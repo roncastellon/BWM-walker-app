@@ -4337,6 +4337,11 @@ async def complete_staff_onboarding(
     if current_user["role"] not in ["walker", "sitter"]:
         raise HTTPException(status_code=403, detail="Only walkers/sitters can complete this onboarding")
     
+    # Build payment_methods dict based on selected method
+    payment_methods = {}
+    if data.payment_method and data.payment_id:
+        payment_methods[data.payment_method] = data.payment_id
+    
     # Update user profile
     update_data = {
         "full_name": data.full_name,
@@ -4344,6 +4349,8 @@ async def complete_staff_onboarding(
         "phone": data.phone,
         "address": data.address,
         "date_of_birth": data.date_of_birth,
+        "payment_methods": payment_methods,
+        "preferred_payment_method": data.payment_method,
         "onboarding_completed": True,
         "onboarding_completed_at": datetime.now(timezone.utc).isoformat()
     }
