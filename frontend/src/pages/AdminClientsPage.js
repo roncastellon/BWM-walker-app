@@ -10,10 +10,10 @@ import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Checkbox } from '../components/ui/checkbox';
-import { Users, Search, Mail, Phone, Plus, PawPrint, DollarSign, Trash2, Edit, Calendar, Clock, Save, MapPin, AlertCircle, CreditCard, CheckCircle } from 'lucide-react';
+import { Users, Search, Mail, Phone, Plus, PawPrint, DollarSign, Trash2, Edit, Calendar, Clock, Save, MapPin, AlertCircle, CreditCard, CheckCircle, Lock, Unlock, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Generate 15-minute increment time slots
