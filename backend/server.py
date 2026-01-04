@@ -4297,6 +4297,76 @@ async def get_client_onboarding_details(
         "onboarding_data": client.get("onboarding_data", {})
     }
 
+# ============================================
+# WALKER/SITTER ONBOARDING
+# ============================================
+
+class StaffOnboardingData(BaseModel):
+    full_name: str
+    email: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    date_of_birth: Optional[str] = None  # YYYY-MM-DD format
+
+@api_router.get("/staff/onboarding-status")
+async def get_staff_onboarding_status(current_user: dict = Depends(get_current_user)):
+    """Check if walker/sitter needs to complete onboarding"""
+    if current_user["role"] not in ["walker", "sitter"]:
+        return {"needs_onboarding": False}
+    
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    return {
+        "needs_onboarding": not user.get("onboarding_completed", False),
+        "user_data": {
+            "full_name": user.get("full_name", ""),
+            "email": user.get("email", ""),
+            "phone": user.get("phone", ""),
+            "address": user.get("address", ""),
+            "date_of_birth": user.get("date_of_birth", "")
+        }
+    }
+
+@api_router.post("/staff/onboarding")
+async def complete_staff_onboarding(
+    data: StaffOnboardingData,
+    current_user: dict = Depends(get_current_user)
+):
+    """Complete walker/sitter onboarding"""
+    if current_user["role"] not in ["walker", "sitter"]:
+        raise HTTPException(status_code=403, detail="Only walkers/sitters can complete this onboarding")
+    
+    # Update user profile
+    update_data = {
+        "full_name": data.full_name,
+        "email": data.email,
+        "phone": data.phone,
+        "address": data.address,
+        "date_of_birth": data.date_of_birth,
+        "onboarding_completed": True,
+        "onboarding_completed_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.update_one({"id": current_user["id"]}, {"$set": update_data})
+    
+    # Create notification for admin(s) - new staff member joined
+    admins = await db.users.find({"role": "admin", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
+    role_display = "Walker" if current_user["role"] == "walker" else "Sitter"
+    for admin in admins:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "user_id": admin["id"],
+            "type": "new_staff_onboarded",
+            "message": f"New {role_display} {data.full_name} has completed their profile setup.",
+            "staff_id": current_user["id"],
+            "staff_name": data.full_name,
+            "staff_role": current_user["role"],
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.notifications.insert_one(notification)
+    
+    return {"message": "Profile setup completed successfully"}
+
 # Include router
 app.include_router(api_router)
 
