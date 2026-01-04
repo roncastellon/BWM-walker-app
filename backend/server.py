@@ -282,6 +282,12 @@ class UserResponse(BaseModel):
     zelle_email: Optional[str] = None
     venmo_username: Optional[str] = None
     cashapp_tag: Optional[str] = None
+    # New onboarding fields
+    date_of_birth: Optional[str] = None
+    payment_methods: Optional[Dict[str, str]] = None
+    preferred_payment_method: Optional[str] = None
+    onboarding_completed: Optional[bool] = None
+    onboarding_data: Optional[Dict] = None
 
 class TokenResponse(BaseModel):
     access_token: str
