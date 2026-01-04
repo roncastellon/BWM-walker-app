@@ -134,6 +134,47 @@ const AdminDashboard = () => {
   return (
     <Layout>
       <div className="space-y-6" data-testid="admin-dashboard">
+        {/* New Client Notifications */}
+        {newClientNotifications.length > 0 && (
+          <div className="space-y-2">
+            {newClientNotifications.map((notification) => (
+              <Card key={notification.id} className="rounded-xl border-2 border-amber-400 bg-amber-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center">
+                        <UserPlus className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-amber-900">New Client Needs Pricing!</p>
+                        <p className="text-sm text-amber-700">{notification.client_name} has completed onboarding.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        size="sm" 
+                        className="bg-amber-500 hover:bg-amber-600 text-white"
+                        onClick={() => goToClientPricing(notification.client_id)}
+                      >
+                        Set Pricing
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => dismissNotification(notification.id)}
+                        className="text-amber-600 hover:text-amber-800"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
         {/* Welcome Header */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-secondary p-6 text-primary-foreground">
           <div className="relative z-10">
