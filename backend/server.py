@@ -592,6 +592,10 @@ async def login(credentials: UserLogin):
     if not user or not verify_password(credentials.password, user.get('password_hash', '')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    # Check if account is frozen/locked
+    if not user.get('is_active', True):
+        raise HTTPException(status_code=403, detail="Your account has been locked. Please contact support.")
+    
     token = create_access_token({"user_id": user['id'], "role": user['role']})
     return TokenResponse(
         access_token=token,
