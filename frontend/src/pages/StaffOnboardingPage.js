@@ -5,8 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { User, Mail, Phone, MapPin, Calendar, CheckCircle, PawPrint } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, CheckCircle, PawPrint, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+
+const PAYMENT_METHODS = [
+  { value: 'zelle', label: 'Zelle', placeholder: 'Email or phone number', icon: '💳' },
+  { value: 'venmo', label: 'Venmo', placeholder: '@username', icon: '💙' },
+  { value: 'cashapp', label: 'CashApp', placeholder: '$cashtag', icon: '💵' },
+];
 
 const StaffOnboardingPage = () => {
   const { user, api } = useAuth();
@@ -18,7 +24,9 @@ const StaffOnboardingPage = () => {
     email: user?.email || '',
     phone: '',
     address: '',
-    date_of_birth: ''
+    date_of_birth: '',
+    payment_method: 'zelle',
+    payment_id: ''
   });
 
   useEffect(() => {
