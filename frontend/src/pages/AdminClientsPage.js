@@ -1004,14 +1004,14 @@ const AdminClientsPage = () => {
                     Select Billing Plan
                   </Label>
                   <Select 
-                    value={clientPricing.billing_plan_id} 
-                    onValueChange={(v) => setClientPricing({...clientPricing, billing_plan_id: v})}
+                    value={clientPricing.billing_plan_id || "custom"} 
+                    onValueChange={(v) => setClientPricing({...clientPricing, billing_plan_id: v === "custom" ? "" : v})}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a billing plan or set custom pricing" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Custom Pricing</SelectItem>
+                      <SelectItem value="custom">Custom Pricing</SelectItem>
                       {billingPlans.map(plan => (
                         <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
                       ))}
@@ -1020,7 +1020,7 @@ const AdminClientsPage = () => {
                 </div>
 
                 {/* Custom Pricing per Service */}
-                {!clientPricing.billing_plan_id && (
+                {(!clientPricing.billing_plan_id || clientPricing.billing_plan_id === "custom") && (
                   <div className="space-y-3">
                     <Label className="text-base font-semibold flex items-center gap-2">
                       <DollarSign className="w-4 h-4" />
