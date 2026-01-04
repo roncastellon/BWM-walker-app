@@ -175,11 +175,55 @@ const StaffOnboardingPage = () => {
                 />
               </div>
 
+              {/* Payment Method Section */}
+              <div className="border-t pt-5 mt-5">
+                <Label className="text-base font-semibold flex items-center gap-2 mb-3">
+                  <DollarSign className="w-5 h-5" />
+                  How do you want to get paid?
+                </Label>
+                
+                {/* Payment Method Selection */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {PAYMENT_METHODS.map((method) => (
+                    <Button
+                      key={method.value}
+                      type="button"
+                      variant={formData.payment_method === method.value ? "default" : "outline"}
+                      className={`h-auto py-3 flex flex-col gap-1 ${
+                        formData.payment_method === method.value 
+                          ? 'bg-green-500 hover:bg-green-600 text-white' 
+                          : ''
+                      }`}
+                      onClick={() => setFormData({...formData, payment_method: method.value, payment_id: ''})}
+                    >
+                      <span className="text-lg">{method.icon}</span>
+                      <span className="text-sm font-medium">{method.label}</span>
+                    </Button>
+                  ))}
+                </div>
+
+                {/* Payment ID Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="payment_id">
+                    {PAYMENT_METHODS.find(m => m.value === formData.payment_method)?.label} ID
+                  </Label>
+                  <Input
+                    id="payment_id"
+                    value={formData.payment_id}
+                    onChange={(e) => setFormData({...formData, payment_id: e.target.value})}
+                    placeholder={PAYMENT_METHODS.find(m => m.value === formData.payment_method)?.placeholder}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This is where we'll send your payments
+                  </p>
+                </div>
+              </div>
+
               {/* Submit Button */}
               <Button 
                 type="submit" 
                 disabled={submitting}
-                className={`w-full bg-gradient-to-r ${roleColor} hover:opacity-90 text-white py-6 text-lg`}
+                className={`w-full bg-gradient-to-r ${roleColor} hover:opacity-90 text-white py-6 text-lg mt-4`}
               >
                 {submitting ? 'Setting up...' : 'Complete Setup'}
                 <CheckCircle className="w-5 h-5 ml-2" />
