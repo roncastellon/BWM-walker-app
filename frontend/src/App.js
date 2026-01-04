@@ -184,6 +184,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/walker/onboarding"
+        element={
+          <ProtectedRoute allowedRoles={['walker']}>
+            <StaffOnboardingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/walker/schedule"
         element={
           <ProtectedRoute allowedRoles={['walker']}>
