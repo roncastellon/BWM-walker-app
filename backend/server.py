@@ -4307,6 +4307,8 @@ class StaffOnboardingData(BaseModel):
     phone: Optional[str] = None
     address: Optional[str] = None
     date_of_birth: Optional[str] = None  # YYYY-MM-DD format
+    payment_method: Optional[str] = None  # zelle, venmo, cashapp
+    payment_id: Optional[str] = None  # the ID/handle for the payment method
 
 @api_router.get("/staff/onboarding-status")
 async def get_staff_onboarding_status(current_user: dict = Depends(get_current_user)):
