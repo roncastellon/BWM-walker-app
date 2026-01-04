@@ -4104,6 +4104,166 @@ async def get_users_to_tag(current_user: dict = Depends(get_current_user)):
     
     return users
 
+# ============================================
+# CLIENT ONBOARDING
+# ============================================
+
+class ClientOnboardingData(BaseModel):
+    # Personal info
+    full_name: str
+    email: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    emergency_phone: Optional[str] = None
+    
+    # Pets info
+    pets: List[Dict] = Field(default_factory=list)  # [{name, type, breed, age, weight, notes, special_instructions}]
+    
+    # Walk preferences
+    walks_per_day: int = 1
+    preferred_walk_times: List[str] = Field(default_factory=list)  # ["09:00", "14:00", "18:00"]
+    days_per_week: int = 5  # 1-7
+    preferred_days: List[str] = Field(default_factory=list)  # ["Monday", "Tuesday", etc.]
+    
+    # Billing preferences
+    billing_frequency: str = "weekly"  # "weekly" or "monthly"
+    payment_method: str = "venmo"  # venmo, zelle, cashapp, paypal, check_cash
+    payment_details: Optional[str] = None  # username/handle for digital payments
+
+@api_router.get("/client/onboarding-status")
+async def get_onboarding_status(current_user: dict = Depends(get_current_user)):
+    """Check if client needs to complete onboarding"""
+    if current_user["role"] != "client":
+        return {"needs_onboarding": False}
+    
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    return {
+        "needs_onboarding": not user.get("onboarding_completed", False),
+        "onboarding_data": user.get("onboarding_data", {})
+    }
+
+@api_router.post("/client/onboarding")
+async def complete_client_onboarding(
+    data: ClientOnboardingData,
+    current_user: dict = Depends(get_current_user)
+):
+    """Complete client onboarding and create pets"""
+    if current_user["role"] != "client":
+        raise HTTPException(status_code=403, detail="Only clients can complete onboarding")
+    
+    # Update user profile
+    update_data = {
+        "full_name": data.full_name,
+        "email": data.email,
+        "phone": data.phone,
+        "address": data.address,
+        "emergency_contact": data.emergency_contact,
+        "emergency_phone": data.emergency_phone,
+        "onboarding_completed": True,
+        "onboarding_completed_at": datetime.now(timezone.utc).isoformat(),
+        "onboarding_data": {
+            "walks_per_day": data.walks_per_day,
+            "preferred_walk_times": data.preferred_walk_times,
+            "days_per_week": data.days_per_week,
+            "preferred_days": data.preferred_days,
+            "billing_frequency": data.billing_frequency,
+            "payment_method": data.payment_method,
+            "payment_details": data.payment_details
+        }
+    }
+    
+    await db.users.update_one({"id": current_user["id"]}, {"$set": update_data})
+    
+    # Create pets
+    created_pets = []
+    for pet_data in data.pets:
+        pet = {
+            "id": str(uuid.uuid4()),
+            "owner_id": current_user["id"],
+            "name": pet_data.get("name", ""),
+            "type": pet_data.get("type", "dog"),
+            "breed": pet_data.get("breed", ""),
+            "age": pet_data.get("age"),
+            "weight": pet_data.get("weight"),
+            "notes": pet_data.get("notes", ""),
+            "special_instructions": pet_data.get("special_instructions", ""),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.pets.insert_one(pet)
+        pet.pop("_id", None)
+        created_pets.append(pet)
+    
+    # Create notification for admin(s) - new client needs pricing
+    admins = await db.users.find({"role": "admin", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
+    for admin in admins:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "user_id": admin["id"],
+            "type": "new_client_pricing",
+            "message": f"New client {data.full_name} has completed onboarding and needs pricing setup.",
+            "client_id": current_user["id"],
+            "client_name": data.full_name,
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.notifications.insert_one(notification)
+    
+    return {
+        "message": "Onboarding completed successfully",
+        "pets_created": len(created_pets),
+        "pets": created_pets
+    }
+
+@api_router.get("/admin/new-client-notifications")
+async def get_new_client_notifications(current_user: dict = Depends(get_current_user)):
+    """Get notifications for new clients needing pricing setup"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    notifications = await db.notifications.find(
+        {"user_id": current_user["id"], "type": "new_client_pricing", "read": False},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return notifications
+
+@api_router.put("/admin/new-client-notifications/{notification_id}/dismiss")
+async def dismiss_new_client_notification(
+    notification_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Dismiss a new client notification"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    await db.notifications.update_one(
+        {"id": notification_id, "user_id": current_user["id"]},
+        {"$set": {"read": True}}
+    )
+    return {"message": "Notification dismissed"}
+
+@api_router.get("/admin/client/{client_id}/onboarding-details")
+async def get_client_onboarding_details(
+    client_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get client's onboarding details for pricing setup"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    client = await db.users.find_one({"id": client_id}, {"_id": 0, "password_hash": 0})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    pets = await db.pets.find({"owner_id": client_id}, {"_id": 0}).to_list(100)
+    
+    return {
+        "client": client,
+        "pets": pets,
+        "onboarding_data": client.get("onboarding_data", {})
+    }
+
 # Include router
 app.include_router(api_router)
 
