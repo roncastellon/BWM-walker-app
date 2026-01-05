@@ -1015,34 +1015,50 @@ const AdminBillingPage = () => {
 
                 {agingReport && (
                   <div className="space-y-4 pt-4 border-t">
-                    {/* Summary Cards */}
+                    {/* Summary Cards - Clickable to expand details */}
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <Card className="rounded-xl bg-green-50">
+                      <Card 
+                        className={`rounded-xl bg-green-50 cursor-pointer transition-all hover:shadow-md hover:ring-2 hover:ring-green-300 ${expandedAgingBucket === 'current' ? 'ring-2 ring-green-500' : ''}`}
+                        onClick={() => setExpandedAgingBucket(expandedAgingBucket === 'current' ? null : 'current')}
+                      >
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold text-green-600">${agingReport.buckets.current.total.toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">Current (0-30)</p>
                           <Badge className="mt-1 bg-green-100 text-green-700 rounded-full">{agingReport.buckets.current.count} invoices</Badge>
+                          <p className="text-xs text-green-600 mt-2">Click to {expandedAgingBucket === 'current' ? 'collapse' : 'view details'}</p>
                         </CardContent>
                       </Card>
-                      <Card className="rounded-xl bg-yellow-50">
+                      <Card 
+                        className={`rounded-xl bg-yellow-50 cursor-pointer transition-all hover:shadow-md hover:ring-2 hover:ring-yellow-300 ${expandedAgingBucket === 'thirty' ? 'ring-2 ring-yellow-500' : ''}`}
+                        onClick={() => setExpandedAgingBucket(expandedAgingBucket === 'thirty' ? null : 'thirty')}
+                      >
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold text-yellow-600">${agingReport.buckets.thirty.total.toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">30 Days (31-60)</p>
                           <Badge className="mt-1 bg-yellow-100 text-yellow-700 rounded-full">{agingReport.buckets.thirty.count} invoices</Badge>
+                          <p className="text-xs text-yellow-600 mt-2">Click to {expandedAgingBucket === 'thirty' ? 'collapse' : 'view details'}</p>
                         </CardContent>
                       </Card>
-                      <Card className="rounded-xl bg-orange-50">
+                      <Card 
+                        className={`rounded-xl bg-orange-50 cursor-pointer transition-all hover:shadow-md hover:ring-2 hover:ring-orange-300 ${expandedAgingBucket === 'sixty' ? 'ring-2 ring-orange-500' : ''}`}
+                        onClick={() => setExpandedAgingBucket(expandedAgingBucket === 'sixty' ? null : 'sixty')}
+                      >
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold text-orange-600">${agingReport.buckets.sixty.total.toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">60 Days (61-90)</p>
                           <Badge className="mt-1 bg-orange-100 text-orange-700 rounded-full">{agingReport.buckets.sixty.count} invoices</Badge>
+                          <p className="text-xs text-orange-600 mt-2">Click to {expandedAgingBucket === 'sixty' ? 'collapse' : 'view details'}</p>
                         </CardContent>
                       </Card>
-                      <Card className="rounded-xl bg-red-50">
+                      <Card 
+                        className={`rounded-xl bg-red-50 cursor-pointer transition-all hover:shadow-md hover:ring-2 hover:ring-red-300 ${expandedAgingBucket === 'ninety_plus' ? 'ring-2 ring-red-500' : ''}`}
+                        onClick={() => setExpandedAgingBucket(expandedAgingBucket === 'ninety_plus' ? null : 'ninety_plus')}
+                      >
                         <CardContent className="p-4 text-center">
                           <p className="text-2xl font-bold text-red-600">${agingReport.buckets.ninety_plus.total.toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">90+ Days</p>
                           <Badge className="mt-1 bg-red-100 text-red-700 rounded-full">{agingReport.buckets.ninety_plus.count} invoices</Badge>
+                          <p className="text-xs text-red-600 mt-2">Click to {expandedAgingBucket === 'ninety_plus' ? 'collapse' : 'view details'}</p>
                         </CardContent>
                       </Card>
                       <Card className="rounded-xl bg-sky-50">
@@ -1054,50 +1070,92 @@ const AdminBillingPage = () => {
                       </Card>
                     </div>
 
-                    {/* Detailed Invoice Tables */}
-                    {['current', 'thirty', 'sixty', 'ninety_plus'].map((bucketKey) => {
-                      const bucket = agingReport.buckets[bucketKey];
-                      if (bucket.count === 0) return null;
-                      
-                      const colorSchemes = {
-                        current: { header: 'bg-green-100 text-green-800', badge: 'bg-green-500' },
-                        thirty: { header: 'bg-yellow-100 text-yellow-800', badge: 'bg-yellow-500' },
-                        sixty: { header: 'bg-orange-100 text-orange-800', badge: 'bg-orange-500' },
-                        ninety_plus: { header: 'bg-red-100 text-red-800', badge: 'bg-red-500' }
-                      };
-                      
-                      return (
-                        <Card key={bucketKey} className="rounded-xl">
-                          <CardHeader className={`pb-3 ${colorSchemes[bucketKey].header} rounded-t-xl`}>
-                            <CardTitle className="text-lg flex items-center justify-between">
-                              <span>{bucket.label}</span>
-                              <Badge className={`${colorSchemes[bucketKey].badge} text-white rounded-full`}>
-                                ${bucket.total.toLocaleString()}
-                              </Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="pt-4">
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="border-b bg-muted/50">
-                                    <th className="text-left p-3 font-medium">Client</th>
-                                    <th className="text-right p-3 font-medium">Amount</th>
-                                    <th className="text-center p-3 font-medium">Due Date</th>
-                                    <th className="text-center p-3 font-medium">Days Overdue</th>
-                                    <th className="text-center p-3 font-medium">Status</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {bucket.invoices.map((invoice) => (
-                                    <tr key={invoice.id} className="border-b hover:bg-muted/30">
-                                      <td className="p-3 font-medium">{invoice.client_name}</td>
-                                      <td className="p-3 text-right font-bold">${invoice.amount.toLocaleString()}</td>
-                                      <td className="p-3 text-center">{invoice.due_date?.split('T')[0]}</td>
-                                      <td className="p-3 text-center">
-                                        {invoice.days_overdue > 0 ? (
-                                          <Badge variant="destructive" className="rounded-full">{invoice.days_overdue} days</Badge>
-                                        ) : (
+                    {/* Detailed Invoice Table - Shows when a bucket is clicked */}
+                    {expandedAgingBucket && agingReport.buckets[expandedAgingBucket] && agingReport.buckets[expandedAgingBucket].count > 0 && (
+                      (() => {
+                        const bucket = agingReport.buckets[expandedAgingBucket];
+                        const colorSchemes = {
+                          current: { header: 'bg-green-100 text-green-800', badge: 'bg-green-500', border: 'border-green-300' },
+                          thirty: { header: 'bg-yellow-100 text-yellow-800', badge: 'bg-yellow-500', border: 'border-yellow-300' },
+                          sixty: { header: 'bg-orange-100 text-orange-800', badge: 'bg-orange-500', border: 'border-orange-300' },
+                          ninety_plus: { header: 'bg-red-100 text-red-800', badge: 'bg-red-500', border: 'border-red-300' }
+                        };
+                        const scheme = colorSchemes[expandedAgingBucket];
+                        
+                        return (
+                          <Card className={`rounded-xl border-2 ${scheme.border} animate-in slide-in-from-top-2 duration-300`}>
+                            <CardHeader className={`pb-3 ${scheme.header} rounded-t-xl`}>
+                              <CardTitle className="text-lg flex items-center justify-between">
+                                <span>{bucket.label}</span>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={`${scheme.badge} text-white rounded-full`}>
+                                    ${bucket.total.toLocaleString()}
+                                  </Badge>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={(e) => { e.stopPropagation(); setExpandedAgingBucket(null); }}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    ✕
+                                  </Button>
+                                </div>
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-4">
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="border-b bg-muted/50">
+                                      <th className="text-left p-3 font-medium">Client</th>
+                                      <th className="text-right p-3 font-medium">Amount</th>
+                                      <th className="text-center p-3 font-medium">Due Date</th>
+                                      <th className="text-center p-3 font-medium">Days Overdue</th>
+                                      <th className="text-center p-3 font-medium">Status</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {bucket.invoices.map((invoice) => (
+                                      <tr key={invoice.id} className="border-b hover:bg-muted/30">
+                                        <td className="p-3 font-medium">{invoice.client_name}</td>
+                                        <td className="p-3 text-right font-bold">${invoice.amount.toLocaleString()}</td>
+                                        <td className="p-3 text-center">{invoice.due_date?.split('T')[0]}</td>
+                                        <td className="p-3 text-center">
+                                          {invoice.days_overdue > 0 ? (
+                                            <Badge variant="destructive" className="rounded-full">{invoice.days_overdue} days</Badge>
+                                          ) : (
+                                            <Badge variant="outline" className="rounded-full text-green-600">Not due</Badge>
+                                          )}
+                                        </td>
+                                        <td className="p-3 text-center">
+                                          <Badge variant={invoice.status === 'overdue' ? 'destructive' : 'secondary'} className="rounded-full capitalize">
+                                            {invoice.status}
+                                          </Badge>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })()
+                    )}
+
+                    {/* Empty state when clicked bucket has no invoices */}
+                    {expandedAgingBucket && agingReport.buckets[expandedAgingBucket] && agingReport.buckets[expandedAgingBucket].count === 0 && (
+                      <Card className="rounded-xl border-2 border-dashed">
+                        <CardContent className="p-8 text-center text-muted-foreground">
+                          <p>No invoices in this aging bucket</p>
+                          <Button variant="ghost" size="sm" onClick={() => setExpandedAgingBucket(null)} className="mt-2">
+                            Close
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
                                           <Badge variant="outline" className="rounded-full text-green-600">Not due</Badge>
                                         )}
                                       </td>
