@@ -417,6 +417,20 @@ const AdminBillingPage = () => {
     setSelectedStaffDetail(null);
   };
 
+  // Accounts Receivable Aging Report
+  const fetchAgingReport = async () => {
+    setLoadingAgingReport(true);
+    try {
+      const response = await api.get('/reports/receivable-aging');
+      setAgingReport(response.data);
+    } catch (error) {
+      toast.error('Failed to load aging report');
+      setAgingReport(null);
+    } finally {
+      setLoadingAgingReport(false);
+    }
+  };
+
   // Paysheets functions
   const fetchPaysheets = async () => {
     setLoadingPaysheets(true);
