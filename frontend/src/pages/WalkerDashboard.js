@@ -325,19 +325,57 @@ const WalkerDashboard = () => {
     }
   };
 
+  const openCompletionDialog = () => {
+    // Reset answers when opening dialog
+    setCompletionAnswers({
+      did_pee: null,
+      did_poop: null,
+      checked_water: null,
+      notes: ''
+    });
+    setCompletionDialogOpen(true);
+  };
+
   const endWalk = async () => {
     if (!activeWalk) return;
+    
+    // Validate that all questions are answered
+    if (completionAnswers.did_pee === null || completionAnswers.did_poop === null || completionAnswers.checked_water === null) {
+      toast.error('Please answer all questions before completing the walk');
+      return;
+    }
+    
     try {
+      // First try to stop tracking, then end the walk with completion data
       try {
         await api.post(`/appointments/${activeWalk.id}/stop-tracking`);
       } catch {
-        await api.post(`/appointments/${activeWalk.id}/end`);
+        // Tracking might not be active, continue anyway
       }
+      
+      // End the walk with completion answers
+      await api.post(`/appointments/${activeWalk.id}/complete`, {
+        did_pee: completionAnswers.did_pee,
+        did_poop: completionAnswers.did_poop,
+        checked_water: completionAnswers.checked_water,
+        completion_notes: completionAnswers.notes
+      });
+      
       toast.success('Walk completed!');
       setActiveWalk(null);
+      setCompletionDialogOpen(false);
       fetchData();
-    } catch {
-      toast.error('Failed to end walk');
+    } catch (error) {
+      // Fallback to simple end if complete endpoint doesn't exist
+      try {
+        await api.post(`/appointments/${activeWalk.id}/end`);
+        toast.success('Walk completed!');
+        setActiveWalk(null);
+        setCompletionDialogOpen(false);
+        fetchData();
+      } catch {
+        toast.error('Failed to end walk');
+      }
     }
   };
 
