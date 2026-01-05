@@ -443,6 +443,45 @@ const AdminClientsPage = () => {
     setPricingMode(true);
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    setSaving(true);
+    try {
+      await api.delete(`/users/${userToDelete.id}`);
+      toast.success(`${userToDelete.full_name} has been deleted`);
+      setDeleteConfirmOpen(false);
+      setUserToDelete(null);
+      setSelectedClient(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete user');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleFreezeUser = async (userId, freeze = true) => {
+    setSaving(true);
+    try {
+      await api.put(`/users/${userId}/${freeze ? 'freeze' : 'unfreeze'}`);
+      toast.success(`Account ${freeze ? 'frozen' : 'unfrozen'} successfully`);
+      fetchData();
+      // Update selected client if viewing
+      if (selectedClient?.id === userId) {
+        setSelectedClient(prev => prev ? {...prev, is_active: !freeze} : null);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || `Failed to ${freeze ? 'freeze' : 'unfreeze'} account`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const confirmDelete = (user) => {
+    setUserToDelete(user);
+    setDeleteConfirmOpen(true);
+  };
+
   const filteredClients = clients.filter(client =>
     client.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase())
