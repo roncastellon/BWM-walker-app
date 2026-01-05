@@ -52,6 +52,15 @@ const WalkerDashboard = () => {
   const [timeOffForm, setTimeOffForm] = useState({ start_date: '', end_date: '', reason: '' });
   const [saving, setSaving] = useState(false);
   
+  // Walk Completion Dialog State
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [completionAnswers, setCompletionAnswers] = useState({
+    did_pee: null,        // #1
+    did_poop: null,       // #2
+    checked_water: null,  // Water check
+    notes: ''
+  });
+  
   // Incoming Trade Requests Review Modal
   const [incomingTradesModalOpen, setIncomingTradesModalOpen] = useState(false);
 
