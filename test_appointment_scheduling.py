@@ -6,7 +6,7 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-BASE_URL = "https://bowwow-dogpark.preview.emergentagent.com"
+BASE_URL = "https://wagmate-app.preview.emergentagent.com"
 
 def login_user(username, password):
     """Login and return access token"""
