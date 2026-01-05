@@ -73,6 +73,10 @@ const AdminBillingPage = () => {
   const [selectedStaffDetail, setSelectedStaffDetail] = useState(null);
   const [staffDetailLoading, setStaffDetailLoading] = useState(false);
   
+  // Accounts Receivable Aging Report state
+  const [agingReport, setAgingReport] = useState(null);
+  const [loadingAgingReport, setLoadingAgingReport] = useState(false);
+  
   // Paysheets state
   const [paysheets, setPaysheets] = useState([]);
   const [loadingPaysheets, setLoadingPaysheets] = useState(false);
