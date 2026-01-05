@@ -831,3 +831,33 @@ agent_communication:
   - agent: "testing"
     message: "✅ TRADE REQUEST RED OCTAGON NOTIFICATION TESTING COMPLETE - Feature working perfectly! Comprehensive testing completed with demo_walker (target) and trade_test_walker (sender) credentials. All 4 test scenarios PASSED: 1) Red octagon notification visibility - notification card appears at top of dashboard with red octagon icon, count badge '1', 'Trade Request Pending!' text, and proper description, 2) Trade review modal - opens with correct title, shows requester 'Trade Test Walker', appointment details (Walk 30, 2026-01-10, 09:00), and Accept/Decline buttons, 3) Accept trade flow - expected behavior verified, 4) No notification for sender - trade_test_walker correctly does NOT see notification. All UI elements, styling (red octagon shape with clip-path, red borders, green/red buttons), positioning (above welcome header), and functionality working correctly. Feature is production-ready!"
 
+
+
+  - task: "Accounts Receivable Aging Report"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminInvoicesPage.js, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Accounts Receivable Aging Report. Backend: Added GET /api/reports/receivable-aging endpoint that queries unpaid invoices and categorizes into 4 age buckets (Current 0-30, 30 Days 31-60, 60 Days 61-90, 90+ Days). Returns grand_total, total_invoices, and detailed breakdown per bucket with client names and days overdue. Frontend: Added Aging Report section in Reports tab with Generate button, summary cards (color-coded per bucket), and detailed invoice tables per bucket showing client name, amount, due date, days overdue, and status. Tested backend via curl - returns correct data."
+
+  - task: "Freeze/Unfreeze user functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminClientsPage.js, /app/frontend/src/pages/AdminWalkersPage.js, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed Freeze/Unfreeze bug. Root cause: GET /users/clients and GET /users/walkers were filtering to only return is_active=true users, causing frozen users to disappear from the list. Fix: Added include_frozen query parameter to both endpoints - when set to true, returns all users including frozen ones. Updated AdminClientsPage.js and AdminWalkersPage.js to use ?include_frozen=true when fetching users. Now frozen users appear with opacity, red border, and 'Unfreeze' button visible."
+
+  - agent: "main"
+    message: "IMPLEMENTED TWO FEATURES: 1) Accounts Receivable Aging Report - New backend endpoint GET /api/reports/receivable-aging that buckets unpaid invoices by age (Current, 30, 60, 90+ days). Frontend UI in Reports tab with color-coded summary cards and detailed invoice tables per bucket. 2) Fixed Freeze/Unfreeze bug - Added include_frozen query parameter to /users/clients and /users/walkers endpoints. Updated admin pages to fetch all users including frozen ones. Frozen users now properly appear with 'Unfreeze' button. Test credentials: demo_admin/demo123"
+
+
