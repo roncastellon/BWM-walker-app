@@ -412,6 +412,12 @@ const AdminWalkersPage = () => {
                             Frozen
                           </Badge>
                         )}
+                        {!walker.pay_setup_completed && (
+                          <Badge className="bg-amber-100 text-amber-700 rounded-full text-xs">
+                            <DollarSign className="w-3 h-3 mr-1" />
+                            Needs Pay Setup
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
