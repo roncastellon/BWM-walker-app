@@ -457,6 +457,8 @@ class WalkCancellationRequest(BaseModel):
 # Walker pay rates
 WALKER_PAY_RATES = {
     "walk_30": 15.00,  # 30-minute walk
+    "walk_45": 20.00,  # 45-minute walk
+    "walk_55": 25.00,  # 55-minute walk
     "walk_60": 30.00,  # 60-minute walk
 }
 
