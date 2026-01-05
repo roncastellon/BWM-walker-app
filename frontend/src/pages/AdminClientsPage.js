@@ -122,7 +122,7 @@ const AdminClientsPage = () => {
   const fetchData = async () => {
     try {
       const [clientsRes, servicesRes, walkersRes, plansRes] = await Promise.all([
-        api.get('/users/clients'),
+        api.get('/users/clients?include_frozen=true'),
         api.get('/services'),
         api.get('/users/walkers'),
         api.get('/billing-plans').catch(() => ({ data: [] })),
