@@ -3005,6 +3005,94 @@ async def get_staff_1099_detail(staff_id: str, year: int = None, current_user: d
         "paysheets": paysheets
     }
 
+# Accounts Receivable Aging Report
+@api_router.get("/reports/receivable-aging")
+async def get_receivable_aging_report(current_user: dict = Depends(get_current_user)):
+    """
+    Get accounts receivable aging report.
+    Buckets unpaid invoices by age: Current (0-30), 30 Days (31-60), 60 Days (61-90), 90+ Days
+    """
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    now = datetime.now(timezone.utc)
+    today = now.date()
+    
+    # Get all unpaid invoices (pending and overdue)
+    invoices = await db.invoices.find(
+        {"status": {"$in": ["pending", "overdue"]}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Initialize buckets
+    buckets = {
+        "current": {"label": "Current (0-30 days)", "total": 0, "count": 0, "invoices": []},
+        "thirty": {"label": "30 Days (31-60)", "total": 0, "count": 0, "invoices": []},
+        "sixty": {"label": "60 Days (61-90)", "total": 0, "count": 0, "invoices": []},
+        "ninety_plus": {"label": "90+ Days", "total": 0, "count": 0, "invoices": []}
+    }
+    
+    grand_total = 0
+    
+    for invoice in invoices:
+        # Parse due date
+        due_date_str = invoice.get('due_date', '')
+        try:
+            if 'T' in due_date_str:
+                due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00')).date()
+            else:
+                due_date = datetime.strptime(due_date_str[:10], "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            # If we can't parse the date, put in current bucket
+            due_date = today
+        
+        # Calculate days overdue (negative means not yet due)
+        days_overdue = (today - due_date).days
+        amount = invoice.get('amount', 0)
+        grand_total += amount
+        
+        # Get client info
+        client = await db.users.find_one({"id": invoice.get('client_id')}, {"_id": 0, "password_hash": 0})
+        client_name = client.get('full_name', 'Unknown') if client else 'Unknown'
+        
+        invoice_info = {
+            "id": invoice.get('id'),
+            "client_id": invoice.get('client_id'),
+            "client_name": client_name,
+            "amount": amount,
+            "due_date": due_date_str,
+            "days_overdue": max(0, days_overdue),
+            "status": invoice.get('status'),
+            "created_at": invoice.get('created_at').isoformat() if isinstance(invoice.get('created_at'), datetime) else invoice.get('created_at', '')
+        }
+        
+        # Determine bucket
+        if days_overdue <= 30:
+            bucket_key = "current"
+        elif days_overdue <= 60:
+            bucket_key = "thirty"
+        elif days_overdue <= 90:
+            bucket_key = "sixty"
+        else:
+            bucket_key = "ninety_plus"
+        
+        buckets[bucket_key]["total"] += amount
+        buckets[bucket_key]["count"] += 1
+        buckets[bucket_key]["invoices"].append(invoice_info)
+    
+    # Round totals
+    for bucket in buckets.values():
+        bucket["total"] = round(bucket["total"], 2)
+        # Sort invoices by days overdue (most overdue first)
+        bucket["invoices"].sort(key=lambda x: x["days_overdue"], reverse=True)
+    
+    return {
+        "generated_at": now.isoformat(),
+        "grand_total": round(grand_total, 2),
+        "total_invoices": len(invoices),
+        "buckets": buckets
+    }
+
 # Revenue & Billing Routes
 @api_router.get("/revenue/summary")
 async def get_revenue_summary(current_user: dict = Depends(get_current_user)):
