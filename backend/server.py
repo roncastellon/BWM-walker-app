@@ -1182,9 +1182,10 @@ def get_walk_duration(service_type: str) -> int:
     """Get walk duration in minutes based on service type"""
     durations = {
         'walk_30': 30,
+        'walk_45': 45,
+        'walk_55': 55,
         'walk_60': 60,
         'walk_15': 15,
-        'walk_45': 45,
         'pet_sitting': 60,
         'pet_sitting_overnight': 60,
         'transport': 30,
