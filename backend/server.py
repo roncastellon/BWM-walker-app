@@ -849,6 +849,63 @@ async def unfreeze_user(user_id: str, current_user: dict = Depends(get_current_u
     
     return {"message": f"Account for {user.get('full_name', user_id)} has been unfrozen"}
 
+@api_router.put("/users/{user_id}/pay-setup")
+async def setup_walker_pay(user_id: str, pay_data: dict, current_user: dict = Depends(get_current_user)):
+    """Set up pay rates for a walker/sitter (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get('role') not in ['walker', 'sitter']:
+        raise HTTPException(status_code=400, detail="Pay setup is only for walkers/sitters")
+    
+    # Extract pay rates from request
+    custom_pay_rates = pay_data.get('custom_pay_rates', {})
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "custom_pay_rates": custom_pay_rates,
+            "pay_setup_completed": True,
+            "pay_setup_at": datetime.now(timezone.utc).isoformat(),
+            "pay_setup_by": current_user['id']
+        }}
+    )
+    
+    return {"message": f"Pay rates set for {user.get('full_name', user_id)}", "custom_pay_rates": custom_pay_rates}
+
+@api_router.get("/users/pending-pay-setup")
+async def get_users_pending_pay_setup(current_user: dict = Depends(get_current_user)):
+    """Get walkers/sitters who need pay setup (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Find walkers/sitters without pay setup
+    users = await db.users.find(
+        {
+            "role": {"$in": ["walker", "sitter"]},
+            "$or": [
+                {"pay_setup_completed": {"$ne": True}},
+                {"pay_setup_completed": {"$exists": False}}
+            ]
+        },
+        {"_id": 0, "password_hash": 0}
+    ).to_list(100)
+    
+    return users
+
+@api_router.get("/pay-rates/defaults")
+async def get_default_pay_rates(current_user: dict = Depends(get_current_user)):
+    """Get default pay rates for walkers/sitters"""
+    return {
+        "walker_rates": DEFAULT_WALKER_PAY_RATES,
+        "sitter_rates": DEFAULT_SITTER_PAY_RATES,
+        "all_rates": WALKER_PAY_RATES
+    }
+
 @api_router.get("/users/all")
 async def get_all_users(current_user: dict = Depends(get_current_user)):
     """Get all users including frozen ones (admin only)"""
