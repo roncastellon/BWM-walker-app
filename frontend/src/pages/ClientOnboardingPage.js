@@ -74,6 +74,7 @@ const ClientOnboardingPage = () => {
   const [walkSchedule, setWalkSchedule] = useState({
     walks_per_day: 1,
     preferred_walk_times: ['09:00'],
+    walk_duration: 30, // 30, 45, or 60 minutes
     days_per_week: 5,
     preferred_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
   });
