@@ -69,6 +69,51 @@ const AdminWalkersPage = () => {
     }
   };
 
+  const fetchPendingPaySetup = async () => {
+    try {
+      const response = await api.get('/users/pending-pay-setup');
+      setPendingPaySetup(response.data);
+    } catch (error) {
+      console.error('Failed to fetch pending pay setup:', error);
+    }
+  };
+
+  const initPaySetup = (walker) => {
+    // Initialize with existing custom rates or defaults
+    const existingRates = walker.custom_pay_rates || {};
+    setPayRates({
+      walk_30: existingRates.walk_30 ?? DEFAULT_WALKER_PAY.walk_30,
+      walk_45: existingRates.walk_45 ?? DEFAULT_WALKER_PAY.walk_45,
+      walk_60: existingRates.walk_60 ?? DEFAULT_WALKER_PAY.walk_60,
+      petsit_walker_location: existingRates.petsit_walker_location ?? DEFAULT_SITTER_PAY.petsit_walker_location,
+      petsit_client_location: existingRates.petsit_client_location ?? DEFAULT_SITTER_PAY.petsit_client_location,
+    });
+    setPaySetupMode(true);
+  };
+
+  const savePayRates = async () => {
+    if (!selectedWalker) return;
+    setSaving(true);
+    try {
+      await api.put(`/users/${selectedWalker.id}/pay-setup`, {
+        custom_pay_rates: payRates
+      });
+      toast.success('Pay rates saved successfully!');
+      setPaySetupMode(false);
+      fetchWalkers();
+      fetchPendingPaySetup();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save pay rates');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const useDefaultRates = () => {
+    setPayRates({...DEFAULT_WALKER_PAY, ...DEFAULT_SITTER_PAY});
+    toast.info('Default rates applied');
+  };
+
   const resetForm = () => {
     setWalkerForm({
       username: '',
