@@ -9,8 +9,20 @@ import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
-import { PawPrint, Search, Mail, Phone, Plus, User, Calendar, CheckCircle, Lock, Unlock, Trash2, UserX } from 'lucide-react';
+import { PawPrint, Search, Mail, Phone, Plus, User, Calendar, CheckCircle, Lock, Unlock, Trash2, UserX, DollarSign, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Default pay rates
+const DEFAULT_WALKER_PAY = {
+  walk_30: 15.00,
+  walk_45: 22.00,
+  walk_60: 30.00,
+};
+
+const DEFAULT_SITTER_PAY = {
+  petsit_walker_location: 40.00,
+  petsit_client_location: 50.00,
+};
 
 const AdminWalkersPage = () => {
   const { api } = useAuth();
@@ -21,6 +33,11 @@ const AdminWalkersPage = () => {
   const [selectedWalker, setSelectedWalker] = useState(null);
   const [walkerStats, setWalkerStats] = useState({});
   const [saving, setSaving] = useState(false);
+  
+  // Pay setup state
+  const [paySetupMode, setPaySetupMode] = useState(false);
+  const [payRates, setPayRates] = useState({...DEFAULT_WALKER_PAY, ...DEFAULT_SITTER_PAY});
+  const [pendingPaySetup, setPendingPaySetup] = useState([]);
   
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -38,6 +55,7 @@ const AdminWalkersPage = () => {
 
   useEffect(() => {
     fetchWalkers();
+    fetchPendingPaySetup();
   }, []);
 
   const fetchWalkers = async () => {
