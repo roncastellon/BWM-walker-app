@@ -425,8 +425,8 @@ const AdminWalkersPage = () => {
         )}
 
         {/* Walker Details Dialog */}
-        <Dialog open={!!selectedWalker} onOpenChange={() => setSelectedWalker(null)}>
-          <DialogContent className="max-w-lg">
+        <Dialog open={!!selectedWalker} onOpenChange={() => { setSelectedWalker(null); setPaySetupMode(false); }}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Walker Details</DialogTitle>
             </DialogHeader>
@@ -446,10 +446,182 @@ const AdminWalkersPage = () => {
                   </div>
                 </div>
                 
-                <Badge className="bg-secondary/10 text-secondary rounded-full">
-                  <PawPrint className="w-3 h-3 mr-1" />
-                  Walker
-                </Badge>
+                <div className="flex gap-2">
+                  <Badge className="bg-secondary/10 text-secondary rounded-full">
+                    <PawPrint className="w-3 h-3 mr-1" />
+                    Walker
+                  </Badge>
+                  {selectedWalker.pay_setup_completed ? (
+                    <Badge className="bg-green-100 text-green-700 rounded-full">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Pay Setup Complete
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-amber-100 text-amber-700 rounded-full">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Needs Pay Setup
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Pay Setup Required Banner */}
+                {!selectedWalker.pay_setup_completed && !paySetupMode && (
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-amber-600" />
+                        <div>
+                          <p className="font-semibold text-amber-800">Pay Setup Required</p>
+                          <p className="text-sm text-amber-600">Set pay rates for this walker</p>
+                        </div>
+                      </div>
+                      <Button size="sm" onClick={() => initPaySetup(selectedWalker)} className="bg-amber-500 hover:bg-amber-600">
+                        <DollarSign className="w-4 h-4 mr-1" />
+                        Set Pay
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pay Setup Mode */}
+                {paySetupMode && (
+                  <div className="space-y-4 p-4 rounded-xl bg-green-50 border border-green-200">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-green-800 flex items-center gap-2">
+                        <DollarSign className="w-5 h-5" />
+                        Pay Rate Setup
+                      </h4>
+                      <Button variant="outline" size="sm" onClick={useDefaultRates}>
+                        Use Defaults
+                      </Button>
+                    </div>
+
+                    {/* Walker Pay Rates */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-green-800">Walk Services</Label>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">30 min</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.walk_30}
+                              onChange={(e) => setPayRates({...payRates, walk_30: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">45 min</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.walk_45}
+                              onChange={(e) => setPayRates({...payRates, walk_45: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">60 min</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.walk_60}
+                              onChange={(e) => setPayRates({...payRates, walk_60: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sitter Pay Rates */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-green-800">Pet Sitting Services</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Walker's Location</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.petsit_walker_location}
+                              onChange={(e) => setPayRates({...payRates, petsit_walker_location: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Client's Location</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.petsit_client_location}
+                              onChange={(e) => setPayRates({...payRates, petsit_client_location: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <Button variant="outline" onClick={() => setPaySetupMode(false)} className="flex-1">
+                        Cancel
+                      </Button>
+                      <Button onClick={savePayRates} disabled={saving} className="flex-1 bg-green-500 hover:bg-green-600">
+                        {saving ? 'Saving...' : 'Save Pay Rates'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show Current Pay Rates if setup complete and not in edit mode */}
+                {selectedWalker.pay_setup_completed && !paySetupMode && (
+                  <div className="p-4 rounded-xl bg-muted/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <DollarSign className="w-4 h-4" />
+                        Current Pay Rates
+                      </h4>
+                      <Button variant="outline" size="sm" onClick={() => initPaySetup(selectedWalker)}>
+                        Edit
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">30 min walk:</span>
+                        <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_30 || DEFAULT_WALKER_PAY.walk_30}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">45 min walk:</span>
+                        <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_45 || DEFAULT_WALKER_PAY.walk_45}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">60 min walk:</span>
+                        <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_60 || DEFAULT_WALKER_PAY.walk_60}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Sitter (their loc):</span>
+                        <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_walker_location || DEFAULT_SITTER_PAY.petsit_walker_location}</span>
+                      </div>
+                      <div className="flex justify-between col-span-2">
+                        <span className="text-muted-foreground">Sitter (client loc):</span>
+                        <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_client_location || DEFAULT_SITTER_PAY.petsit_client_location}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {selectedWalker.bio && (
                   <div className="p-3 rounded-xl bg-muted/50">
