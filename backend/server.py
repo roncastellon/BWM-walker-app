@@ -1588,10 +1588,41 @@ async def end_walk(appt_id: str, current_user: dict = Depends(get_current_user))
     )
     return {"message": "Walk completed", "duration_minutes": duration}
 
-# Alias for /end endpoint
+# Walk completion with questionnaire
+class WalkCompletionData(BaseModel):
+    did_pee: Optional[bool] = None
+    did_poop: Optional[bool] = None
+    checked_water: Optional[bool] = None
+    completion_notes: Optional[str] = None
+
 @api_router.post("/appointments/{appt_id}/complete")
-async def complete_walk(appt_id: str, current_user: dict = Depends(get_current_user)):
-    return await end_walk(appt_id, current_user)
+async def complete_walk(appt_id: str, completion_data: WalkCompletionData = None, current_user: dict = Depends(get_current_user)):
+    """Complete a walk with optional completion questionnaire data"""
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if current_user['role'] not in ['admin', 'walker', 'sitter'] and appt.get('walker_id') != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    update_data = {
+        "status": "completed",
+        "end_time": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add completion questionnaire data if provided
+    if completion_data:
+        update_data["completion_data"] = {
+            "did_pee": completion_data.did_pee,
+            "did_poop": completion_data.did_poop,
+            "checked_water": completion_data.checked_water,
+            "notes": completion_data.completion_notes,
+            "completed_at": datetime.now(timezone.utc).isoformat()
+        }
+    
+    await db.appointments.update_one({"id": appt_id}, {"$set": update_data})
+    
+    return {"message": "Walk completed successfully", "completion_data": update_data.get("completion_data")}
 
 @api_router.put("/appointments/{appt_id}/assign")
 async def assign_walker(appt_id: str, walker_id: str, current_user: dict = Depends(get_current_user)):
