@@ -1364,6 +1364,123 @@ const WalkerDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Walk Completion Dialog */}
+      <Dialog open={completionDialogOpen} onOpenChange={setCompletionDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              Complete Walk
+            </DialogTitle>
+            <DialogDescription>
+              Please answer these questions before completing the walk
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Question 1: Did the pet pee? */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Did the pet do #1 (pee)?</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={completionAnswers.did_pee === true ? "default" : "outline"}
+                  className={`flex-1 ${completionAnswers.did_pee === true ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                  onClick={() => setCompletionAnswers({...completionAnswers, did_pee: true})}
+                >
+                  Yes
+                </Button>
+                <Button
+                  variant={completionAnswers.did_pee === false ? "default" : "outline"}
+                  className={`flex-1 ${completionAnswers.did_pee === false ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                  onClick={() => setCompletionAnswers({...completionAnswers, did_pee: false})}
+                >
+                  No
+                </Button>
+              </div>
+            </div>
+
+            {/* Question 2: Did the pet poop? */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Did the pet do #2 (poop)?</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={completionAnswers.did_poop === true ? "default" : "outline"}
+                  className={`flex-1 ${completionAnswers.did_poop === true ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                  onClick={() => setCompletionAnswers({...completionAnswers, did_poop: true})}
+                >
+                  Yes
+                </Button>
+                <Button
+                  variant={completionAnswers.did_poop === false ? "default" : "outline"}
+                  className={`flex-1 ${completionAnswers.did_poop === false ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                  onClick={() => setCompletionAnswers({...completionAnswers, did_poop: false})}
+                >
+                  No
+                </Button>
+              </div>
+            </div>
+
+            {/* Quick option for Both */}
+            {(completionAnswers.did_pee !== true || completionAnswers.did_poop !== true) && (
+              <Button
+                variant="outline"
+                className="w-full border-dashed"
+                onClick={() => setCompletionAnswers({...completionAnswers, did_pee: true, did_poop: true})}
+              >
+                Pet did both #1 and #2
+              </Button>
+            )}
+
+            {/* Question 3: Water check */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Did you check and fill their water?</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={completionAnswers.checked_water === true ? "default" : "outline"}
+                  className={`flex-1 ${completionAnswers.checked_water === true ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                  onClick={() => setCompletionAnswers({...completionAnswers, checked_water: true})}
+                >
+                  Yes
+                </Button>
+                <Button
+                  variant={completionAnswers.checked_water === false ? "default" : "outline"}
+                  className={`flex-1 ${completionAnswers.checked_water === false ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                  onClick={() => setCompletionAnswers({...completionAnswers, checked_water: false})}
+                >
+                  No
+                </Button>
+              </div>
+            </div>
+
+            {/* Optional Notes */}
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Additional notes (optional)</Label>
+              <Textarea
+                placeholder="Any other observations about the walk..."
+                value={completionAnswers.notes}
+                onChange={(e) => setCompletionAnswers({...completionAnswers, notes: e.target.value})}
+                className="resize-none"
+                rows={2}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setCompletionDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={endWalk}
+              disabled={completionAnswers.did_pee === null || completionAnswers.did_poop === null || completionAnswers.checked_water === null}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Complete Walk
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
