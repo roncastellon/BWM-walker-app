@@ -1735,6 +1735,82 @@ class WagWalkAPITester:
             return
         
         appointment_id = scheduled_appt['id']
+        
+        # Test attempting to trade with self (should fail with 400 error)
+        trade_data = {
+            "appointment_id": appointment_id,
+            "target_walker_id": walker_user_id  # Same as requesting walker
+        }
+        
+        success, trade_response = self.run_test(
+            "Attempt Self-Trade (Should Fail)", "POST", "trades", 400,
+            data=trade_data, token=self.tokens['demo_walker'],
+            description="Attempt to trade appointment with self (should fail with validation error)"
+        )
+        
+        if success:
+            print("✅ Self-trade validation working - correctly rejected with 400 error")
+            # Check if the error message is correct
+            if isinstance(trade_response, dict) and 'detail' in trade_response:
+                error_message = trade_response['detail']
+                if 'cannot trade' in error_message.lower() and 'yourself' in error_message.lower():
+                    print("✅ Correct error message returned")
+                else:
+                    print(f"⚠️  Unexpected error message: {error_message}")
+        
+        # Test trading with a different walker (should work)
+        # Get other walkers
+        success, walkers = self.run_test(
+            "Get Walkers for Valid Trade Test", "GET", "users/walkers", 200,
+            token=self.tokens['demo_walker'], description="Get walkers for valid trade test"
+        )
+        
+        if success and walkers:
+            # Find a different walker
+            target_walker_id = None
+            for walker in walkers:
+                if walker['id'] != walker_user_id:
+                    target_walker_id = walker['id']
+                    break
+            
+            if target_walker_id:
+                # Test valid trade with different walker
+                valid_trade_data = {
+                    "appointment_id": appointment_id,
+                    "target_walker_id": target_walker_id
+                }
+                
+                success, valid_trade_response = self.run_test(
+                    "Valid Trade with Different Walker", "POST", "trades", 200,
+                    data=valid_trade_data, token=self.tokens['demo_walker'],
+                    description="Trade appointment with different walker (should succeed)"
+                )
+                
+                if success:
+                    print("✅ Valid trade with different walker successful")
+                    # Clean up - reject the trade
+                    trade_id = valid_trade_response.get('id')
+                    if trade_id:
+                        self.run_test(
+                            "Cleanup - Reject Trade", "POST", f"trades/{trade_id}/reject", 200,
+                            token=self.tokens['demo_walker'],
+                            description="Clean up by rejecting the test trade"
+                        )
+
+    def test_bowwowmeow_new_features(self):
+        """Test the two new BowWowMeow features from the review request"""
+        print("\n" + "=" * 70)
+        print("🆕 TESTING BOWWOWMEOW NEW FEATURES")
+        print("=" * 70)
+        
+        # Test 1: Accounts Receivable Aging Report
+        self.test_accounts_receivable_aging_report()
+        
+        # Test 2: Freeze/Unfreeze User Functionality Fix
+        self.test_freeze_unfreeze_user_functionality()
+        
+        # Test 3: Walker Trade Self-Validation Bug Fix (already implemented)
+        self.test_walker_trade_self_validation_bug_fix()
         print(f"   Using appointment ID: {appointment_id}")
         
         # Test creating trade request with walker's own ID as target (should fail)
