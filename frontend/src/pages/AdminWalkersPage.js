@@ -8,8 +8,8 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
-import { PawPrint, Search, Mail, Phone, Plus, User, Calendar, CheckCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
+import { PawPrint, Search, Mail, Phone, Plus, User, Calendar, CheckCircle, Lock, Unlock, Trash2, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 
 const AdminWalkersPage = () => {
@@ -20,6 +20,11 @@ const AdminWalkersPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedWalker, setSelectedWalker] = useState(null);
   const [walkerStats, setWalkerStats] = useState({});
+  const [saving, setSaving] = useState(false);
+  
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   
   // Form state for new walker
   const [walkerForm, setWalkerForm] = useState({
