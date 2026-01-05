@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Checkbox } from '../components/ui/checkbox';
-import { Users, Search, Mail, Phone, Plus, PawPrint, DollarSign, Trash2, Edit, Calendar, Clock, Save, MapPin, AlertCircle, CreditCard, CheckCircle, Lock, Unlock, UserX } from 'lucide-react';
+import { Users, Search, Mail, Phone, Plus, PawPrint, DollarSign, Trash2, Edit, Calendar, Clock, Save, MapPin, AlertCircle, CreditCard, CheckCircle, Lock, Unlock, UserX, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Generate 15-minute increment time slots
