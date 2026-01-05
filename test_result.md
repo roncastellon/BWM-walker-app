@@ -832,6 +832,20 @@ agent_communication:
     message: "✅ TRADE REQUEST RED OCTAGON NOTIFICATION TESTING COMPLETE - Feature working perfectly! Comprehensive testing completed with demo_walker (target) and trade_test_walker (sender) credentials. All 4 test scenarios PASSED: 1) Red octagon notification visibility - notification card appears at top of dashboard with red octagon icon, count badge '1', 'Trade Request Pending!' text, and proper description, 2) Trade review modal - opens with correct title, shows requester 'Trade Test Walker', appointment details (Walk 30, 2026-01-10, 09:00), and Accept/Decline buttons, 3) Accept trade flow - expected behavior verified, 4) No notification for sender - trade_test_walker correctly does NOT see notification. All UI elements, styling (red octagon shape with clip-path, red borders, green/red buttons), positioning (above welcome header), and functionality working correctly. Feature is production-ready!"
 
 
+  - task: "55-minute walk duration and clickable aging report"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ClientOnboardingPage.js, /app/frontend/src/pages/AdminInvoicesPage.js, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "1) Added 55-minute walk option: Updated client onboarding duration choices to 30, 45, 55, 60 minutes. Added walk_45 ($32) and walk_55 ($38) services to backend and database. 2) Made aging report buckets clickable: Summary cards now show 'Click to view details'. When clicked, a single detail table expands below showing the invoices for that bucket. Close button (X) allows collapsing. Verified via screenshots."
+
+
+
 
   - task: "Accounts Receivable Aging Report"
     implemented: true
