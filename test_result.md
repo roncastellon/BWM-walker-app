@@ -854,11 +854,14 @@ agent_communication:
     file: "/app/frontend/src/pages/AdminClientsPage.js, /app/frontend/src/pages/AdminWalkersPage.js, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Fixed Freeze/Unfreeze bug. Root cause: GET /users/clients and GET /users/walkers were filtering to only return is_active=true users, causing frozen users to disappear from the list. Fix: Added include_frozen query parameter to both endpoints - when set to true, returns all users including frozen ones. Updated AdminClientsPage.js and AdminWalkersPage.js to use ?include_frozen=true when fetching users. Now frozen users appear with opacity, red border, and 'Unfreeze' button visible."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Freeze/Unfreeze user functionality working perfectly! Comprehensive testing completed: 1) GET /users/walkers without include_frozen returns only active users (11 walkers) ✅, 2) GET /users/walkers?include_frozen=true returns all users including frozen (13 walkers, found 2 frozen) ✅, 3) GET /users/clients without include_frozen returns only active users (11 clients) ✅, 4) GET /users/clients?include_frozen=true returns all users including frozen (13 clients, found 2 frozen) ✅, 5) Freeze operation working - walker successfully frozen and removed from active list ✅, 6) Frozen user visibility - appears only in include_frozen=true list, not in active-only list ✅, 7) Unfreeze operation working - walker successfully unfrozen and restored to active list ✅. All functionality working as expected for user management with proper frozen user handling."
 
   - agent: "main"
     message: "IMPLEMENTED TWO FEATURES: 1) Accounts Receivable Aging Report - New backend endpoint GET /api/reports/receivable-aging that buckets unpaid invoices by age (Current, 30, 60, 90+ days). Frontend UI in Reports tab with color-coded summary cards and detailed invoice tables per bucket. 2) Fixed Freeze/Unfreeze bug - Added include_frozen query parameter to /users/clients and /users/walkers endpoints. Updated admin pages to fetch all users including frozen ones. Frozen users now properly appear with 'Unfreeze' button. Test credentials: demo_admin/demo123"
