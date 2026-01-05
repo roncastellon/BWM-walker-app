@@ -1106,6 +1106,8 @@ async def get_services():
         # Initialize default services
         default_services = [
             ServicePricing(service_type=ServiceType.WALK_30, name="30-Minute Walk", description="A quick 30-minute walk for your pet", price=25.00, duration_minutes=30),
+            ServicePricing(service_type=ServiceType.WALK_45, name="45-Minute Walk", description="A moderate 45-minute walk for your pet", price=32.00, duration_minutes=45),
+            ServicePricing(service_type=ServiceType.WALK_55, name="55-Minute Walk", description="An extended 55-minute walk for your pet", price=38.00, duration_minutes=55),
             ServicePricing(service_type=ServiceType.WALK_60, name="60-Minute Walk", description="A full hour walk with play time", price=40.00, duration_minutes=60),
             ServicePricing(service_type=ServiceType.PETSIT_OUR_LOCATION, name="Pet Sitting - Our Location (Boarding)", description="Boarding at our facility. $50/night, 2nd dog half price, +$10 holiday surcharge.", price=50.00, duration_minutes=1440),
             ServicePricing(service_type=ServiceType.TRANSPORT, name="Pet Transport", description="Safe transport to vet or groomer", price=35.00, duration_minutes=60),
