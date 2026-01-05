@@ -67,6 +67,8 @@ class UserRole(str, Enum):
 class ServiceType(str, Enum):
     # Walking Services
     WALK_30 = "walk_30"
+    WALK_45 = "walk_45"
+    WALK_55 = "walk_55"
     WALK_60 = "walk_60"
     # Staying/Sitting Services (minimum 1 day)
     STAY_DAY = "stay_day"                                # Day stay (drop-off)
