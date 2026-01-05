@@ -541,7 +541,7 @@ const WalkerDashboard = () => {
                 <div className="text-center">
                   <p className="text-3xl font-mono font-bold text-primary">{formatTime(elapsedTime)}</p>
                 </div>
-                <Button onClick={endWalk} variant="destructive" className="rounded-full">
+                <Button onClick={openCompletionDialog} variant="destructive" className="rounded-full">
                   <Square className="w-4 h-4 mr-2" />
                   End Walk
                 </Button>
