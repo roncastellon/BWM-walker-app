@@ -450,6 +450,58 @@ const SitterDashboard = () => {
               </Card>
             </Link>
 
+            {/* My Pay Rates - Read Only */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-green-500" />
+                  My Pay Rates
+                </CardTitle>
+                <CardDescription>What you earn per service</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {/* Walk Services */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Walk Services</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center p-3 rounded-lg bg-green-50">
+                        <p className="text-lg font-bold text-green-600">${user?.custom_pay_rates?.walk_30 || 15}</p>
+                        <p className="text-xs text-muted-foreground">30 min</p>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-green-50">
+                        <p className="text-lg font-bold text-green-600">${user?.custom_pay_rates?.walk_45 || 22}</p>
+                        <p className="text-xs text-muted-foreground">45 min</p>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-green-50">
+                        <p className="text-lg font-bold text-green-600">${user?.custom_pay_rates?.walk_60 || 30}</p>
+                        <p className="text-xs text-muted-foreground">60 min</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Sitting Services */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pet Sitting</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="text-center p-3 rounded-lg bg-purple-50">
+                        <p className="text-lg font-bold text-purple-600">${user?.custom_pay_rates?.petsit_walker_location || 40}</p>
+                        <p className="text-xs text-muted-foreground">Your Location</p>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-purple-50">
+                        <p className="text-lg font-bold text-purple-600">${user?.custom_pay_rates?.petsit_client_location || 50}</p>
+                        <p className="text-xs text-muted-foreground">Client's Location</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {!user?.pay_setup_completed && (
+                  <p className="text-xs text-amber-600 mt-3 text-center">
+                    Pay rates pending admin setup. Showing defaults.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
