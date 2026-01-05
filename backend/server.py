@@ -68,7 +68,6 @@ class ServiceType(str, Enum):
     # Walking Services
     WALK_30 = "walk_30"
     WALK_45 = "walk_45"
-    WALK_55 = "walk_55"
     WALK_60 = "walk_60"
     # Staying/Sitting Services (minimum 1 day)
     STAY_DAY = "stay_day"                                # Day stay (drop-off)
@@ -458,7 +457,6 @@ class WalkCancellationRequest(BaseModel):
 WALKER_PAY_RATES = {
     "walk_30": 15.00,  # 30-minute walk
     "walk_45": 20.00,  # 45-minute walk
-    "walk_55": 25.00,  # 55-minute walk
     "walk_60": 30.00,  # 60-minute walk
 }
 
@@ -1107,7 +1105,6 @@ async def get_services():
         default_services = [
             ServicePricing(service_type=ServiceType.WALK_30, name="30-Minute Walk", description="A quick 30-minute walk for your pet", price=25.00, duration_minutes=30),
             ServicePricing(service_type=ServiceType.WALK_45, name="45-Minute Walk", description="A moderate 45-minute walk for your pet", price=32.00, duration_minutes=45),
-            ServicePricing(service_type=ServiceType.WALK_55, name="55-Minute Walk", description="An extended 55-minute walk for your pet", price=38.00, duration_minutes=55),
             ServicePricing(service_type=ServiceType.WALK_60, name="60-Minute Walk", description="A full hour walk with play time", price=40.00, duration_minutes=60),
             ServicePricing(service_type=ServiceType.PETSIT_OUR_LOCATION, name="Pet Sitting - Our Location (Boarding)", description="Boarding at our facility. $50/night, 2nd dog half price, +$10 holiday surcharge.", price=50.00, duration_minutes=1440),
             ServicePricing(service_type=ServiceType.TRANSPORT, name="Pet Transport", description="Safe transport to vet or groomer", price=35.00, duration_minutes=60),
@@ -1185,7 +1182,6 @@ def get_walk_duration(service_type: str) -> int:
     durations = {
         'walk_30': 30,
         'walk_45': 45,
-        'walk_55': 55,
         'walk_60': 60,
         'walk_15': 15,
         'pet_sitting': 60,

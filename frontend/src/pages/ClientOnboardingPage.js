@@ -506,7 +506,7 @@ const ClientOnboardingPage = () => {
                   Walk Duration
                 </Label>
                 <div className="flex gap-2">
-                  {[30, 45, 55, 60].map((duration) => (
+                  {[30, 45, 60].map((duration) => (
                     <Button
                       key={duration}
                       variant={walkSchedule.walk_duration === duration ? "default" : "outline"}
