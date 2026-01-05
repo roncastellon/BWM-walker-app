@@ -690,8 +690,10 @@ async def setup_first_admin(request: AdminSetupRequest):
 
 # User Routes
 @api_router.get("/users/walkers", response_model=List[UserResponse])
-async def get_walkers():
-    walkers = await db.users.find({"role": "walker", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
+async def get_walkers(include_frozen: bool = False):
+    # Include frozen users if requested (for admin management pages)
+    query = {"role": "walker"} if include_frozen else {"role": "walker", "is_active": True}
+    walkers = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(100)
     
     # Auto-assign colors to walkers who don't have one
     default_colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
@@ -730,10 +732,12 @@ async def update_walker_color(user_id: str, color: str, current_user: dict = Dep
     return {"message": "Walker color updated"}
 
 @api_router.get("/users/clients", response_model=List[UserResponse])
-async def get_clients(current_user: dict = Depends(get_current_user)):
+async def get_clients(include_frozen: bool = False, current_user: dict = Depends(get_current_user)):
     if current_user['role'] not in ['admin', 'walker']:
         raise HTTPException(status_code=403, detail="Not authorized")
-    clients = await db.users.find({"role": "client", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
+    # Include frozen users if requested (for admin management pages)
+    query = {"role": "client"} if include_frozen else {"role": "client", "is_active": True}
+    clients = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(100)
     return [UserResponse(**c) for c in clients]
 
 @api_router.get("/users/{user_id}", response_model=UserResponse)
