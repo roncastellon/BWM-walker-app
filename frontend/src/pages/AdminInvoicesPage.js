@@ -1156,25 +1156,6 @@ const AdminBillingPage = () => {
                     )}
                   </div>
                 )}
-                                          <Badge variant="outline" className="rounded-full text-green-600">Not due</Badge>
-                                        )}
-                                      </td>
-                                      <td className="p-3 text-center">
-                                        <Badge variant={invoice.status === 'overdue' ? 'destructive' : 'secondary'} className="rounded-full capitalize">
-                                          {invoice.status}
-                                        </Badge>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
