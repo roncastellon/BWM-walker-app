@@ -289,6 +289,9 @@ class UserResponse(BaseModel):
     preferred_payment_method: Optional[str] = None
     onboarding_completed: Optional[bool] = None
     onboarding_data: Optional[Dict] = None
+    # Pay setup fields for walkers/sitters
+    pay_setup_completed: Optional[bool] = None
+    custom_pay_rates: Optional[Dict[str, float]] = None  # Custom pay rates per service
 
 class TokenResponse(BaseModel):
     access_token: str
