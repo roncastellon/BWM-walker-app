@@ -76,6 +76,7 @@ const AdminBillingPage = () => {
   // Accounts Receivable Aging Report state
   const [agingReport, setAgingReport] = useState(null);
   const [loadingAgingReport, setLoadingAgingReport] = useState(false);
+  const [expandedAgingBucket, setExpandedAgingBucket] = useState(null);
   
   // Paysheets state
   const [paysheets, setPaysheets] = useState([]);
