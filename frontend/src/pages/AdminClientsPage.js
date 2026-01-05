@@ -412,10 +412,14 @@ const AdminClientsPage = () => {
     if (!selectedClient) return;
     setSaving(true);
     try {
+      // If default pricing, send empty custom_prices so it uses standard rates
+      const customPricesToSave = clientPricing.pricing_type === 'default' ? {} : clientPricing.custom_prices;
+      
       await api.put(`/users/${selectedClient.id}/pricing`, {
         billing_plan_id: clientPricing.billing_plan_id || null,
-        custom_prices: clientPricing.custom_prices,
+        custom_prices: customPricesToSave,
         pricing_notes: clientPricing.notes,
+        pricing_type: clientPricing.pricing_type,
         pricing_setup_completed: true
       });
       
