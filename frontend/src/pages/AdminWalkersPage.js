@@ -450,6 +450,19 @@ const AdminWalkersPage = () => {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setSelectedWalker(walker);
+                        initPaySetup(walker);
+                      }}
+                      className="text-green-600 hover:bg-green-50"
+                    >
+                      <DollarSign className="w-4 h-4 mr-1" />
+                      Edit Pay
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={(e) => { e.stopPropagation(); confirmDelete(walker); }}
                       className="text-red-600 hover:bg-red-50"
                     >
