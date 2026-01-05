@@ -436,7 +436,10 @@ const AdminClientsPage = () => {
     services.forEach(s => {
       defaultPrices[s.service_type] = selectedClient?.custom_prices?.[s.service_type] || s.price;
     });
+    // Check if client already has custom pricing set
+    const hasCustomPricing = selectedClient?.custom_prices && Object.keys(selectedClient.custom_prices).length > 0;
     setClientPricing({
+      pricing_type: hasCustomPricing ? 'custom' : 'default',
       billing_plan_id: selectedClient?.billing_plan_id || '',
       custom_prices: defaultPrices,
       notes: selectedClient?.pricing_notes || ''
