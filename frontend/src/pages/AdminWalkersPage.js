@@ -291,7 +291,7 @@ const AdminWalkersPage = () => {
             {filteredWalkers.map((walker) => (
               <Card 
                 key={walker.id} 
-                className="rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer" 
+                className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer ${!walker.is_active ? 'opacity-60 border-red-300' : ''}`}
                 data-testid={`walker-card-${walker.id}`}
                 onClick={() => viewWalkerDetails(walker)}
               >
@@ -305,10 +305,18 @@ const AdminWalkersPage = () => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold truncate">{walker.full_name}</h3>
-                      <Badge className="bg-secondary/10 text-secondary rounded-full text-xs mt-1">
-                        <PawPrint className="w-3 h-3 mr-1" />
-                        Walker
-                      </Badge>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <Badge className="bg-secondary/10 text-secondary rounded-full text-xs">
+                          <PawPrint className="w-3 h-3 mr-1" />
+                          Walker
+                        </Badge>
+                        {!walker.is_active && (
+                          <Badge className="bg-red-100 text-red-800 rounded-full text-xs">
+                            <Lock className="w-3 h-3 mr-1" />
+                            Frozen
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2 text-sm">
@@ -325,6 +333,27 @@ const AdminWalkersPage = () => {
                     {walker.bio && (
                       <p className="text-muted-foreground text-xs mt-2 line-clamp-2">{walker.bio}</p>
                     )}
+                  </div>
+                  {/* Quick Actions */}
+                  <div className="mt-4 pt-3 border-t flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleFreezeUser(walker.id, walker.is_active !== false); }}
+                      className={walker.is_active === false ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}
+                    >
+                      {walker.is_active === false ? <Unlock className="w-4 h-4 mr-1" /> : <Lock className="w-4 h-4 mr-1" />}
+                      {walker.is_active === false ? 'Unfreeze' : 'Freeze'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); confirmDelete(walker); }}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
