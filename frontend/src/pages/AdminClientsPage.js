@@ -1075,44 +1075,74 @@ const AdminClientsPage = () => {
                   </div>
                 )}
 
-                {/* Pricing Plan Selection */}
+                {/* Pricing Type Selection */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" />
-                    Select Billing Plan
+                    <DollarSign className="w-4 h-4" />
+                    Pricing Type
                   </Label>
-                  <Select 
-                    value={clientPricing.billing_plan_id || "custom"} 
-                    onValueChange={(v) => setClientPricing({...clientPricing, billing_plan_id: v === "custom" ? "" : v})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a billing plan or set custom pricing" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="custom">Custom Pricing</SelectItem>
-                      {billingPlans.map(plan => (
-                        <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant={clientPricing.pricing_type === 'default' ? "default" : "outline"}
+                      className={`h-auto py-4 flex flex-col ${clientPricing.pricing_type === 'default' ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                      onClick={() => {
+                        // Reset to default prices when switching to default
+                        const defaultPrices = {};
+                        services.forEach(s => {
+                          defaultPrices[s.service_type] = s.price;
+                        });
+                        setClientPricing({...clientPricing, pricing_type: 'default', custom_prices: defaultPrices});
+                      }}
+                    >
+                      <span className="text-lg font-bold">Default Pricing</span>
+                      <span className="text-xs opacity-80">Use standard rates</span>
+                    </Button>
+                    <Button
+                      variant={clientPricing.pricing_type === 'custom' ? "default" : "outline"}
+                      className={`h-auto py-4 flex flex-col ${clientPricing.pricing_type === 'custom' ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+                      onClick={() => setClientPricing({...clientPricing, pricing_type: 'custom'})}
+                    >
+                      <span className="text-lg font-bold">Custom Pricing</span>
+                      <span className="text-xs opacity-80">Set specific rates</span>
+                    </Button>
+                  </div>
                 </div>
 
+                {/* Default Pricing Summary */}
+                {clientPricing.pricing_type === 'default' && (
+                  <div className="p-4 rounded-xl bg-green-50 border border-green-200">
+                    <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Default Pricing Applied
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {services.map(service => (
+                        <div key={service.service_type} className="flex justify-between">
+                          <span className="text-muted-foreground capitalize">{service.service_type.replace(/_/g, ' ')}:</span>
+                          <span className="font-medium">${service.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Custom Pricing per Service */}
-                {(!clientPricing.billing_plan_id || clientPricing.billing_plan_id === "custom") && (
+                {clientPricing.pricing_type === 'custom' && (
                   <div className="space-y-3">
                     <Label className="text-base font-semibold flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" />
+                      <Settings className="w-4 h-4" />
                       Custom Service Pricing
                     </Label>
                     <div className="grid grid-cols-2 gap-3">
                       {services.map(service => (
-                        <div key={service.service_type} className="flex items-center gap-2">
+                        <div key={service.service_type} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
                           <Label className="text-sm flex-1 capitalize">{service.service_type.replace(/_/g, ' ')}</Label>
                           <div className="relative w-24">
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                             <Input
                               type="number"
                               step="0.01"
+                              placeholder={service.price.toString()}
                               value={clientPricing.custom_prices[service.service_type] || ''}
                               onChange={(e) => setClientPricing({
                                 ...clientPricing,
@@ -1127,8 +1157,33 @@ const AdminClientsPage = () => {
                         </div>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Default price shown as placeholder. Leave blank to use default.
+                    </p>
                   </div>
                 )}
+
+                {/* Billing Plan Selection (Optional) */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    Billing Plan (Optional)
+                  </Label>
+                  <Select 
+                    value={clientPricing.billing_plan_id || "none"} 
+                    onValueChange={(v) => setClientPricing({...clientPricing, billing_plan_id: v === "none" ? "" : v})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a billing plan (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Plan</SelectItem>
+                      {billingPlans.map(plan => (
+                        <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Pricing Notes */}
                 <div className="space-y-2">
