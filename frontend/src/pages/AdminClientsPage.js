@@ -1041,6 +1041,10 @@ const AdminClientsPage = () => {
                         <span className="text-muted-foreground">Walks per day:</span>
                         <span className="ml-2 font-medium">{selectedClient.onboarding_data.walks_per_day}</span>
                       </div>
+                      <div>
+                        <span className="text-muted-foreground">Walk duration:</span>
+                        <span className="ml-2 font-medium">{selectedClient.onboarding_data.walk_duration || 30} minutes</span>
+                      </div>
                       <div className="col-span-2">
                         <span className="text-muted-foreground">Preferred days:</span>
                         <span className="ml-2 font-medium">{selectedClient.onboarding_data.preferred_days?.join(', ')}</span>
