@@ -1500,6 +1500,202 @@ class WagWalkAPITester:
             else:
                 print(f"⚠️  Preference persistence failed - Expected 'both', got '{final_preference}'")
 
+    def test_accounts_receivable_aging_report(self):
+        """Test accounts receivable aging report endpoint"""
+        print("\n🔍 Testing Accounts Receivable Aging Report...")
+        
+        if not self.tokens.get('demo_admin'):
+            print("⚠️  Skipping receivable aging report test - no demo admin token")
+            return
+        
+        # Test GET /api/reports/receivable-aging
+        success, response = self.run_test(
+            "Get Receivable Aging Report", "GET", "reports/receivable-aging", 200,
+            token=self.tokens['demo_admin'],
+            description="Get accounts receivable aging report (admin only)"
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['generated_at', 'grand_total', 'total_invoices', 'buckets']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if missing_fields:
+                print(f"⚠️  Missing fields in aging report: {missing_fields}")
+            else:
+                print("✅ Aging report contains all required fields")
+                
+                # Verify buckets structure
+                buckets = response.get('buckets', {})
+                expected_buckets = ['current', 'thirty', 'sixty', 'ninety_plus']
+                missing_buckets = [bucket for bucket in expected_buckets if bucket not in buckets]
+                
+                if missing_buckets:
+                    print(f"⚠️  Missing buckets in aging report: {missing_buckets}")
+                else:
+                    print("✅ All aging buckets present")
+                    
+                    # Verify bucket structure
+                    for bucket_name, bucket_data in buckets.items():
+                        bucket_fields = ['label', 'total', 'count', 'invoices']
+                        missing_bucket_fields = [field for field in bucket_fields if field not in bucket_data]
+                        if missing_bucket_fields:
+                            print(f"⚠️  Missing fields in {bucket_name} bucket: {missing_bucket_fields}")
+                        else:
+                            print(f"✅ {bucket_name} bucket structure correct")
+                
+                # Display summary
+                print(f"   Grand Total: ${response.get('grand_total', 0)}")
+                print(f"   Total Invoices: {response.get('total_invoices', 0)}")
+                
+                # Display bucket summaries
+                for bucket_name, bucket_data in buckets.items():
+                    label = bucket_data.get('label', bucket_name)
+                    total = bucket_data.get('total', 0)
+                    count = bucket_data.get('count', 0)
+                    print(f"   {label}: ${total} ({count} invoices)")
+        
+        # Test non-admin access (should fail)
+        if self.tokens.get('demo_client'):
+            success, response = self.run_test(
+                "Non-Admin Access (Should Fail)", "GET", "reports/receivable-aging", 403,
+                token=self.tokens['demo_client'],
+                description="Test that non-admin users cannot access aging report"
+            )
+            
+            if success:
+                print("✅ Non-admin access properly blocked")
+
+    def test_freeze_unfreeze_user_functionality(self):
+        """Test freeze/unfreeze user functionality with include_frozen parameter"""
+        print("\n🔍 Testing Freeze/Unfreeze User Functionality...")
+        
+        if not self.tokens.get('demo_admin'):
+            print("⚠️  Skipping freeze/unfreeze test - no demo admin token")
+            return
+        
+        # Test 1: Get walkers without include_frozen (should only show active)
+        success, active_walkers = self.run_test(
+            "Get Active Walkers Only", "GET", "users/walkers", 200,
+            token=self.tokens['demo_admin'],
+            description="Get walkers without include_frozen parameter (active only)"
+        )
+        
+        if success:
+            print(f"✅ Active walkers retrieved: {len(active_walkers)} walkers")
+        
+        # Test 2: Get walkers with include_frozen=true (should show all including frozen)
+        success, all_walkers = self.run_test(
+            "Get All Walkers Including Frozen", "GET", "users/walkers?include_frozen=true", 200,
+            token=self.tokens['demo_admin'],
+            description="Get walkers with include_frozen=true (all walkers)"
+        )
+        
+        if success:
+            print(f"✅ All walkers retrieved: {len(all_walkers)} walkers")
+            
+            # Check if we have more walkers when including frozen
+            if len(all_walkers) >= len(active_walkers):
+                print("✅ include_frozen=true returns same or more walkers than active-only")
+            else:
+                print("⚠️  include_frozen=true returned fewer walkers than active-only")
+        
+        # Test 3: Get clients without include_frozen (should only show active)
+        success, active_clients = self.run_test(
+            "Get Active Clients Only", "GET", "users/clients", 200,
+            token=self.tokens['demo_admin'],
+            description="Get clients without include_frozen parameter (active only)"
+        )
+        
+        if success:
+            print(f"✅ Active clients retrieved: {len(active_clients)} clients")
+        
+        # Test 4: Get clients with include_frozen=true (should show all including frozen)
+        success, all_clients = self.run_test(
+            "Get All Clients Including Frozen", "GET", "users/clients?include_frozen=true", 200,
+            token=self.tokens['demo_admin'],
+            description="Get clients with include_frozen=true (all clients)"
+        )
+        
+        if success:
+            print(f"✅ All clients retrieved: {len(all_clients)} clients")
+            
+            # Check if we have more clients when including frozen
+            if len(all_clients) >= len(active_clients):
+                print("✅ include_frozen=true returns same or more clients than active-only")
+            else:
+                print("⚠️  include_frozen=true returned fewer clients than active-only")
+        
+        # Test 5: Test freeze/unfreeze functionality if we have users to test with
+        if all_walkers:
+            # Find a walker that is currently active to test freezing
+            active_walker = None
+            for walker in all_walkers:
+                if walker.get('is_active', True):
+                    active_walker = walker
+                    break
+            
+            if active_walker:
+                walker_id = active_walker['id']
+                walker_name = active_walker.get('full_name', 'Unknown')
+                
+                # Test freezing the walker
+                success, freeze_response = self.run_test(
+                    "Freeze Walker", "PUT", f"users/{walker_id}/freeze", 200,
+                    token=self.tokens['demo_admin'],
+                    description=f"Freeze walker {walker_name}"
+                )
+                
+                if success:
+                    print(f"✅ Walker {walker_name} frozen successfully")
+                    
+                    # Verify frozen walker appears in include_frozen=true but not in active-only
+                    success, active_after_freeze = self.run_test(
+                        "Verify Frozen Walker Not in Active List", "GET", "users/walkers", 200,
+                        token=self.tokens['demo_admin'],
+                        description="Verify frozen walker not in active-only list"
+                    )
+                    
+                    success, all_after_freeze = self.run_test(
+                        "Verify Frozen Walker in All List", "GET", "users/walkers?include_frozen=true", 200,
+                        token=self.tokens['demo_admin'],
+                        description="Verify frozen walker appears in include_frozen=true list"
+                    )
+                    
+                    if success:
+                        # Check if frozen walker is in all list but not active list
+                        frozen_in_all = any(w['id'] == walker_id and not w.get('is_active', True) for w in all_after_freeze)
+                        frozen_in_active = any(w['id'] == walker_id for w in active_after_freeze)
+                        
+                        if frozen_in_all and not frozen_in_active:
+                            print("✅ Frozen walker correctly appears only in include_frozen=true list")
+                        else:
+                            print("⚠️  Frozen walker visibility issue")
+                    
+                    # Test unfreezing the walker
+                    success, unfreeze_response = self.run_test(
+                        "Unfreeze Walker", "PUT", f"users/{walker_id}/unfreeze", 200,
+                        token=self.tokens['demo_admin'],
+                        description=f"Unfreeze walker {walker_name}"
+                    )
+                    
+                    if success:
+                        print(f"✅ Walker {walker_name} unfrozen successfully")
+                        
+                        # Verify unfrozen walker appears in active list again
+                        success, active_after_unfreeze = self.run_test(
+                            "Verify Unfrozen Walker in Active List", "GET", "users/walkers", 200,
+                            token=self.tokens['demo_admin'],
+                            description="Verify unfrozen walker appears in active list"
+                        )
+                        
+                        if success:
+                            unfrozen_in_active = any(w['id'] == walker_id and w.get('is_active', True) for w in active_after_unfreeze)
+                            if unfrozen_in_active:
+                                print("✅ Unfrozen walker correctly appears in active list")
+                            else:
+                                print("⚠️  Unfrozen walker not appearing in active list")
+
     def test_walker_trade_self_validation_bug_fix(self):
         """Test walker trade self-validation bug fix"""
         print("\n🔍 Testing Walker Trade Self-Validation Bug Fix...")
