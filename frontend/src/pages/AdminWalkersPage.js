@@ -42,7 +42,7 @@ const AdminWalkersPage = () => {
 
   const fetchWalkers = async () => {
     try {
-      const response = await api.get('/users/walkers');
+      const response = await api.get('/users/walkers?include_frozen=true');
       setWalkers(response.data);
     } catch (error) {
       toast.error('Failed to load walkers');
