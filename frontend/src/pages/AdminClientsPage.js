@@ -56,6 +56,10 @@ const AdminClientsPage = () => {
   const [pricingMode, setPricingMode] = useState(false);
   const [saving, setSaving] = useState(false);
   
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  
   // Pricing setup state
   const [clientPricing, setClientPricing] = useState({
     billing_plan_id: '',
