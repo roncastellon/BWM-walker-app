@@ -499,6 +499,27 @@ const ClientOnboardingPage = () => {
                 </div>
               </div>
 
+              {/* Walk Duration */}
+              <div className="space-y-3">
+                <Label className="text-base font-semibold flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Walk Duration
+                </Label>
+                <div className="flex gap-2">
+                  {[30, 45, 60].map((duration) => (
+                    <Button
+                      key={duration}
+                      variant={walkSchedule.walk_duration === duration ? "default" : "outline"}
+                      className={`flex-1 h-auto py-3 flex flex-col ${walkSchedule.walk_duration === duration ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                      onClick={() => setWalkSchedule({...walkSchedule, walk_duration: duration})}
+                    >
+                      <span className="text-lg font-bold">{duration}</span>
+                      <span className="text-xs opacity-80">minutes</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
               {/* Preferred times */}
               <div className="space-y-3">
                 <Label className="text-base font-semibold flex items-center gap-2">
