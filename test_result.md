@@ -835,19 +835,22 @@ agent_communication:
 
   - task: "Accounts Receivable Aging Report"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/AdminInvoicesPage.js, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented Accounts Receivable Aging Report. Backend: Added GET /api/reports/receivable-aging endpoint that queries unpaid invoices and categorizes into 4 age buckets (Current 0-30, 30 Days 31-60, 60 Days 61-90, 90+ Days). Returns grand_total, total_invoices, and detailed breakdown per bucket with client names and days overdue. Frontend: Added Aging Report section in Reports tab with Generate button, summary cards (color-coded per bucket), and detailed invoice tables per bucket showing client name, amount, due date, days overdue, and status. Tested backend via curl - returns correct data."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Accounts Receivable Aging Report working perfectly! Comprehensive testing completed: 1) GET /api/reports/receivable-aging endpoint working correctly with admin authentication ✅, 2) Response structure contains all required fields (generated_at, grand_total, total_invoices, buckets) ✅, 3) All 4 aging buckets present (current, thirty, sixty, ninety_plus) with correct labels ✅, 4) Each bucket contains proper structure (label, total, count, invoices) ✅, 5) Invoice details include client_name, amount, days_overdue, status ✅, 6) Admin-only access control working - non-admin users blocked with 403 Forbidden ✅, 7) Test data shows Grand Total: $255.0, Total Invoices: 9, all in Current bucket (0-30 days) ✅. All functionality working as expected for aging report generation and display."
 
   - task: "Freeze/Unfreeze user functionality"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/AdminClientsPage.js, /app/frontend/src/pages/AdminWalkersPage.js, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
