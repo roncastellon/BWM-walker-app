@@ -932,7 +932,7 @@ const AdminClientsPage = () => {
             {filteredClients.map((client) => (
               <Card 
                 key={client.id} 
-                className="rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer" 
+                className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer ${!client.is_active ? 'opacity-60 border-red-300' : ''}`}
                 data-testid={`client-card-${client.id}`}
                 onClick={() => viewClientDetails(client)}
               >
@@ -946,10 +946,16 @@ const AdminClientsPage = () => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold truncate">{client.full_name}</h3>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <Badge className="bg-blue-100 text-blue-800 rounded-full text-xs">
                           Client
                         </Badge>
+                        {!client.is_active && (
+                          <Badge className="bg-red-100 text-red-800 rounded-full text-xs">
+                            <Lock className="w-3 h-3 mr-1" />
+                            Frozen
+                          </Badge>
+                        )}
                         <Badge variant="outline" className="rounded-full text-xs capitalize">
                           {client.billing_cycle || 'weekly'}
                         </Badge>
@@ -967,6 +973,27 @@ const AdminClientsPage = () => {
                         <span>{client.phone}</span>
                       </div>
                     )}
+                  </div>
+                  {/* Quick Actions */}
+                  <div className="mt-4 pt-3 border-t flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleFreezeUser(client.id, client.is_active !== false); }}
+                      className={client.is_active === false ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}
+                    >
+                      {client.is_active === false ? <Unlock className="w-4 h-4 mr-1" /> : <Lock className="w-4 h-4 mr-1" />}
+                      {client.is_active === false ? 'Unfreeze' : 'Freeze'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); confirmDelete(client); }}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
