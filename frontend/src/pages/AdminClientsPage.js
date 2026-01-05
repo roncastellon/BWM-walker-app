@@ -1522,6 +1522,41 @@ const AdminClientsPage = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <UserX className="w-5 h-5" />
+                Delete User
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete <strong>{userToDelete?.full_name}</strong>? This action cannot be undone and will also delete:
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                <li>All their pets</li>
+                <li>All their appointments</li>
+                <li>All their messages</li>
+                <li>All their payment history</li>
+              </ul>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteUser}
+                disabled={saving}
+              >
+                {saving ? 'Deleting...' : 'Delete Permanently'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
