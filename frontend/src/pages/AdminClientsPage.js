@@ -62,6 +62,7 @@ const AdminClientsPage = () => {
   
   // Pricing setup state
   const [clientPricing, setClientPricing] = useState({
+    pricing_type: 'default', // 'default' or 'custom'
     billing_plan_id: '',
     custom_prices: {},
     notes: ''
