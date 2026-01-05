@@ -456,11 +456,22 @@ class WalkCancellationRequest(BaseModel):
     reason: str
 
 
-# Walker pay rates
+# Walker/Sitter default pay rates
+DEFAULT_WALKER_PAY_RATES = {
+    "walk_30": 15.00,   # 30-minute walk
+    "walk_45": 22.00,   # 45-minute walk
+    "walk_60": 30.00,   # 60-minute walk
+}
+
+DEFAULT_SITTER_PAY_RATES = {
+    "petsit_walker_location": 40.00,  # At walker's/sitter's location
+    "petsit_client_location": 50.00,  # At client's location
+}
+
+# Combined default pay rates
 WALKER_PAY_RATES = {
-    "walk_30": 15.00,  # 30-minute walk
-    "walk_45": 20.00,  # 45-minute walk
-    "walk_60": 30.00,  # 60-minute walk
+    **DEFAULT_WALKER_PAY_RATES,
+    **DEFAULT_SITTER_PAY_RATES,
 }
 
 def calculate_walk_earnings(service_type: str, duration_minutes: int = None) -> float:
