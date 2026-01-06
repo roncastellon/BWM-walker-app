@@ -905,7 +905,7 @@ const WalkerDashboard = () => {
                       </div>
                       <div>
                         <p className="font-medium text-sm">Zelle</p>
-                        <p className="text-xs text-muted-foreground">{user?.zelle_email || 'Not set'}</p>
+                        <p className="text-xs text-muted-foreground">{user?.zelle_email || user?.payment_methods?.zelle || 'Not set'}</p>
                       </div>
                     </div>
                   </div>
@@ -916,7 +916,7 @@ const WalkerDashboard = () => {
                       </div>
                       <div>
                         <p className="font-medium text-sm">Venmo</p>
-                        <p className="text-xs text-muted-foreground">{user?.venmo_username ? `@${user.venmo_username}` : 'Not set'}</p>
+                        <p className="text-xs text-muted-foreground">{user?.venmo_username ? `@${user.venmo_username}` : (user?.payment_methods?.venmo ? `@${user.payment_methods.venmo}` : 'Not set')}</p>
                       </div>
                     </div>
                   </div>
@@ -927,7 +927,29 @@ const WalkerDashboard = () => {
                       </div>
                       <div>
                         <p className="font-medium text-sm">Cash App</p>
-                        <p className="text-xs text-muted-foreground">{user?.cashapp_tag ? `$${user.cashapp_tag}` : 'Not set'}</p>
+                        <p className="text-xs text-muted-foreground">{user?.cashapp_tag ? `$${user.cashapp_tag}` : (user?.payment_methods?.cashapp ? `$${user.payment_methods.cashapp}` : 'Not set')}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">🍎</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Apple Pay</p>
+                        <p className="text-xs text-muted-foreground">{user?.apple_pay_id || user?.payment_methods?.apple_pay || 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">🍎</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Apple Cash</p>
+                        <p className="text-xs text-muted-foreground">{user?.apple_cash_id || user?.payment_methods?.apple_cash || 'Not set'}</p>
                       </div>
                     </div>
                   </div>
