@@ -8,30 +8,32 @@
   <!-- Inner blue circle border - closer to dog -->
   <circle cx="256" cy="256" r="130" fill="none" stroke="#5cb8e6" stroke-width="6"/>
   
-  <!-- Curved text paths -->
+  <!-- Curved text paths - positioned between circles, not touching -->
   <defs>
-    <path id="topArcLeft" d="M 58,256 A 198,198 0 0,1 256,58" fill="none"/>
-    <path id="topArcRight" d="M 256,58 A 198,198 0 0,1 454,256" fill="none"/>
-    <path id="bottomArc" d="M 58,256 A 198,198 0 0,0 454,256" fill="none"/>
+    <!-- Top arcs moved inward (smaller radius) -->
+    <path id="topArcLeft" d="M 85,256 A 171,171 0 0,1 256,85" fill="none"/>
+    <path id="topArcRight" d="M 256,85 A 171,171 0 0,1 427,256" fill="none"/>
+    <!-- Bottom arc moved outward (larger radius, closer to edge) -->
+    <path id="bottomArc" d="M 50,256 A 206,206 0 0,0 462,256" fill="none"/>
   </defs>
   
-  <!-- "BOW" curved top left -->
+  <!-- "BOW" curved top left - moved in -->
   <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
     <textPath href="#topArcLeft" startOffset="12%">
       BOW
     </textPath>
   </text>
   
-  <!-- "WOW" curved top right -->
+  <!-- "WOW" curved top right - moved in -->
   <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
     <textPath href="#topArcRight" startOffset="12%">
       WOW
     </textPath>
   </text>
   
-  <!-- "MEOW" curved bottom - same radius as top -->
+  <!-- "MEOW" curved bottom - moved down/out -->
   <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
-    <textPath href="#bottomArc" startOffset="29%">
+    <textPath href="#bottomArc" startOffset="27%">
       MEOW
     </textPath>
   </text>
