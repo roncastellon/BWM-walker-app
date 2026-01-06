@@ -1920,7 +1920,7 @@ async def mark_invoice_paid(invoice_id: str, payment_method: str, current_user: 
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
-    if payment_method not in ['zelle', 'venmo', 'cashapp', 'cash', 'check', 'other']:
+    if payment_method not in ['zelle', 'venmo', 'cashapp', 'apple_pay', 'apple_cash', 'paypal', 'cash', 'check', 'other']:
         raise HTTPException(status_code=400, detail="Invalid payment method")
     
     paid_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
