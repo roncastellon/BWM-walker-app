@@ -1,23 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Orange to Blue gradient background -->
-  <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f97316"/>
-      <stop offset="100%" style="stop-color:#5cb8e6"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="100" fill="url(#bgGradient)"/>
-  <g transform="translate(100, 50)">
-    <!-- Paw pad main -->
-    <ellipse cx="156" cy="190" rx="65" ry="75" fill="white"/>
-    <!-- Paw toes -->
-    <ellipse cx="80" cy="95" rx="32" ry="42" fill="white"/>
-    <ellipse cx="156" cy="65" rx="32" ry="42" fill="white"/>
-    <ellipse cx="232" cy="95" rx="32" ry="42" fill="white"/>
-    <!-- Small toe pads -->
-    <ellipse cx="62" cy="170" rx="22" ry="28" fill="white"/>
-    <ellipse cx="250" cy="170" rx="22" ry="28" fill="white"/>
+  <!-- Orange background -->
+  <rect width="512" height="512" rx="100" fill="#f97316"/>
+  
+  <!-- Blue dog face -->
+  <g transform="translate(256, 220)" fill="#5cb8e6">
+    <!-- Main face -->
+    <ellipse cx="0" cy="0" rx="95" ry="85"/>
+    <!-- Left ear -->
+    <ellipse cx="-85" cy="-70" rx="40" ry="60" transform="rotate(-20 -85 -70)"/>
+    <!-- Right ear -->
+    <ellipse cx="85" cy="-70" rx="40" ry="60" transform="rotate(20 85 -70)"/>
   </g>
-  <text x="256" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="bold" fill="white">BowWow</text>
-  <text x="256" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="bold" fill="white">Meow</text>
+  
+  <!-- Dog face details in darker blue -->
+  <g transform="translate(256, 220)">
+    <!-- Left eye -->
+    <ellipse cx="-35" cy="-15" rx="14" ry="18" fill="white"/>
+    <circle cx="-35" cy="-12" r="8" fill="#1e3a5f"/>
+    <!-- Right eye -->
+    <ellipse cx="35" cy="-15" rx="14" ry="18" fill="white"/>
+    <circle cx="35" cy="-12" r="8" fill="#1e3a5f"/>
+    <!-- Nose -->
+    <ellipse cx="0" cy="25" rx="20" ry="15" fill="#1e3a5f"/>
+    <!-- Mouth -->
+    <path d="M -20 45 Q 0 60 20 45" stroke="#1e3a5f" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- Tongue -->
+    <ellipse cx="0" cy="55" rx="10" ry="12" fill="#ff6b9d"/>
+  </g>
+  
+  <!-- "BOW" at top -->
+  <text x="256" y="75" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" fill="white">BOW</text>
+  
+  <!-- "WOW" at bottom left -->
+  <text x="110" y="430" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="44" font-weight="900" fill="white">WOW</text>
+  
+  <!-- "MEOW" at bottom right -->
+  <text x="400" y="430" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="44" font-weight="900" fill="white">MEOW</text>
 </svg>
