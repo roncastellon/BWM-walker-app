@@ -5,57 +5,41 @@
   <!-- Blue outer ring border -->
   <circle cx="256" cy="256" r="240" fill="none" stroke="#5cb8e6" stroke-width="16"/>
   
-  <!-- Curved text paths -->
-  <defs>
-    <!-- Top arc for BOW (left side) -->
-    <path id="bowArc" d="M 85,200 A 200,200 0 0,1 200,72" fill="none"/>
-    <!-- Top arc for WOW (right side) -->
-    <path id="wowArc" d="M 312,72 A 200,200 0 0,1 427,200" fill="none"/>
-    <!-- Bottom arc for MEOW -->
-    <path id="meowArc" d="M 100,340 A 180,180 0 0,0 412,340" fill="none"/>
-  </defs>
+  <!-- BOW - positioned top left, rotated to follow curve -->
+  <g transform="translate(120, 130) rotate(-45)">
+    <text fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold" letter-spacing="4">BOW</text>
+  </g>
   
-  <!-- "BOW" curved top left -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="2">
-    <textPath href="#bowArc" startOffset="5%">
-      BOW
-    </textPath>
-  </text>
+  <!-- WOW - positioned top right, rotated to follow curve -->
+  <g transform="translate(340, 90) rotate(45)">
+    <text fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold" letter-spacing="4">WOW</text>
+  </g>
   
-  <!-- "WOW" curved top right -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="2">
-    <textPath href="#wowArc" startOffset="5%">
-      WOW
-    </textPath>
-  </text>
-  
-  <!-- "MEOW" curved bottom -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="8">
-    <textPath href="#meowArc" startOffset="18%">
-      MEOW
-    </textPath>
-  </text>
+  <!-- MEOW - positioned at bottom, slightly curved look using rotation -->
+  <g transform="translate(160, 440)">
+    <text fill="white" font-family="Arial, sans-serif" font-size="52" font-weight="bold" letter-spacing="10">MEOW</text>
+  </g>
   
   <!-- Dog Face - Centered cartoon style with blue fill -->
   <g transform="translate(256, 250)">
     <!-- Left ear -->
-    <ellipse cx="-75" cy="-45" rx="40" ry="55" fill="#5cb8e6" transform="rotate(-20, -75, -45)"/>
+    <ellipse cx="-70" cy="-50" rx="38" ry="52" fill="#5cb8e6" transform="rotate(-15, -70, -50)"/>
     <!-- Right ear -->
-    <ellipse cx="75" cy="-45" rx="40" ry="55" fill="#5cb8e6" transform="rotate(20, 75, -45)"/>
+    <ellipse cx="70" cy="-50" rx="38" ry="52" fill="#5cb8e6" transform="rotate(15, 70, -50)"/>
     
     <!-- Main face circle -->
-    <circle cx="0" cy="0" r="85" fill="#5cb8e6"/>
+    <circle cx="0" cy="0" r="80" fill="#5cb8e6"/>
     
     <!-- Orange spots/cheeks -->
-    <circle cx="-50" cy="15" r="22" fill="#f97316"/>
-    <circle cx="50" cy="15" r="22" fill="#f97316"/>
+    <circle cx="-45" cy="15" r="20" fill="#f97316"/>
+    <circle cx="45" cy="15" r="20" fill="#f97316"/>
     
     <!-- Left eye -->
-    <circle cx="-30" cy="-15" r="8" fill="#000"/>
+    <circle cx="-28" cy="-12" r="7" fill="#000"/>
     <!-- Right eye -->
-    <circle cx="30" cy="-15" r="8" fill="#000"/>
+    <circle cx="28" cy="-12" r="7" fill="#000"/>
     
-    <!-- Nose - black triangle -->
-    <polygon points="0,-5 -12,18 12,18" fill="#000"/>
+    <!-- Nose - black triangle pointing down -->
+    <polygon points="0,-2 -10,16 10,16" fill="#000"/>
   </g>
 </svg>
