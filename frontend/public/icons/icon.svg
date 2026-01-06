@@ -6,38 +6,38 @@
   <circle cx="256" cy="256" r="248" fill="none" stroke="#5cb8e6" stroke-width="14"/>
   
   <!-- Inner blue circle border - closer to dog -->
-  <circle cx="256" cy="256" r="140" fill="none" stroke="#5cb8e6" stroke-width="6"/>
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#5cb8e6" stroke-width="6"/>
   
-  <!-- Curved text paths - between the two circles -->
+  <!-- Curved text paths -->
   <defs>
-    <path id="topArcLeft" d="M 70,256 A 186,186 0 0,1 256,70" fill="none"/>
-    <path id="topArcRight" d="M 256,70 A 186,186 0 0,1 442,256" fill="none"/>
-    <path id="bottomArc" d="M 70,256 A 186,186 0 0,0 442,256" fill="none"/>
+    <path id="topArcLeft" d="M 58,256 A 198,198 0 0,1 256,58" fill="none"/>
+    <path id="topArcRight" d="M 256,58 A 198,198 0 0,1 454,256" fill="none"/>
+    <path id="bottomArc" d="M 58,256 A 198,198 0 0,0 454,256" fill="none"/>
   </defs>
   
   <!-- "BOW" curved top left -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="62" font-weight="900">
-    <textPath href="#topArcLeft" startOffset="18%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
+    <textPath href="#topArcLeft" startOffset="12%">
       BOW
     </textPath>
   </text>
   
   <!-- "WOW" curved top right -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="62" font-weight="900">
-    <textPath href="#topArcRight" startOffset="15%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
+    <textPath href="#topArcRight" startOffset="12%">
       WOW
     </textPath>
   </text>
   
-  <!-- "MEOW" curved bottom - same distance as top text -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="62" font-weight="900">
-    <textPath href="#bottomArc" startOffset="32%">
+  <!-- "MEOW" curved bottom - same radius as top -->
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
+    <textPath href="#bottomArc" startOffset="29%">
       MEOW
     </textPath>
   </text>
   
-  <!-- Blue Dog face (Lucide icon - slightly bigger) -->
-  <g transform="translate(96, 105) scale(13.3)" fill="none" stroke="#5cb8e6" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Blue Dog face (Lucide icon - bigger) -->
+  <g transform="translate(86, 95) scale(14.2)" fill="none" stroke="#5cb8e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <!-- Nose -->
     <path d="M11.25 16.25h1.5L12 17z"/>
     <!-- Left eye -->
