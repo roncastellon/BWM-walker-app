@@ -2,53 +2,60 @@
   <!-- Orange background circle -->
   <circle cx="256" cy="256" r="256" fill="#f97316"/>
   
-  <!-- Outer blue circle border - at the edge -->
-  <circle cx="256" cy="256" r="248" fill="none" stroke="#5cb8e6" stroke-width="14"/>
-  
-  <!-- Inner blue circle border - smaller to give text room -->
-  <circle cx="256" cy="256" r="115" fill="none" stroke="#5cb8e6" stroke-width="6"/>
+  <!-- Blue outer ring border -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#5cb8e6" stroke-width="16"/>
   
   <!-- Curved text paths -->
   <defs>
-    <!-- Top arcs - in the space between circles -->
-    <path id="topArcLeft" d="M 75,256 A 181,181 0 0,1 256,75" fill="none"/>
-    <path id="topArcRight" d="M 256,75 A 181,181 0 0,1 437,256" fill="none"/>
-    <!-- Bottom arc - in the space between circles -->
-    <path id="bottomArc" d="M 75,256 A 181,181 0 0,0 437,256" fill="none"/>
+    <!-- Top arc for BOW (left side) -->
+    <path id="bowArc" d="M 85,200 A 200,200 0 0,1 200,72" fill="none"/>
+    <!-- Top arc for WOW (right side) -->
+    <path id="wowArc" d="M 312,72 A 200,200 0 0,1 427,200" fill="none"/>
+    <!-- Bottom arc for MEOW -->
+    <path id="meowArc" d="M 100,340 A 180,180 0 0,0 412,340" fill="none"/>
   </defs>
   
   <!-- "BOW" curved top left -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="54" font-weight="900" letter-spacing="3">
-    <textPath href="#topArcLeft" startOffset="18%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="2">
+    <textPath href="#bowArc" startOffset="5%">
       BOW
     </textPath>
   </text>
   
   <!-- "WOW" curved top right -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="54" font-weight="900" letter-spacing="3">
-    <textPath href="#topArcRight" startOffset="20%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="2">
+    <textPath href="#wowArc" startOffset="5%">
       WOW
     </textPath>
   </text>
   
   <!-- "MEOW" curved bottom -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="54" font-weight="900" letter-spacing="6">
-    <textPath href="#bottomArc" startOffset="26%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="8">
+    <textPath href="#meowArc" startOffset="18%">
       MEOW
     </textPath>
   </text>
   
-  <!-- Blue Dog face - centered and sized to fit inside inner circle -->
-  <g transform="translate(136, 145) scale(10)" fill="none" stroke="#5cb8e6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Nose -->
-    <path d="M11.25 16.25h1.5L12 17z"/>
+  <!-- Dog Face - Centered cartoon style with blue fill -->
+  <g transform="translate(256, 250)">
+    <!-- Left ear -->
+    <ellipse cx="-75" cy="-45" rx="40" ry="55" fill="#5cb8e6" transform="rotate(-20, -75, -45)"/>
+    <!-- Right ear -->
+    <ellipse cx="75" cy="-45" rx="40" ry="55" fill="#5cb8e6" transform="rotate(20, 75, -45)"/>
+    
+    <!-- Main face circle -->
+    <circle cx="0" cy="0" r="85" fill="#5cb8e6"/>
+    
+    <!-- Orange spots/cheeks -->
+    <circle cx="-50" cy="15" r="22" fill="#f97316"/>
+    <circle cx="50" cy="15" r="22" fill="#f97316"/>
+    
     <!-- Left eye -->
-    <path d="M8 14v.5"/>
+    <circle cx="-30" cy="-15" r="8" fill="#000"/>
     <!-- Right eye -->
-    <path d="M16 14v.5"/>
-    <!-- Face outline -->
-    <path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a11.702 11.702 0 0 0-.493-3.309"/>
-    <!-- Ears -->
-    <path d="M8.5 8.5c-.384 1.05-1.083 2.028-2.344 2.5-1.931.722-3.576-.297-3.656-1-.113-.994 1.177-6.53 4-7 1.923-.321 3.651.845 3.651 2.235A7.497 7.497 0 0 1 14 5.277c0-1.39 1.844-2.598 3.767-2.277 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5"/>
+    <circle cx="30" cy="-15" r="8" fill="#000"/>
+    
+    <!-- Nose - black triangle -->
+    <polygon points="0,-5 -12,18 12,18" fill="#000"/>
   </g>
 </svg>
