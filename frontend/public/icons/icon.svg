@@ -10,11 +10,11 @@
   
   <!-- Curved text paths - positioned between circles, not touching -->
   <defs>
-    <!-- Top arcs moved inward (smaller radius) -->
-    <path id="topArcLeft" d="M 85,256 A 171,171 0 0,1 256,85" fill="none"/>
-    <path id="topArcRight" d="M 256,85 A 171,171 0 0,1 427,256" fill="none"/>
-    <!-- Bottom arc - moved up a bit -->
-    <path id="bottomArc" d="M 80,330 A 190,190 0 0,0 432,330" fill="none"/>
+    <!-- Top arcs - between outer and inner circles -->
+    <path id="topArcLeft" d="M 95,256 A 161,161 0 0,1 256,95" fill="none"/>
+    <path id="topArcRight" d="M 256,95 A 161,161 0 0,1 417,256" fill="none"/>
+    <!-- Bottom arc - between inner circle and outer edge -->
+    <path id="bottomArc" d="M 95,256 A 161,161 0 0,0 417,256" fill="none"/>
   </defs>
   
   <!-- "BOW" curved top left - moved in -->
