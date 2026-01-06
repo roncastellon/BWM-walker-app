@@ -1551,6 +1551,14 @@ const AdminBillingPage = () => {
                     <p className="font-medium text-sm">Cash App</p>
                     <Input placeholder="$cashtag" value={paymentSettings.cashapp?.cashtag || ''} onChange={(e) => setPaymentSettings({...paymentSettings, cashapp: {...paymentSettings.cashapp, cashtag: e.target.value}})} />
                   </div>
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <p className="font-medium text-sm flex items-center gap-1">🍎 Apple Pay</p>
+                    <Input placeholder="Phone or Email" value={paymentSettings.apple_pay?.email || ''} onChange={(e) => setPaymentSettings({...paymentSettings, apple_pay: {...paymentSettings.apple_pay, email: e.target.value}})} />
+                  </div>
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <p className="font-medium text-sm flex items-center gap-1">🍎 Apple Cash</p>
+                    <Input placeholder="Phone or Email" value={paymentSettings.apple_cash?.email || ''} onChange={(e) => setPaymentSettings({...paymentSettings, apple_cash: {...paymentSettings.apple_cash, email: e.target.value}})} />
+                  </div>
                 </div>
                 <Button onClick={savePaymentSettings} disabled={savingPaymentSettings} className="rounded-full">
                   <Save className="w-4 h-4 mr-2" />{savingPaymentSettings ? 'Saving...' : 'Save Payment Settings'}
