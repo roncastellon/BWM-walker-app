@@ -1,50 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Orange background circle -->
-  <circle cx="256" cy="256" r="256" fill="#f97316"/>
-  
-  <!-- Outer blue circle border -->
-  <circle cx="256" cy="256" r="240" fill="none" stroke="#5cb8e6" stroke-width="16"/>
-  
-  <!-- Curved text paths -->
+  <!-- Gradient background circle like in the app -->
   <defs>
-    <path id="topArcLeft" d="M 75,220 A 190,190 0 0,1 220,65" fill="none"/>
-    <path id="topArcRight" d="M 292,65 A 190,190 0 0,1 437,220" fill="none"/>
-    <path id="bottomArc" d="M 90,360 A 175,175 0 0,0 422,360" fill="none"/>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#38bdf8"/>
+      <stop offset="100%" style="stop-color:#fb923c"/>
+    </linearGradient>
   </defs>
   
-  <!-- "BOW" curved top left -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="2">
-    <textPath href="#topArcLeft" startOffset="5%">BOW</textPath>
-  </text>
+  <!-- Background circle with gradient -->
+  <circle cx="256" cy="256" r="256" fill="url(#bgGradient)"/>
   
-  <!-- "WOW" curved top right -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="2">
-    <textPath href="#topArcRight" startOffset="5%">WOW</textPath>
-  </text>
-  
-  <!-- "MEOW" curved bottom -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="4">
-    <textPath href="#bottomArc" startOffset="20%">MEOW</textPath>
-  </text>
-  
-  <!-- Dog Face - OUTLINE ONLY with orange showing through -->
-  <g transform="translate(256, 250)" fill="none" stroke="#5cb8e6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Left floppy ear - looped/droopy style -->
-    <path d="M -55,-30 C -95,-60 -110,-20 -95,25 C -80,65 -55,55 -55,30"/>
-    <!-- Right floppy ear - looped/droopy style -->  
-    <path d="M 55,-30 C 95,-60 110,-20 95,25 C 80,65 55,55 55,30"/>
-    <!-- Main face outline - rounded -->
-    <ellipse cx="0" cy="10" rx="65" ry="55"/>
+  <!-- Lucide Dog icon - scaled up and centered, white color -->
+  <g transform="translate(128, 128) scale(10.67)" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Nose -->
+    <path d="M11.25 16.25h1.5L12 17z"/>
+    <!-- Right eye -->
+    <path d="M16 14v.5"/>
+    <!-- Face outline -->
+    <path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a11.702 11.702 0 0 0-.493-3.309"/>
+    <!-- Left eye -->
+    <path d="M8 14v.5"/>
+    <!-- Ears -->
+    <path d="M8.5 8.5c-.384 1.05-1.083 2.028-2.344 2.5-1.931.722-3.576-.297-3.656-1-.113-.994 1.177-6.53 4-7 1.923-.321 3.651.845 3.651 2.235A7.497 7.497 0 0 1 14 5.277c0-1.39 1.844-2.598 3.767-2.277 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5"/>
   </g>
-  
-  <!-- Orange spots/cheeks inside the face -->
-  <circle cx="210" cy="270" r="18" fill="#f97316"/>
-  <circle cx="302" cy="270" r="18" fill="#f97316"/>
-  
-  <!-- Eyes - solid black dots -->
-  <circle cx="230" cy="245" r="8" fill="#000"/>
-  <circle cx="282" cy="245" r="8" fill="#000"/>
-  
-  <!-- Nose - solid black inverted triangle -->
-  <polygon points="256,258 244,280 268,280" fill="#000"/>
 </svg>
