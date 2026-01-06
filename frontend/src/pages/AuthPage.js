@@ -252,6 +252,84 @@ const AuthPage = () => {
           <PawPrint className="inline w-4 h-4 mr-1 text-sky-400" />
           Trusted by pet owners everywhere
         </p>
+
+        {/* Install App Link */}
+        <button 
+          onClick={() => setShowInstallHelp(true)}
+          className="flex items-center justify-center gap-2 mx-auto mt-4 text-sm text-sky-600 hover:text-sky-700 transition-colors"
+        >
+          <Smartphone className="w-4 h-4" />
+          <span>Install App on Your Phone</span>
+        </button>
+
+        {/* Install Help Modal */}
+        {showInstallHelp && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden">
+              <div className="bg-gradient-to-r from-orange-500 to-sky-500 p-4 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Smartphone className="w-6 h-6" />
+                    <h2 className="font-bold text-lg">Install BowWowMeow</h2>
+                  </div>
+                  <button 
+                    onClick={() => setShowInstallHelp(false)}
+                    className="text-white hover:bg-white/20 rounded-full p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {/* iPhone/iPad Instructions */}
+                <div className="space-y-3">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                    🍎 iPhone / iPad (Safari)
+                  </h3>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                    <li>Open this site in <strong>Safari</strong></li>
+                    <li>Tap the <strong>Share</strong> button (square with arrow)</li>
+                    <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                    <li>Tap <strong>"Add"</strong> in the top right</li>
+                  </ol>
+                </div>
+
+                <hr className="border-gray-200" />
+
+                {/* Android Instructions */}
+                <div className="space-y-3">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                    🤖 Android (Chrome)
+                  </h3>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                    <li>Open this site in <strong>Chrome</strong></li>
+                    <li>Tap the <strong>menu</strong> (three dots)</li>
+                    <li>Tap <strong>"Add to Home Screen"</strong></li>
+                    <li>Tap <strong>"Add"</strong></li>
+                  </ol>
+                </div>
+
+                {/* App Icon Preview */}
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-gray-500 mb-2">The app icon:</p>
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl overflow-hidden shadow-md">
+                    <img src="/icons/icon-192x192.png" alt="BowWowMeow icon" className="w-full h-full" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border-t bg-gray-50">
+                <Button 
+                  onClick={() => setShowInstallHelp(false)}
+                  className="w-full bg-gradient-to-r from-orange-500 to-sky-500 hover:from-orange-600 hover:to-sky-600 text-white rounded-full"
+                >
+                  Got it!
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
