@@ -7,7 +7,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Dog, PawPrint } from 'lucide-react';
+import { Dog, PawPrint, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
