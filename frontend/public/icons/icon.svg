@@ -5,41 +5,41 @@
   <!-- Outer blue circle border - at the edge -->
   <circle cx="256" cy="256" r="248" fill="none" stroke="#5cb8e6" stroke-width="14"/>
   
-  <!-- Inner blue circle border - closer to dog -->
-  <circle cx="256" cy="256" r="130" fill="none" stroke="#5cb8e6" stroke-width="6"/>
+  <!-- Inner blue circle border - smaller to give text room -->
+  <circle cx="256" cy="256" r="115" fill="none" stroke="#5cb8e6" stroke-width="6"/>
   
-  <!-- Curved text paths - positioned between circles, not touching -->
+  <!-- Curved text paths -->
   <defs>
-    <!-- Top arcs - between outer and inner circles -->
-    <path id="topArcLeft" d="M 95,256 A 161,161 0 0,1 256,95" fill="none"/>
-    <path id="topArcRight" d="M 256,95 A 161,161 0 0,1 417,256" fill="none"/>
-    <!-- Bottom arc - between inner circle and outer edge -->
-    <path id="bottomArc" d="M 95,256 A 161,161 0 0,0 417,256" fill="none"/>
+    <!-- Top arcs - in the space between circles -->
+    <path id="topArcLeft" d="M 75,256 A 181,181 0 0,1 256,75" fill="none"/>
+    <path id="topArcRight" d="M 256,75 A 181,181 0 0,1 437,256" fill="none"/>
+    <!-- Bottom arc - in the space between circles -->
+    <path id="bottomArc" d="M 75,256 A 181,181 0 0,0 437,256" fill="none"/>
   </defs>
   
   <!-- "BOW" curved top left -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="4">
-    <textPath href="#topArcLeft" startOffset="15%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="54" font-weight="900" letter-spacing="3">
+    <textPath href="#topArcLeft" startOffset="18%">
       BOW
     </textPath>
   </text>
   
   <!-- "WOW" curved top right -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="4">
-    <textPath href="#topArcRight" startOffset="18%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="54" font-weight="900" letter-spacing="3">
+    <textPath href="#topArcRight" startOffset="20%">
       WOW
     </textPath>
   </text>
   
-  <!-- "MEOW" curved bottom - centered, spaced letters -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="8">
-    <textPath href="#bottomArc" startOffset="25%">
+  <!-- "MEOW" curved bottom -->
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="54" font-weight="900" letter-spacing="6">
+    <textPath href="#bottomArc" startOffset="26%">
       MEOW
     </textPath>
   </text>
   
-  <!-- Blue Dog face (Lucide icon - bigger) -->
-  <g transform="translate(86, 95) scale(14.2)" fill="none" stroke="#5cb8e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Blue Dog face - centered and sized to fit inside inner circle -->
+  <g transform="translate(136, 145) scale(10)" fill="none" stroke="#5cb8e6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
     <!-- Nose -->
     <path d="M11.25 16.25h1.5L12 17z"/>
     <!-- Left eye -->
