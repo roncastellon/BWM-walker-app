@@ -39,6 +39,8 @@ const PAYMENT_METHODS = [
   { value: 'venmo', label: 'Venmo', placeholder: '@username' },
   { value: 'zelle', label: 'Zelle', placeholder: 'Email or phone' },
   { value: 'cashapp', label: 'CashApp', placeholder: '$cashtag' },
+  { value: 'apple_pay', label: 'Apple Pay', placeholder: 'Phone number or email' },
+  { value: 'apple_cash', label: 'Apple Cash', placeholder: 'Phone number or email' },
   { value: 'paypal', label: 'PayPal', placeholder: 'Email' },
   { value: 'check_cash', label: 'Check/Cash', placeholder: 'No details needed' },
 ];
