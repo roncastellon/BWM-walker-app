@@ -32,6 +32,8 @@ const AdminBillingPage = () => {
     zelle: { enabled: true, email: '', phone: '', name: '' },
     venmo: { enabled: true, username: '' },
     cashapp: { enabled: true, cashtag: '' },
+    apple_pay: { enabled: true, phone: '', email: '' },
+    apple_cash: { enabled: true, phone: '', email: '' },
     instructions: 'Please include your invoice number in the payment memo.',
   });
   const [savingPaymentSettings, setSavingPaymentSettings] = useState(false);
