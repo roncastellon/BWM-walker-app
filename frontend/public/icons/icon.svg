@@ -13,8 +13,8 @@
     <!-- Top arcs moved inward (smaller radius) -->
     <path id="topArcLeft" d="M 85,256 A 171,171 0 0,1 256,85" fill="none"/>
     <path id="topArcRight" d="M 256,85 A 171,171 0 0,1 427,256" fill="none"/>
-    <!-- Bottom arc - at the very bottom, centered -->
-    <path id="bottomArc" d="M 40,280 A 220,220 0 0,0 472,280" fill="none"/>
+    <!-- Bottom arc - very bottom, tight curve centered -->
+    <path id="bottomArc" d="M 80,350 A 180,180 0 0,0 432,350" fill="none"/>
   </defs>
   
   <!-- "BOW" curved top left - moved in -->
