@@ -15,6 +15,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const AuthPage = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
   const [registerForm, setRegisterForm] = useState({
     username: '',
     email: '',
