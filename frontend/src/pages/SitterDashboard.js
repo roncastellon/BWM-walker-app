@@ -502,6 +502,39 @@ const SitterDashboard = () => {
               </CardContent>
             </Card>
 
+            {/* Payment Methods */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-orange-500" />
+                  Payment Methods
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Zelle', value: user?.zelle_email || user?.payment_methods?.zelle, icon: 'Z', bg: 'bg-purple-100', text: 'text-purple-600' },
+                    { label: 'Venmo', value: user?.venmo_username || user?.payment_methods?.venmo, prefix: '@', icon: 'V', bg: 'bg-sky-100', text: 'text-sky-600' },
+                    { label: 'Cash App', value: user?.cashapp_tag || user?.payment_methods?.cashapp, prefix: '$', icon: '$', bg: 'bg-green-100', text: 'text-green-600' },
+                    { label: 'Apple Pay', value: user?.apple_pay_id || user?.payment_methods?.apple_pay, icon: '🍎', bg: 'bg-gray-900', text: 'text-white' },
+                    { label: 'Apple Cash', value: user?.apple_cash_id || user?.payment_methods?.apple_cash, icon: '🍎', bg: 'bg-green-500', text: 'text-white' },
+                  ].map((method) => (
+                    <div key={method.label} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-full ${method.bg} flex items-center justify-center`}>
+                          <span className={`${method.text} font-bold text-xs`}>{method.icon}</span>
+                        </div>
+                        <p className="font-medium text-sm">{method.label}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {method.value ? `${method.prefix || ''}${method.value}` : 'Not set'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
