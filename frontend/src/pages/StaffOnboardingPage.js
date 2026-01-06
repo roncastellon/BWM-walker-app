@@ -12,6 +12,8 @@ const PAYMENT_METHODS = [
   { value: 'zelle', label: 'Zelle', placeholder: 'Email or phone number', icon: '💳' },
   { value: 'venmo', label: 'Venmo', placeholder: '@username', icon: '💙' },
   { value: 'cashapp', label: 'CashApp', placeholder: '$cashtag', icon: '💵' },
+  { value: 'apple_pay', label: 'Apple Pay', placeholder: 'Phone or email', icon: '🍎' },
+  { value: 'apple_cash', label: 'Apple Cash', placeholder: 'Phone or email', icon: '💚' },
 ];
 
 const StaffOnboardingPage = () => {
