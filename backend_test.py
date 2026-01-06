@@ -5,7 +5,7 @@ import io
 from datetime import datetime, timedelta
 
 class WagWalkAPITester:
-    def __init__(self, base_url="https://wagmate-app.preview.emergentagent.com"):
+    def __init__(self, base_url="https://petpal-system-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.tokens = {}  # Store tokens for different users
         self.users = {}   # Store user data
