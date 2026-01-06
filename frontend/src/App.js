@@ -386,6 +386,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <LocationPermissionPrompt />
+        <InstallAppBanner />
         <AppRoutes />
         <Toaster richColors position="top-right" />
       </AuthProvider>
