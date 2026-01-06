@@ -27,24 +27,26 @@
     <textPath href="#bottomArc" startOffset="20%">MEOW</textPath>
   </text>
   
-  <!-- Dog Face - OUTLINE ONLY with orange showing through -->
-  <g transform="translate(256, 250)" fill="none" stroke="#5cb8e6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Left floppy ear - looped/droopy style -->
-    <path d="M -55,-30 C -95,-60 -110,-20 -95,25 C -80,65 -55,55 -55,30"/>
-    <!-- Right floppy ear - looped/droopy style -->  
-    <path d="M 55,-30 C 95,-60 110,-20 95,25 C 80,65 55,55 55,30"/>
-    <!-- Main face outline - rounded -->
-    <ellipse cx="0" cy="10" rx="65" ry="55"/>
+  <!-- Dog Face - OUTLINE ONLY - centered -->
+  <g transform="translate(256, 245)" fill="none" stroke="#5cb8e6" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left ear - floppy loop going up then curving down -->
+    <path d="M -50,-20 C -70,-55 -100,-45 -100,-10 C -100,30 -75,50 -50,35"/>
+    
+    <!-- Right ear - floppy loop going up then curving down -->  
+    <path d="M 50,-20 C 70,-55 100,-45 100,-10 C 100,30 75,50 50,35"/>
+    
+    <!-- Main face outline - rounded head shape -->
+    <ellipse cx="0" cy="15" rx="60" ry="50"/>
   </g>
   
-  <!-- Orange spots/cheeks inside the face -->
-  <circle cx="210" cy="270" r="18" fill="#f97316"/>
-  <circle cx="302" cy="270" r="18" fill="#f97316"/>
+  <!-- Orange spots/cheeks -->
+  <circle cx="212" cy="268" r="16" fill="#f97316"/>
+  <circle cx="300" cy="268" r="16" fill="#f97316"/>
   
   <!-- Eyes - solid black dots -->
-  <circle cx="230" cy="245" r="8" fill="#000"/>
-  <circle cx="282" cy="245" r="8" fill="#000"/>
+  <circle cx="232" cy="250" r="7" fill="#000"/>
+  <circle cx="280" cy="250" r="7" fill="#000"/>
   
   <!-- Nose - solid black inverted triangle -->
-  <polygon points="256,258 244,280 268,280" fill="#000"/>
+  <polygon points="256,262 246,280 266,280" fill="#000"/>
 </svg>
