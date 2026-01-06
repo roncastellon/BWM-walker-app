@@ -2,44 +2,49 @@
   <!-- Orange background circle -->
   <circle cx="256" cy="256" r="256" fill="#f97316"/>
   
-  <!-- Blue outer ring border -->
+  <!-- Outer blue circle border -->
   <circle cx="256" cy="256" r="240" fill="none" stroke="#5cb8e6" stroke-width="16"/>
   
-  <!-- BOW - positioned top left, rotated to follow curve -->
-  <g transform="translate(115, 135) rotate(-50)">
-    <text fill="white" font-family="Arial, sans-serif" font-size="50" font-weight="bold" letter-spacing="3">BOW</text>
+  <!-- Curved text paths -->
+  <defs>
+    <path id="topArcLeft" d="M 75,220 A 190,190 0 0,1 220,65" fill="none"/>
+    <path id="topArcRight" d="M 292,65 A 190,190 0 0,1 437,220" fill="none"/>
+    <path id="bottomArc" d="M 90,360 A 175,175 0 0,0 422,360" fill="none"/>
+  </defs>
+  
+  <!-- "BOW" curved top left -->
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="2">
+    <textPath href="#topArcLeft" startOffset="5%">BOW</textPath>
+  </text>
+  
+  <!-- "WOW" curved top right -->
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="2">
+    <textPath href="#topArcRight" startOffset="5%">WOW</textPath>
+  </text>
+  
+  <!-- "MEOW" curved bottom -->
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="4">
+    <textPath href="#bottomArc" startOffset="20%">MEOW</textPath>
+  </text>
+  
+  <!-- Dog Face - OUTLINE ONLY with orange showing through -->
+  <g transform="translate(256, 250)" fill="none" stroke="#5cb8e6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left floppy ear - looped/droopy style -->
+    <path d="M -55,-30 C -95,-60 -110,-20 -95,25 C -80,65 -55,55 -55,30"/>
+    <!-- Right floppy ear - looped/droopy style -->  
+    <path d="M 55,-30 C 95,-60 110,-20 95,25 C 80,65 55,55 55,30"/>
+    <!-- Main face outline - rounded -->
+    <ellipse cx="0" cy="10" rx="65" ry="55"/>
   </g>
   
-  <!-- WOW - positioned top right, rotated to follow curve -->
-  <g transform="translate(345, 85) rotate(50)">
-    <text fill="white" font-family="Arial, sans-serif" font-size="50" font-weight="bold" letter-spacing="3">WOW</text>
-  </g>
+  <!-- Orange spots/cheeks inside the face -->
+  <circle cx="210" cy="270" r="18" fill="#f97316"/>
+  <circle cx="302" cy="270" r="18" fill="#f97316"/>
   
-  <!-- MEOW - positioned at bottom center -->
-  <g transform="translate(155, 445)">
-    <text fill="white" font-family="Arial, sans-serif" font-size="55" font-weight="bold" letter-spacing="8">MEOW</text>
-  </g>
+  <!-- Eyes - solid black dots -->
+  <circle cx="230" cy="245" r="8" fill="#000"/>
+  <circle cx="282" cy="245" r="8" fill="#000"/>
   
-  <!-- Dog Face - with long floppy ears like in the approved design -->
-  <g transform="translate(256, 240)">
-    <!-- Left floppy ear - long, hanging down past the face -->
-    <ellipse cx="-65" cy="25" rx="28" ry="70" fill="#5cb8e6" transform="rotate(-5, -65, 25)"/>
-    <!-- Right floppy ear - long, hanging down past the face -->
-    <ellipse cx="65" cy="25" rx="28" ry="70" fill="#5cb8e6" transform="rotate(5, 65, 25)"/>
-    
-    <!-- Main face circle -->
-    <circle cx="0" cy="0" r="70" fill="#5cb8e6"/>
-    
-    <!-- Orange spots/cheeks -->
-    <circle cx="-38" cy="18" r="18" fill="#f97316"/>
-    <circle cx="38" cy="18" r="18" fill="#f97316"/>
-    
-    <!-- Left eye -->
-    <circle cx="-22" cy="-8" r="7" fill="#000"/>
-    <!-- Right eye -->
-    <circle cx="22" cy="-8" r="7" fill="#000"/>
-    
-    <!-- Nose - black triangle pointing down -->
-    <polygon points="0,5 -10,22 10,22" fill="#000"/>
-  </g>
+  <!-- Nose - solid black inverted triangle -->
+  <polygon points="256,258 244,280 268,280" fill="#000"/>
 </svg>
