@@ -20,26 +20,26 @@
     <text fill="white" font-family="Arial, sans-serif" font-size="55" font-weight="bold" letter-spacing="8">MEOW</text>
   </g>
   
-  <!-- Dog Face - Centered cartoon style with blue fill and FLOPPY DOG EARS -->
-  <g transform="translate(256, 245)">
-    <!-- Left floppy ear - hanging down like a dog -->
-    <ellipse cx="-75" cy="10" rx="32" ry="60" fill="#5cb8e6" transform="rotate(-10, -75, 10)"/>
-    <!-- Right floppy ear - hanging down like a dog -->
-    <ellipse cx="75" cy="10" rx="32" ry="60" fill="#5cb8e6" transform="rotate(10, 75, 10)"/>
+  <!-- Dog Face - with long floppy ears like in the approved design -->
+  <g transform="translate(256, 240)">
+    <!-- Left floppy ear - long, hanging down past the face -->
+    <ellipse cx="-65" cy="25" rx="28" ry="70" fill="#5cb8e6" transform="rotate(-5, -65, 25)"/>
+    <!-- Right floppy ear - long, hanging down past the face -->
+    <ellipse cx="65" cy="25" rx="28" ry="70" fill="#5cb8e6" transform="rotate(5, 65, 25)"/>
     
     <!-- Main face circle -->
-    <circle cx="0" cy="0" r="78" fill="#5cb8e6"/>
+    <circle cx="0" cy="0" r="70" fill="#5cb8e6"/>
     
     <!-- Orange spots/cheeks -->
-    <circle cx="-42" cy="18" r="20" fill="#f97316"/>
-    <circle cx="42" cy="18" r="20" fill="#f97316"/>
+    <circle cx="-38" cy="18" r="18" fill="#f97316"/>
+    <circle cx="38" cy="18" r="18" fill="#f97316"/>
     
     <!-- Left eye -->
-    <circle cx="-26" cy="-10" r="8" fill="#000"/>
+    <circle cx="-22" cy="-8" r="7" fill="#000"/>
     <!-- Right eye -->
-    <circle cx="26" cy="-10" r="8" fill="#000"/>
+    <circle cx="22" cy="-8" r="7" fill="#000"/>
     
     <!-- Nose - black triangle pointing down -->
-    <polygon points="0,0 -12,20 12,20" fill="#000"/>
+    <polygon points="0,5 -10,22 10,22" fill="#000"/>
   </g>
 </svg>
