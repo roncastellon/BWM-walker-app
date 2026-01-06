@@ -5,8 +5,8 @@
   <!-- Blue inner circle with black outline -->
   <circle cx="256" cy="256" r="200" fill="#38bdf8" stroke="#000" stroke-width="8"/>
   
-  <!-- Lucide Dog icon - BIGGER, centered, with black stroke -->
-  <g transform="translate(96, 96) scale(13.33)" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Lucide Dog icon - BIGGER, centered, with orange stroke -->
+  <g transform="translate(96, 96) scale(13.33)" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <!-- Nose -->
     <path d="M11.25 16.25h1.5L12 17z"/>
     <!-- Right eye -->
