@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Toaster } from "./components/ui/sonner";
 import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
+import InstallAppBanner from "./components/InstallAppBanner";
 
 // Pages
 import AuthPage from "./pages/AuthPage";
