@@ -1938,7 +1938,7 @@ async def mark_invoice_paid(invoice_id: str, payment_method: str, current_user: 
 
 @api_router.get("/settings/payment-info")
 async def get_payment_info():
-    """Get business payment info for Zelle, Venmo, CashApp"""
+    """Get business payment info for Zelle, Venmo, CashApp, Apple Pay, Apple Cash"""
     settings = await db.settings.find_one({"type": "payment_info"}, {"_id": 0})
     if settings:
         return settings.get('data', {})
@@ -1947,6 +1947,8 @@ async def get_payment_info():
         "zelle": {"enabled": True, "email": "", "phone": "", "name": ""},
         "venmo": {"enabled": True, "username": ""},
         "cashapp": {"enabled": True, "cashtag": ""},
+        "apple_pay": {"enabled": True, "phone": "", "email": ""},
+        "apple_cash": {"enabled": True, "phone": "", "email": ""},
         "instructions": "Please include your invoice number in the payment memo."
     }
 
