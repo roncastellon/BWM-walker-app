@@ -31,9 +31,9 @@
     </textPath>
   </text>
   
-  <!-- "MEOW" curved bottom - centered at bottom -->
+  <!-- "MEOW" curved bottom - centered at very bottom -->
   <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
-    <textPath href="#bottomArc" startOffset="26%">
+    <textPath href="#bottomArc" startOffset="22%">
       MEOW
     </textPath>
   </text>
