@@ -1,15 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="100" fill="#f97316"/>
-  <g transform="translate(100, 80)">
+  <rect width="512" height="512" rx="100" fill="#22c55e"/>
+  <g transform="translate(100, 60)">
     <!-- Paw pad main -->
-    <ellipse cx="156" cy="220" rx="70" ry="80" fill="white"/>
+    <ellipse cx="156" cy="200" rx="65" ry="75" fill="white"/>
     <!-- Paw toes -->
-    <ellipse cx="80" cy="120" rx="35" ry="45" fill="white"/>
-    <ellipse cx="156" cy="90" rx="35" ry="45" fill="white"/>
-    <ellipse cx="232" cy="120" rx="35" ry="45" fill="white"/>
+    <ellipse cx="80" cy="105" rx="32" ry="42" fill="white"/>
+    <ellipse cx="156" cy="75" rx="32" ry="42" fill="white"/>
+    <ellipse cx="232" cy="105" rx="32" ry="42" fill="white"/>
     <!-- Small toe pads -->
-    <ellipse cx="60" cy="200" rx="25" ry="30" fill="white"/>
-    <ellipse cx="252" cy="200" rx="25" ry="30" fill="white"/>
+    <ellipse cx="62" cy="180" rx="22" ry="28" fill="white"/>
+    <ellipse cx="250" cy="180" rx="22" ry="28" fill="white"/>
   </g>
-  <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white">WagWalk</text>
+  <text x="256" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white">BowWow</text>
+  <text x="256" y="445" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white">Meow</text>
 </svg>
