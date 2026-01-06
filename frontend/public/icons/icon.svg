@@ -17,23 +17,23 @@
     <path id="bottomArc" d="M 95,256 A 161,161 0 0,0 417,256" fill="none"/>
   </defs>
   
-  <!-- "BOW" curved top left - moved in -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
-    <textPath href="#topArcLeft" startOffset="12%">
+  <!-- "BOW" curved top left -->
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="4">
+    <textPath href="#topArcLeft" startOffset="15%">
       BOW
     </textPath>
   </text>
   
-  <!-- "WOW" curved top right - moved in -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900">
-    <textPath href="#topArcRight" startOffset="12%">
+  <!-- "WOW" curved top right -->
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="4">
+    <textPath href="#topArcRight" startOffset="18%">
       WOW
     </textPath>
   </text>
   
   <!-- "MEOW" curved bottom - centered, spaced letters -->
-  <text fill="white" font-family="Arial Black, sans-serif" font-size="72" font-weight="900" letter-spacing="12">
-    <textPath href="#bottomArc" startOffset="24%">
+  <text fill="white" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="8">
+    <textPath href="#bottomArc" startOffset="25%">
       MEOW
     </textPath>
   </text>
