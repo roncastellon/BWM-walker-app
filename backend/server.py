@@ -4653,14 +4653,17 @@ class ClientOnboardingData(BaseModel):
     pets: List[Dict] = Field(default_factory=list)  # [{name, type, breed, age, weight, notes, special_instructions}]
     
     # Walk preferences
+    schedule_type: str = "recurring"  # "one_time" or "recurring"
     walks_per_day: int = 1
     preferred_walk_times: List[str] = Field(default_factory=list)  # ["09:00", "14:00", "18:00"]
+    walk_duration: int = 30  # 30, 45, or 60 minutes
     days_per_week: int = 5  # 1-7
     preferred_days: List[str] = Field(default_factory=list)  # ["Monday", "Tuesday", etc.]
+    preferred_walker_id: Optional[str] = None  # Optional walker preference
     
     # Billing preferences
     billing_frequency: str = "weekly"  # "weekly" or "monthly"
-    payment_method: str = "venmo"  # venmo, zelle, cashapp, paypal, check_cash
+    payment_method: str = "venmo"  # venmo, zelle, cashapp, apple_pay, apple_cash, paypal, check_cash
     payment_details: Optional[str] = None  # username/handle for digital payments
 
 @api_router.get("/client/onboarding-status")
