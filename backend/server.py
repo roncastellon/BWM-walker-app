@@ -1234,16 +1234,23 @@ async def get_services():
     if not services:
         # Initialize default services
         default_services = [
-            ServicePricing(service_type=ServiceType.WALK_30, name="30-Minute Walk", description="A quick 30-minute walk for your pet", price=25.00, duration_minutes=30),
-            ServicePricing(service_type=ServiceType.WALK_45, name="45-Minute Walk", description="A moderate 45-minute walk for your pet", price=32.00, duration_minutes=45),
-            ServicePricing(service_type=ServiceType.WALK_60, name="60-Minute Walk", description="A full hour walk with play time", price=40.00, duration_minutes=60),
-            ServicePricing(service_type=ServiceType.PETSIT_OUR_LOCATION, name="Pet Sitting - Our Location (Boarding)", description="Boarding at our facility. $50/night, 2nd dog half price, +$10 holiday surcharge.", price=50.00, duration_minutes=1440),
-            ServicePricing(service_type=ServiceType.TRANSPORT, name="Pet Transport", description="Safe transport to vet or groomer", price=35.00, duration_minutes=60),
-            ServicePricing(service_type=ServiceType.CONCIERGE, name="Concierge Service", description="Premium care including feeding, walks, and attention", price=50.00, duration_minutes=120),
+            ServicePricing(service_type=ServiceType.WALK_30, name="30-Minute Walk", description="A quick 30-minute walk for your pet", price=25.00, duration_minutes=30, duration_type="minutes"),
+            ServicePricing(service_type=ServiceType.WALK_45, name="45-Minute Walk", description="A moderate 45-minute walk for your pet", price=32.00, duration_minutes=45, duration_type="minutes"),
+            ServicePricing(service_type=ServiceType.WALK_60, name="60-Minute Walk", description="A full hour walk with play time", price=40.00, duration_minutes=60, duration_type="minutes"),
+            ServicePricing(service_type=ServiceType.PETSIT_OUR_LOCATION, name="Pet Sitting - Our Location (Boarding)", description="Boarding at our facility. $50/night, 2nd dog half price, +$10 holiday surcharge.", price=50.00, duration_type="nights"),
+            ServicePricing(service_type=ServiceType.TRANSPORT, name="Pet Transport", description="Safe transport to vet or groomer", price=35.00, duration_minutes=60, duration_type="minutes"),
+            ServicePricing(service_type=ServiceType.CONCIERGE, name="Concierge Service", description="Premium care including feeding, walks, and attention", price=50.00, duration_minutes=120, duration_type="minutes"),
         ]
         for service in default_services:
             await db.services.insert_one(service.model_dump())
         services = [s.model_dump() for s in default_services]
+    
+    # Ensure all services have correct duration_type
+    for service in services:
+        if not service.get("duration_type") or service.get("duration_type") == "minutes":
+            correct_type = get_service_duration_type(service.get("service_type", ""))
+            service["duration_type"] = correct_type
+    
     return services
 
 @api_router.post("/services", response_model=ServicePricing)
@@ -1257,6 +1264,9 @@ async def create_service(service: ServicePricing, current_user: dict = Depends(g
     if ' ' in service_dict['service_type'] or service_dict['service_type'][0].isupper():
         # Create a slug from the name: "Doggy Day Camp" -> "doggy_day_camp"
         service_dict['service_type'] = service_dict['name'].lower().replace(' ', '_').replace('-', '_')
+    
+    # Auto-detect duration type based on service type
+    service_dict['duration_type'] = get_service_duration_type(service_dict['service_type'])
     
     # Ensure we have a unique service_type
     existing = await db.services.find_one({"service_type": service_dict['service_type']}, {"_id": 0})
