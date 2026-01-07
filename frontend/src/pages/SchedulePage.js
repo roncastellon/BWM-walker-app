@@ -628,7 +628,7 @@ const SchedulePage = () => {
                       </div>
                     )}
                   </div>
-                )}
+
                 {isPetSittingService(formData.service_type) && priceEstimate && (
                   <div className="p-4 rounded-xl bg-secondary/10 space-y-3">
                     <div className="flex items-center justify-between">
