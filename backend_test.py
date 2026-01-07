@@ -2439,6 +2439,12 @@ def main():
         # NEW BOWWOWMEOW FEATURES TESTS
         tester.test_bowwowmeow_new_features()
         
+        # RECURRING SCHEDULE FUNCTIONALITY TESTS
+        print("\n" + "=" * 70)
+        print("🔄 TESTING RECURRING SCHEDULE FUNCTIONALITY")
+        print("=" * 70)
+        tester.test_recurring_schedule_functionality()
+        
         # DOG PARK SOCIAL FEED TESTS
         print("\n" + "=" * 70)
         print("🐕 TESTING DOG PARK SOCIAL FEED FUNCTIONALITY")
