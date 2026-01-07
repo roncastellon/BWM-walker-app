@@ -530,6 +530,11 @@ const SchedulePage = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      {!formData.is_recurring && formData.duration_value > 1 && (
+                        <p className="text-xs text-muted-foreground">
+                          This will book {formData.duration_value} consecutive {getDurationTypeForService(formData.service_type)} starting from {selectedDate ? format(selectedDate, 'MMM d') : 'selected date'}
+                        </p>
+                      )}
                     </div>
                   ) : isPetSittingService(formData.service_type) ? (
                     <div className="space-y-2">
