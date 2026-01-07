@@ -688,7 +688,7 @@ const ClientOnboardingPage = () => {
                   </Label>
                   <Select 
                     value={walkSchedule.preferred_walker_id} 
-                    onValueChange={(v) => setWalkSchedule({...walkSchedule, preferred_walker_id: v})}
+                    onValueChange={handleWalkerSelect}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="No preference - Admin will assign" />
@@ -703,7 +703,7 @@ const ClientOnboardingPage = () => {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    If you don't select a walker, the admin will assign one to your schedule.
+                    {checkingConflicts ? 'Checking availability...' : 'If you don\'t select a walker, the admin will assign one to your schedule.'}
                   </p>
                 </div>
               )}
