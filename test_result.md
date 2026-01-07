@@ -712,6 +712,18 @@ frontend:
         agent: "main"
         comment: "Added 'Auto-Generate Invoices' section with Generate Weekly/Monthly buttons. Pending Review section shows auto-generated invoices with Approve button. 'Send All Approved' button for mass sending."
 
+  - task: "Admin Client Schedule Tab - All Service Types Support"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdminClientsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed Admin Client Schedule Tab to support all service types (not just walks). Added: 1) Service Type dropdown at top with all services and proper /day or /night suffixes for pricing, 2) Conditional UI rendering - Walks show 'Walks Per Day' and 'Preferred Walk Times', Day Care shows 'Days Per Booking' (1-7 buttons with purple styling), Overnights show 'Nights Per Booking' (1-7, 14 buttons with indigo styling), 3) Added service_type and duration_value fields to walkingSchedule state, 4) Updated startEditClient and resetForm functions to include new fields. Screenshot verified all 3 service type variations display correctly."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
