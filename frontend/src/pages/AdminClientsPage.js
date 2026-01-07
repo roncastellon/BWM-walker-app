@@ -1203,7 +1203,7 @@ const AdminClientsPage = () => {
                   <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
                     <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" />
-                      Client's Requested Schedule
+                      Client&apos;s Requested Schedule
                     </h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
