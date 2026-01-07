@@ -323,24 +323,54 @@ const SchedulePage = () => {
                       <SelectValue placeholder="Select a service" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Regular Services */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Walks & Transport</div>
-                      {services.filter(s => !isPetSittingService(s.service_type)).map((service) => (
+                      {/* Walks */}
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Walks</div>
+                      {services.filter(s => s.service_type?.includes('walk')).map((service) => (
                         <SelectItem key={service.id} value={service.service_type}>
                           <div className="flex items-center gap-2">
                             {getServiceIcon(service.service_type)}
-                            <span>{service.name} - ${service.price.toFixed(2)}</span>
+                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
                           </div>
                         </SelectItem>
                       ))}
                       
-                      {/* Pet Sitting Services */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Pet Sitting</div>
-                      {services.filter(s => isPetSittingService(s.service_type)).map((service) => (
+                      {/* Day Care / Day Visits */}
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Day Care & Visits</div>
+                      {services.filter(s => 
+                        s.service_type?.includes('day') || 
+                        s.service_type?.includes('visit') ||
+                        s.service_type?.includes('concierge')
+                      ).map((service) => (
                         <SelectItem key={service.id} value={service.service_type}>
                           <div className="flex items-center gap-2">
                             {getServiceIcon(service.service_type)}
-                            <span>{service.name}</span>
+                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                      
+                      {/* Overnight / Extended Stays */}
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Overnight & Stays</div>
+                      {services.filter(s => 
+                        s.service_type?.includes('overnight') || 
+                        s.service_type?.includes('stay') ||
+                        s.service_type?.includes('petsit')
+                      ).map((service) => (
+                        <SelectItem key={service.id} value={service.service_type}>
+                          <div className="flex items-center gap-2">
+                            {getServiceIcon(service.service_type)}
+                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                      
+                      {/* Transport */}
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Transport</div>
+                      {services.filter(s => s.service_type?.includes('transport')).map((service) => (
+                        <SelectItem key={service.id} value={service.service_type}>
+                          <div className="flex items-center gap-2">
+                            {getServiceIcon(service.service_type)}
+                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
                           </div>
                         </SelectItem>
                       ))}
