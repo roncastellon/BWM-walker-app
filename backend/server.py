@@ -2047,10 +2047,19 @@ async def get_calendar_appointments(current_user: dict = Depends(get_current_use
         if appt.get('walker_id'):
             walker = await db.users.find_one({"id": appt['walker_id']}, {"_id": 0, "full_name": 1})
         
+        # Get pet names for this appointment
+        pet_names = []
+        if appt.get('pet_ids'):
+            for pet_id in appt['pet_ids']:
+                pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+                if pet:
+                    pet_names.append(pet['name'])
+        
         calendar_events.append({
             **appt,
             "client_name": client.get('full_name') if client else "Unknown",
-            "walker_name": walker.get('full_name') if walker else "Unassigned"
+            "walker_name": walker.get('full_name') if walker else "Unassigned",
+            "pet_names": pet_names
         })
     return calendar_events
 
