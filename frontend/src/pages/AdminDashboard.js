@@ -728,6 +728,84 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Walker Change Dialog */}
+        <Dialog open={walkerChangeDialog.open} onOpenChange={(open) => setWalkerChangeDialog({...walkerChangeDialog, open})}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Change Walker</DialogTitle>
+              <DialogDescription>
+                Change walker for {walkerChangeDialog.schedule?.client_name || 'this schedule'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="walker-select">Select Walker</Label>
+                <Select 
+                  value={walkerChangeDialog.selectedWalkerId} 
+                  onValueChange={(value) => setWalkerChangeDialog({...walkerChangeDialog, selectedWalkerId: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a walker" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {walkers.map((walker) => (
+                      <SelectItem key={walker.id} value={walker.id}>
+                        {walker.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label>Change Type</Label>
+                <div className="space-y-2 mt-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="one-time"
+                      name="changeType"
+                      value="one_time"
+                      checked={walkerChangeDialog.changeType === 'one_time'}
+                      onChange={(e) => setWalkerChangeDialog({...walkerChangeDialog, changeType: e.target.value})}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="one-time" className="text-sm font-normal">
+                      One-time change for {walkerChangeDialog.specificDate}
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="permanent"
+                      name="changeType"
+                      value="permanent"
+                      checked={walkerChangeDialog.changeType === 'permanent'}
+                      onChange={(e) => setWalkerChangeDialog({...walkerChangeDialog, changeType: e.target.value})}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="permanent" className="text-sm font-normal">
+                      Permanent change for all future walks
+                    </Label>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setWalkerChangeDialog({...walkerChangeDialog, open: false})}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleWalkerChange}>
+                  Change Walker
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
