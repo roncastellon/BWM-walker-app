@@ -1391,10 +1391,14 @@ async def create_appointment(appt_data: AppointmentCreate, current_user: dict = 
 @api_router.post("/recurring-schedules")
 async def create_recurring_schedule(schedule_data: RecurringScheduleCreate, current_user: dict = Depends(get_current_user)):
     """Create a new recurring schedule"""
+    # Get the data and remove client_id if present to avoid conflicts
+    data = schedule_data.model_dump()
+    data.pop('client_id', None)  # Remove client_id from data to avoid duplicate
+    
     schedule = RecurringSchedule(
-        client_id=current_user['id'] if current_user['role'] == 'client' else schedule_data.client_id if hasattr(schedule_data, 'client_id') else current_user['id'],
+        client_id=current_user['id'] if current_user['role'] == 'client' else schedule_data.client_id if hasattr(schedule_data, 'client_id') and schedule_data.client_id else current_user['id'],
         created_by=current_user['id'],
-        **schedule_data.model_dump()
+        **data
     )
     schedule_dict = schedule.model_dump()
     schedule_dict['created_at'] = schedule_dict['created_at'].isoformat()
