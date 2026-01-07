@@ -347,7 +347,7 @@ const CalendarPage = () => {
             {isAdmin && (
               <Button className="rounded-full" onClick={() => openAddDialog()} data-testid="add-appointment-btn">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Walk
+                Add Service
               </Button>
             )}
             <Select value={selectedWalker} onValueChange={setSelectedWalker}>
