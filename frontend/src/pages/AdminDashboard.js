@@ -406,6 +406,74 @@ const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Recurring Schedules Section */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Repeat className="w-5 h-5 text-orange-500" />
+                  Recurring Schedules
+                  <Badge variant="secondary" className="rounded-full ml-2">
+                    {recurringSchedules.filter(s => s.status === 'active').length}
+                  </Badge>
+                </CardTitle>
+                <CardDescription>Manage weekly recurring walks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {recurringSchedules.filter(s => s.status === 'active').length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No active recurring schedules</p>
+                ) : (
+                  <div className="space-y-3">
+                    {recurringSchedules.filter(s => s.status === 'active').slice(0, 5).map((schedule) => {
+                      const client = clients.find(c => c.id === schedule.client_id);
+                      const walker = walkers.find(w => w.id === schedule.walker_id);
+                      return (
+                        <div
+                          key={schedule.id}
+                          className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-orange-100">
+                              <Repeat className="w-4 h-4 text-orange-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">
+                                {client?.full_name || 'Unknown Client'}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {getDayName(schedule.day_of_week)} at {schedule.scheduled_time}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className={`rounded-full ${walker ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}
+                            >
+                              {walker?.full_name || 'Needs Walker'}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-full h-8 w-8 p-0"
+                              onClick={() => openWalkerChangeDialog(schedule)}
+                              title="Change Walker"
+                            >
+                              <UserCog className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {recurringSchedules.filter(s => s.status === 'active').length > 5 && (
+                      <p className="text-sm text-muted-foreground text-center">
+                        +{recurringSchedules.filter(s => s.status === 'active').length - 5} more schedules
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* CHAT TAB */}
