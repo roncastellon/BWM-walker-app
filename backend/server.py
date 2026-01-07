@@ -1096,6 +1096,9 @@ async def get_pet(pet_id: str):
     pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
     if not pet:
         raise HTTPException(status_code=404, detail="Pet not found")
+    # Handle empty string weight values
+    if pet.get('weight') == '' or pet.get('weight') == 'null':
+        pet['weight'] = None
     return pet
 
 @api_router.delete("/pets/{pet_id}")
