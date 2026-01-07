@@ -10,9 +10,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { 
   Calendar, CreditCard, PawPrint, Clock, ArrowRight, MessageCircle, 
   User, Plus, DollarSign, CalendarPlus, Users, Eye, Send,
-  TrendingUp, FileText, CheckCircle, Building2, UserPlus, Bell, X
+  TrendingUp, FileText, CheckCircle, Building2, UserPlus, Bell, X,
+  Repeat, UserCog, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Label } from '../components/ui/label';
 
 const AdminDashboard = () => {
   const { user, api } = useAuth();
