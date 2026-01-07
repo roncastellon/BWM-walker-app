@@ -516,6 +516,24 @@ WALKER_PAY_RATES = {
     **DEFAULT_SITTER_PAY_RATES,
 }
 
+def get_service_duration_type(service_type: str) -> str:
+    """
+    Determine the duration type for a service:
+    - 'days' for day care services
+    - 'nights' for overnight services
+    - 'minutes' for walks and other time-based services
+    """
+    day_services = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day']
+    night_services = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location']
+    
+    # Check if service type contains any day care keywords
+    if any(day in service_type.lower() for day in day_services):
+        return "days"
+    # Check if service type contains any overnight keywords
+    if any(night in service_type.lower() for night in night_services):
+        return "nights"
+    return "minutes"
+
 def calculate_walk_earnings(service_type: str, duration_minutes: int = None) -> float:
     """Calculate walker earnings for a walk"""
     if service_type in WALKER_PAY_RATES:
