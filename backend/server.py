@@ -360,12 +360,16 @@ class Appointment(BaseModel):
     pet_ids: List[str]
     service_type: ServiceType
     scheduled_date: str
-    scheduled_time: str
+    scheduled_time: str = ""  # Optional for day/night based services
     status: AppointmentStatus = AppointmentStatus.SCHEDULED
     notes: Optional[str] = None
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     actual_duration_minutes: Optional[int] = None
+    # Duration fields for day/night services
+    duration_value: int = 1  # Number of days/nights
+    duration_type: str = "minutes"  # "minutes", "days", or "nights"
+    end_date: Optional[str] = None  # For multi-day bookings
     # GPS Tracking fields
     gps_route: List[Dict] = Field(default_factory=list)  # List of {lat, lng, timestamp}
     distance_meters: Optional[float] = None
