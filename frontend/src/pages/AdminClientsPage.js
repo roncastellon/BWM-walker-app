@@ -1080,6 +1080,52 @@ const AdminClientsPage = () => {
                   </div>
                 )}
 
+                {/* Schedule Type Selection - One-Time or Recurring */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Schedule Type
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant={clientPricing.schedule_type === 'one_time' ? "default" : "outline"}
+                      className={`h-auto py-4 flex flex-col ${clientPricing.schedule_type === 'one_time' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                      onClick={() => setClientPricing({...clientPricing, schedule_type: 'one_time'})}
+                    >
+                      <CalendarDays className="w-5 h-5 mb-1" />
+                      <span className="text-lg font-bold">One-Time</span>
+                      <span className="text-xs opacity-80">Single appointment</span>
+                    </Button>
+                    <Button
+                      variant={clientPricing.schedule_type === 'recurring' ? "default" : "outline"}
+                      className={`h-auto py-4 flex flex-col ${clientPricing.schedule_type === 'recurring' ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                      onClick={() => setClientPricing({...clientPricing, schedule_type: 'recurring'})}
+                    >
+                      <Repeat className="w-5 h-5 mb-1" />
+                      <span className="text-lg font-bold">Recurring</span>
+                      <span className="text-xs opacity-80">Repeats weekly</span>
+                    </Button>
+                  </div>
+                  {clientPricing.schedule_type === 'recurring' && (
+                    <div className="p-3 rounded-lg bg-orange-50 border border-orange-200 text-sm text-orange-800">
+                      <p className="font-medium flex items-center gap-2">
+                        <Repeat className="w-4 h-4" />
+                        Weekly recurring schedule
+                      </p>
+                      <p className="text-xs mt-1">Walks will repeat every week on the selected days until paused or stopped.</p>
+                    </div>
+                  )}
+                  {clientPricing.schedule_type === 'one_time' && (
+                    <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 text-sm text-sky-800">
+                      <p className="font-medium flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4" />
+                        One-time appointment
+                      </p>
+                      <p className="text-xs mt-1">This will create a single appointment that does not repeat.</p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Pricing Type Selection */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold flex items-center gap-2">
