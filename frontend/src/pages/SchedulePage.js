@@ -202,21 +202,30 @@ const SchedulePage = () => {
   const getServiceIcon = (type) => {
     switch (type) {
       case 'walk_30':
+      case 'walk_45':
       case 'walk_60':
         return <PawPrint className="w-5 h-5" />;
       case 'petsit_your_location_3':
       case 'petsit_your_location_4':
+      case 'petsit_your_location':
         return <Home className="w-5 h-5" />;
       case 'petsit_our_location':
+      case 'stay_day':
+      case 'doggy_day_camp':
+      case 'doggy_day_care':
         return <Building2 className="w-5 h-5" />;
       case 'overnight':
+      case 'stay_overnight':
+      case 'stay_extended':
         return <Moon className="w-5 h-5" />;
       case 'transport':
         return <Car className="w-5 h-5" />;
       case 'concierge':
         return <Sparkles className="w-5 h-5" />;
-      default:
+      case 'day_visit':
         return <Clock className="w-5 h-5" />;
+      default:
+        return <PawPrint className="w-5 h-5" />;
     }
   };
 
