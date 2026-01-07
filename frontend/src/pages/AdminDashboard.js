@@ -374,7 +374,8 @@ const AdminDashboard = () => {
                     {todayAppts.slice(0, 5).map((appt) => (
                       <div
                         key={appt.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                        onClick={() => navigate(`/admin/calendar?highlight=${appt.id}`)}
                       >
                         <div className="flex items-center gap-3">
                           <div 
@@ -386,7 +387,7 @@ const AdminDashboard = () => {
                           <div>
                             <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
                             <p className="text-xs text-muted-foreground">
-                              {appt.scheduled_time} • {appt.client_name}
+                              {appt.scheduled_time} • {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name}
                             </p>
                           </div>
                         </div>
