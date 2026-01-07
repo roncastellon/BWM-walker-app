@@ -5071,7 +5071,10 @@ class ClientOnboardingData(BaseModel):
     # Pets info
     pets: List[Dict] = Field(default_factory=list)  # [{name, type, breed, age, weight, notes, special_instructions}]
     
-    # Walk preferences
+    # Service category - NEW
+    service_category: str = "walks"  # "walks" or "other"
+    
+    # Walk preferences (used when service_category == "walks")
     schedule_type: str = "recurring"  # "one_time" or "recurring"
     walks_per_day: int = 1
     preferred_walk_times: List[str] = Field(default_factory=list)  # ["09:00", "14:00", "18:00"]
@@ -5079,6 +5082,9 @@ class ClientOnboardingData(BaseModel):
     days_per_week: int = 5  # 1-7
     preferred_days: List[str] = Field(default_factory=list)  # ["Monday", "Tuesday", etc.]
     preferred_walker_id: Optional[str] = None  # Optional walker preference
+    
+    # Other service preferences (used when service_category == "other")
+    other_service: Optional[Dict] = None  # {service_type, schedule_type, duration_value, preferred_days}
     
     # Billing preferences
     billing_frequency: str = "weekly"  # "weekly" or "monthly"
