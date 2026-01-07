@@ -63,6 +63,7 @@ const AdminClientsPage = () => {
   // Pricing setup state
   const [clientPricing, setClientPricing] = useState({
     pricing_type: 'default', // 'default' or 'custom'
+    schedule_type: 'recurring', // 'one_time' or 'recurring' - default to recurring
     billing_plan_id: '',
     custom_prices: {},
     notes: ''
