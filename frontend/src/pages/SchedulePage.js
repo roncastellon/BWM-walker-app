@@ -107,11 +107,28 @@ const SchedulePage = () => {
       return;
     }
     try {
-      await api.post('/appointments', {
-        ...formData,
-        scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
-      });
-      toast.success('Appointment booked successfully!');
+      if (formData.is_recurring) {
+        // Create recurring schedule
+        const dayOfWeek = selectedDate.getDay();
+        // Convert Sunday (0) to 6, and shift others down by 1 for Monday=0 format
+        const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        await api.post('/recurring-schedules', {
+          pet_ids: formData.pet_ids,
+          service_type: formData.service_type,
+          scheduled_time: formData.scheduled_time,
+          day_of_week: adjustedDay,
+          walker_id: formData.walker_id || null,
+          notes: formData.notes || null,
+        });
+        toast.success('Recurring schedule created! Walks will repeat weekly.');
+      } else {
+        // Create one-time appointment
+        await api.post('/appointments', {
+          ...formData,
+          scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
+        });
+        toast.success('Appointment booked successfully!');
+      }
       setDialogOpen(false);
       setFormData({
         pet_ids: [],
@@ -120,13 +137,66 @@ const SchedulePage = () => {
         scheduled_time: '',
         walker_id: '',
         notes: '',
+        is_recurring: false,
+        day_of_week: null,
       });
       setEndDate(null);
       setPriceEstimate(null);
       fetchData();
     } catch (error) {
-      toast.error('Failed to book appointment');
+      toast.error(error.response?.data?.detail || 'Failed to book appointment');
     }
+  };
+
+  const handlePauseSchedule = async (scheduleId) => {
+    try {
+      await api.put(`/recurring-schedules/${scheduleId}/pause`);
+      toast.success('Schedule paused');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to pause schedule');
+    }
+  };
+
+  const handleResumeSchedule = async (scheduleId) => {
+    try {
+      await api.put(`/recurring-schedules/${scheduleId}/resume`);
+      toast.success('Schedule resumed');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to resume schedule');
+    }
+  };
+
+  const handleStopSchedule = async (scheduleId) => {
+    try {
+      await api.put(`/recurring-schedules/${scheduleId}/stop`);
+      toast.success('Schedule stopped');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to stop schedule');
+    }
+  };
+
+  const handleCancelAppointment = async (appointmentId, cancelType = 'one_time') => {
+    try {
+      await api.put(`/appointments/${appointmentId}/cancel?cancel_type=${cancelType}`);
+      if (cancelType === 'future') {
+        toast.success('Appointment cancelled and recurring schedule stopped');
+      } else {
+        toast.success('Appointment cancelled');
+      }
+      setEditModalOpen(false);
+      setSelectedAppointment(null);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to cancel appointment');
+    }
+  };
+
+  const getDayName = (dayNum) => {
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return days[dayNum] || 'Unknown';
   };
 
   const getServiceIcon = (type) => {
