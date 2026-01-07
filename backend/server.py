@@ -1084,6 +1084,11 @@ async def get_pets(owner_id: Optional[str] = None, current_user: dict = Depends(
         pets = await db.pets.find({"owner_id": owner_id}, {"_id": 0}).to_list(100)
     else:
         pets = await db.pets.find({}, {"_id": 0}).to_list(500)
+    
+    # Handle empty string weight values
+    for pet in pets:
+        if pet.get('weight') == '' or pet.get('weight') == 'null':
+            pet['weight'] = None
     return pets
 
 @api_router.get("/pets/{pet_id}", response_model=Pet)
