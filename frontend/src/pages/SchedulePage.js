@@ -36,11 +36,25 @@ const SchedulePage = () => {
     notes: '',
     is_recurring: false,
     day_of_week: null,
+    selected_days: [], // For multi-day scheduling (day care, overnight, etc.)
   });
   const [recurringSchedules, setRecurringSchedules] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [changeType, setChangeType] = useState('one_time'); // 'one_time' or 'future'
+
+  const ALL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  
+  // Check if service allows multi-day scheduling
+  const isMultiDayService = (serviceType) => {
+    if (!serviceType) return false;
+    return serviceType.includes('day') || 
+           serviceType.includes('overnight') || 
+           serviceType.includes('stay') || 
+           serviceType.includes('petsit') ||
+           serviceType.includes('camp') ||
+           serviceType.includes('care');
+  };
 
   useEffect(() => {
     fetchData();
