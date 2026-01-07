@@ -30,11 +30,21 @@ const CalendarPage = () => {
   const [services, setServices] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedWalker, setSelectedWalker] = useState('all');
+  const [selectedServiceCategory, setSelectedServiceCategory] = useState('all');
   const [viewMode, setViewMode] = useState('week');
   const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [appointmentDetail, setAppointmentDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  
+  // Service categories for filtering
+  const SERVICE_CATEGORIES = [
+    { value: 'all', label: 'All Services' },
+    { value: 'walks', label: 'Walks', match: ['walk_30', 'walk_45', 'walk_60'] },
+    { value: 'daycare', label: 'Day Care', match: ['doggy_day_care', 'doggy_day_camp', 'day_visit', 'concierge'] },
+    { value: 'overnight', label: 'Overnights', match: ['overnight', 'stay_overnight', 'petsit_our_location', 'petsit_your_location'] },
+    { value: 'transport', label: 'Transport', match: ['transport'] },
+  ];
   
   // Admin add/edit appointment state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
