@@ -191,14 +191,43 @@ const CalendarPage = () => {
 
   const handleCreateAppointment = async (e) => {
     e.preventDefault();
-    if (!formData.client_id || !formData.service_type || !formData.scheduled_date || !formData.scheduled_time) {
+    
+    const isDayNight = isDayNightService(formData.service_type);
+    
+    // For day/night services, time is optional
+    if (!formData.client_id || !formData.service_type || !formData.scheduled_date) {
       toast.error('Please fill in all required fields');
       return;
     }
     
+    // For time-based services, time is required
+    if (!isDayNight && !formData.scheduled_time) {
+      toast.error('Please select a time');
+      return;
+    }
+    
     try {
-      await api.post('/appointments/admin', formData);
-      toast.success('Appointment created successfully');
+      // For multi-day bookings, create separate appointments for each day
+      const daysToCreate = isDayNight && formData.duration_value > 1 ? formData.duration_value : 1;
+      
+      for (let i = 0; i < daysToCreate; i++) {
+        const appointmentDate = new Date(formData.scheduled_date);
+        appointmentDate.setDate(appointmentDate.getDate() + i);
+        const dateStr = appointmentDate.toISOString().split('T')[0];
+        
+        await api.post('/appointments/admin', {
+          ...formData,
+          scheduled_date: dateStr,
+          scheduled_time: isDayNight ? '' : formData.scheduled_time,
+          duration_value: 1,
+          duration_type: getDurationTypeForService(formData.service_type)
+        });
+      }
+      
+      const successMsg = daysToCreate > 1 
+        ? `${daysToCreate} ${getDurationTypeForService(formData.service_type) === 'days' ? 'day' : 'night'} appointments created successfully`
+        : 'Appointment created successfully';
+      toast.success(successMsg);
       setAddDialogOpen(false);
       fetchData();
     } catch (error) {
