@@ -397,11 +397,14 @@ class AppointmentCreate(BaseModel):
     pet_ids: List[str]
     service_type: ServiceType
     scheduled_date: str
-    scheduled_time: str
+    scheduled_time: str = ""  # Optional for day/night based services
     walker_id: Optional[str] = None
     notes: Optional[str] = None
     is_recurring: bool = False  # If true, creates a recurring schedule
     day_of_week: Optional[int] = None  # Required if is_recurring is true
+    duration_value: int = 1  # Number of days/nights for day/night services
+    duration_type: str = "minutes"  # "minutes", "days", or "nights"
+    end_date: Optional[str] = None  # For multi-day bookings
 
 class RecurringScheduleCreate(BaseModel):
     client_id: Optional[str] = None  # Admin can set this, clients auto-filled
