@@ -74,12 +74,34 @@ const ClientOnboardingPage = () => {
   
   // Step 3: Walk Schedule
   const [walkSchedule, setWalkSchedule] = useState({
+    schedule_type: 'recurring', // 'one_time' or 'recurring' - default to recurring
     walks_per_day: 1,
     preferred_walk_times: ['09:00'],
     walk_duration: 30, // 30, 45, or 60 minutes
     days_per_week: 5,
-    preferred_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    preferred_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    preferred_walker_id: '' // Optional walker preference
   });
+  
+  // Available walkers
+  const [walkers, setWalkers] = useState([]);
+  
+  // Time conflict state
+  const [timeConflicts, setTimeConflicts] = useState([]);
+  const [checkingConflicts, setCheckingConflicts] = useState(false);
+
+  // Fetch walkers on mount
+  useEffect(() => {
+    const fetchWalkers = async () => {
+      try {
+        const res = await api.get('/users/walkers');
+        setWalkers(res.data || []);
+      } catch (error) {
+        console.error('Failed to load walkers');
+      }
+    };
+    fetchWalkers();
+  }, [api]);
   
   // Step 4: Billing
   const [billing, setBilling] = useState({
