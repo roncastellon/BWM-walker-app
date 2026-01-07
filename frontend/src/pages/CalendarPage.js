@@ -86,6 +86,19 @@ const CalendarPage = () => {
     fetchData();
   }, []);
 
+  // Handle highlight parameter from URL (from dashboard clicks)
+  useEffect(() => {
+    const highlightId = searchParams.get('highlight');
+    if (highlightId && appointments.length > 0) {
+      const appt = appointments.find(a => a.id === highlightId);
+      if (appt) {
+        openAppointmentDetail(appt);
+        // Clear the highlight param from URL
+        setSearchParams({});
+      }
+    }
+  }, [searchParams, appointments]);
+
   const fetchData = async () => {
     try {
       const requests = [
