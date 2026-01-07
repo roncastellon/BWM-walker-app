@@ -50,7 +50,7 @@ const SchedulePage = () => {
   // Determine duration type based on service type
   const getDurationTypeForService = (serviceType) => {
     if (!serviceType) return 'minutes';
-    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day'];
+    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day', 'day_visit'];
     const nightServices = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location'];
     
     if (dayServices.some(s => serviceType.toLowerCase().includes(s))) return 'days';
