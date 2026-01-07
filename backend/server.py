@@ -339,11 +339,11 @@ class PetCreate(BaseModel):
 class ServicePricing(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    service_type: ServiceType
+    service_type: str  # Changed from ServiceType enum to string to allow custom services
     name: str
-    description: str
+    description: str = ""
     price: float
-    duration_minutes: int
+    duration_minutes: int = 30
     is_active: bool = True
 
 class GPSCoordinate(BaseModel):
