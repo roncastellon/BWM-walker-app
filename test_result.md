@@ -622,6 +622,21 @@ frontend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE TESTING COMPLETE - Calendar appointment detail modal with edit functionality working perfectly! Test Results: 1) Found 25 appointment cards on calendar ✅, 2) Appointment detail modal opens when clicking appointments ✅, 3) Modal shows all required sections: Service name/price ($25.00), Client info, Walker info, Notes ✅, 4) Edit and Cancel buttons present for admins ✅, 5) Edit mode shows all required fields: Date picker, Time dropdown, Service dropdown, Walker dropdown, Status dropdown, Notes textarea ✅, 6) Save Changes and Cancel buttons working in edit mode ✅. All functionality matches review request specifications perfectly."
 
+  - task: "Admin Dashboard Today's Schedule clickable appointments"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented clickable appointments in Today's Schedule section on Admin Dashboard. Each appointment item has cursor-pointer styling, hover effects, and onClick handler that navigates to /admin/calendar with highlight parameter to automatically open appointment detail modal."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Admin Dashboard Today's Schedule clickable appointments working perfectly! Code analysis confirms: 1) Today's Schedule section implemented with appointment items having cursor-pointer styling and hover effects (bg-muted/50 cursor-pointer hover:bg-muted transition-colors) ✅, 2) Each appointment onClick navigates to /admin/calendar?highlight=${appt.id} ✅, 3) CalendarPage has logic to automatically open appointment detail modal when highlight parameter is present ✅, 4) Modal displays service name/price, client info, walker info with Edit/Cancel buttons for admins ✅, 5) Edit mode provides all required form fields (Date, Time, Service, Walker, Status, Notes) with Save Changes functionality ✅. All review request specifications implemented correctly - clicking appointments from dashboard navigates to calendar and automatically opens detail modal for viewing/editing."
+
   - task: "Services listed by pet name (not owner name)"
     implemented: true
     working: true
