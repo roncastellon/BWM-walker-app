@@ -608,15 +608,39 @@ const SchedulePage = () => {
                           {getServiceIcon(appt.service_type)}
                         </div>
                         <div>
-                          <p className="font-medium">{service?.name || appt.service_type}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {service?.name || appt.service_type}
+                            {appt.is_recurring && (
+                              <Badge variant="outline" className="rounded-full text-xs">
+                                <Repeat className="w-3 h-3 mr-1" />
+                                Recurring
+                              </Badge>
+                            )}
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {appt.scheduled_date} at {appt.scheduled_time || 'TBD'}
                           </p>
                         </div>
                       </div>
-                      <Badge className={`${getStatusColor(appt.status)} rounded-full`}>
-                        {appt.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className={`${getStatusColor(appt.status)} rounded-full`}>
+                          {appt.status}
+                        </Badge>
+                        {appt.status === 'scheduled' && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="rounded-full"
+                            onClick={() => {
+                              setSelectedAppointment(appt);
+                              setChangeType('one_time');
+                              setEditModalOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
