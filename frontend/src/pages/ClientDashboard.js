@@ -138,8 +138,12 @@ const ClientDashboard = () => {
     }
   };
 
+  const today = new Date().toISOString().split('T')[0];
   const upcomingAppts = appointments
-    .filter(a => a.status === 'scheduled' || a.status === 'in_progress')
+    .filter(a => 
+      (a.status === 'scheduled' || a.status === 'in_progress') &&
+      a.scheduled_date >= today
+    )
     .sort((a, b) => {
       // Sort by date first, then by time
       const dateCompare = a.scheduled_date?.localeCompare(b.scheduled_date || '');
