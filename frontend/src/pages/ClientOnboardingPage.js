@@ -9,6 +9,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Checkbox } from '../components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { 
   User, PawPrint, Calendar, CreditCard, ArrowRight, ArrowLeft, 
   CheckCircle, Plus, Trash2, Dog, Cat, Clock, Repeat, CalendarDays, AlertTriangle
