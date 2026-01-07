@@ -319,6 +319,13 @@ class Pet(BaseModel):
     prescriptions: Optional[str] = None
     things_to_know: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    @classmethod
+    def from_db(cls, data: dict) -> "Pet":
+        """Create Pet from database data, handling empty string weight"""
+        if data.get('weight') == '':
+            data['weight'] = None
+        return cls(**data)
 
 class PetCreate(BaseModel):
     name: str
