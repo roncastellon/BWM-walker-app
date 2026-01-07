@@ -883,10 +883,16 @@ const AdminClientsPage = () => {
                           <Label>Preferred Walker (Optional)</Label>
                           <Select
                             value={walkingSchedule.preferred_walker_id || 'any'}
-                            onValueChange={(value) => setWalkingSchedule({ 
-                              ...walkingSchedule, 
-                              preferred_walker_id: value === 'any' ? '' : value 
-                            })}
+                            onValueChange={(value) => {
+                              const walkerId = value === 'any' ? '' : value;
+                              setWalkingSchedule({ 
+                                ...walkingSchedule, 
+                                preferred_walker_id: walkerId 
+                              });
+                              if (walkerId && selectedClient) {
+                                checkAdminWalkerConflicts(walkerId, selectedClient);
+                              }
+                            }}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Any available walker" />
@@ -900,6 +906,9 @@ const AdminClientsPage = () => {
                               ))}
                             </SelectContent>
                           </Select>
+                          {checkingWalkerConflicts && (
+                            <p className="text-xs text-muted-foreground">Checking availability...</p>
+                          )}
                         </div>
                         
                         <div className="space-y-2">
