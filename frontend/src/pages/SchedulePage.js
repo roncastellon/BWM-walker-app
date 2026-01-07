@@ -367,7 +367,13 @@ const SchedulePage = () => {
                   <Select
                     value={formData.service_type}
                     onValueChange={(value) => {
-                      setFormData({ ...formData, service_type: value });
+                      const durationType = getDurationTypeForService(value);
+                      setFormData({ 
+                        ...formData, 
+                        service_type: value,
+                        duration_type: durationType,
+                        duration_value: 1, // Reset to 1 when changing service
+                      });
                       if (!isPetSittingService(value)) {
                         setEndDate(null);
                         setPriceEstimate(null);
@@ -390,7 +396,7 @@ const SchedulePage = () => {
                       ))}
                       
                       {/* Day Care / Day Visits */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Day Care & Visits</div>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Day Care (# of Days)</div>
                       {services.filter(s => 
                         s.service_type?.includes('day') || 
                         s.service_type?.includes('visit') ||
@@ -399,13 +405,13 @@ const SchedulePage = () => {
                         <SelectItem key={service.id} value={service.service_type}>
                           <div className="flex items-center gap-2">
                             {getServiceIcon(service.service_type)}
-                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
+                            <span>{service.name} - ${service.price?.toFixed(2)}{getDurationTypeForService(service.service_type) === 'days' ? '/day' : ''}</span>
                           </div>
                         </SelectItem>
                       ))}
                       
                       {/* Overnight / Extended Stays */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Overnight & Stays</div>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Overnight & Stays (# of Nights)</div>
                       {services.filter(s => 
                         s.service_type?.includes('overnight') || 
                         s.service_type?.includes('stay') ||
@@ -414,7 +420,7 @@ const SchedulePage = () => {
                         <SelectItem key={service.id} value={service.service_type}>
                           <div className="flex items-center gap-2">
                             {getServiceIcon(service.service_type)}
-                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
+                            <span>{service.name} - ${service.price?.toFixed(2)}{getDurationTypeForService(service.service_type) === 'nights' ? '/night' : ''}</span>
                           </div>
                         </SelectItem>
                       ))}
