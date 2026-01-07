@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -24,6 +25,7 @@ import { toast } from 'sonner';
 
 const CalendarPage = () => {
   const { api, isAdmin } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [appointments, setAppointments] = useState([]);
   const [walkers, setWalkers] = useState([]);
   const [clients, setClients] = useState([]);
