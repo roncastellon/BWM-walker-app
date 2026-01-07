@@ -296,8 +296,20 @@ const ClientOnboardingPage = () => {
       }
     }
     if (step === 3) {
-      if (walkSchedule.preferred_days.length === 0) {
+      if (!serviceCategory) {
+        toast.error('Please choose a service type (Walks or Other Services)');
+        return false;
+      }
+      if (serviceCategory === 'walks' && walkSchedule.preferred_days.length === 0) {
         toast.error('Please select at least one day');
+        return false;
+      }
+      if (serviceCategory === 'other' && !selectedOtherService) {
+        toast.error('Please select a service');
+        return false;
+      }
+      if (serviceCategory === 'other' && otherServiceSchedule.schedule_type === 'recurring' && otherServiceSchedule.preferred_days.length === 0) {
+        toast.error('Please select at least one day for recurring schedule');
         return false;
       }
     }
