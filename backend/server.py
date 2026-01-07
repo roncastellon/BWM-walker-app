@@ -1320,22 +1320,35 @@ async def check_walker_availability(walker_id: str, scheduled_date: str, schedul
     """
     Check if walker is available at the given time.
     
-    Rules:
+    Rules for WALKS only:
     - Walker can't have overlapping walks
     - 15-minute buffer required AFTER a walk ends before the next can start
     
+    For OTHER services (overnight, day visits, transport, etc.):
+    - Times CAN overlap - these services don't require the same time exclusivity
+    
     Example: If walker has a 30-min walk at 10:00 (ends 10:30),
     next walk can start at 10:45 (10:30 + 15 min buffer)
+    But an overnight or day visit can be scheduled at any time.
     """
+    # Non-walk services can overlap - no conflict checking needed
+    non_conflicting_services = ['overnight', 'stay_overnight', 'stay_extended', 'stay_day', 
+                                 'day_visit', 'petsit_our_location', 'petsit_your_location',
+                                 'doggy_day_camp', 'doggy_day_care', 'transport', 'concierge']
+    
+    if service_type in non_conflicting_services:
+        return {"available": True, "message": "Service type allows overlapping schedules"}
+    
     new_walk_start = time_to_minutes(scheduled_time)
     new_walk_duration = get_walk_duration(service_type)
     new_walk_end = new_walk_start + new_walk_duration
     
-    # Get all walker's appointments for that day
+    # Get all walker's WALK appointments for that day (only walks conflict with walks)
     query = {
         "walker_id": walker_id,
         "scheduled_date": scheduled_date,
-        "status": {"$nin": ["cancelled", "completed"]}
+        "status": {"$nin": ["cancelled", "completed"]},
+        "service_type": {"$regex": "^walk_"}  # Only check against walk services
     }
     
     if exclude_appt_id:
