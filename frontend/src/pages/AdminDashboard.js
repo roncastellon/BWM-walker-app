@@ -79,6 +79,57 @@ const AdminDashboard = () => {
     navigate(`/admin/clients?highlight=${clientId}`);
   };
 
+  // Open walker change dialog
+  const openWalkerChangeDialog = (schedule) => {
+    // Calculate next date for this schedule
+    const dayNum = schedule.day_of_week;
+    const today = new Date();
+    const todayWeekday = today.getDay() === 0 ? 6 : today.getDay() - 1; // Convert to Mon=0 format
+    let daysAhead = dayNum - todayWeekday;
+    if (daysAhead <= 0) daysAhead += 7;
+    const nextDate = new Date(today);
+    nextDate.setDate(today.getDate() + daysAhead);
+    
+    setWalkerChangeDialog({
+      open: true,
+      schedule,
+      selectedWalkerId: schedule.walker_id || '',
+      changeType: 'one_time', // Default to one-time
+      specificDate: nextDate.toISOString().split('T')[0]
+    });
+  };
+
+  // Handle walker change submission
+  const handleWalkerChange = async () => {
+    if (!walkerChangeDialog.selectedWalkerId) {
+      toast.error('Please select a walker');
+      return;
+    }
+
+    try {
+      const res = await api.put(
+        `/recurring-schedules/${walkerChangeDialog.schedule.id}/change-walker?walker_id=${walkerChangeDialog.selectedWalkerId}&change_type=${walkerChangeDialog.changeType}&specific_date=${walkerChangeDialog.specificDate}`
+      );
+      
+      if (walkerChangeDialog.changeType === 'one_time') {
+        toast.success(`Walker changed for ${walkerChangeDialog.specificDate} only. Original walker will resume next week.`);
+      } else {
+        toast.success('Walker permanently changed for all future walks.');
+      }
+      
+      setWalkerChangeDialog({ ...walkerChangeDialog, open: false });
+      fetchRecurringSchedules();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to change walker');
+    }
+  };
+
+  const getDayName = (dayNum) => {
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return days[dayNum] || 'Unknown';
+  };
+
   const fetchData = async () => {
     try {
       const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes, paysheetsRes] = await Promise.all([
