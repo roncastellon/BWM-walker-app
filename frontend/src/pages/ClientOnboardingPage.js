@@ -687,14 +687,14 @@ const ClientOnboardingPage = () => {
                     Preferred Walker (Optional)
                   </Label>
                   <Select 
-                    value={walkSchedule.preferred_walker_id} 
-                    onValueChange={handleWalkerSelect}
+                    value={walkSchedule.preferred_walker_id || 'none'} 
+                    onValueChange={(value) => handleWalkerSelect(value === 'none' ? '' : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="No preference - Admin will assign" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No preference</SelectItem>
+                      <SelectItem value="none">No preference</SelectItem>
                       {walkers.map((walker) => (
                         <SelectItem key={walker.id} value={walker.id}>
                           {walker.full_name || walker.username}
