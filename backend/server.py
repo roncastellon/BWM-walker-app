@@ -5123,6 +5123,7 @@ async def complete_client_onboarding(
         "onboarding_completed": True,
         "onboarding_completed_at": datetime.now(timezone.utc).isoformat(),
         "onboarding_data": {
+            "service_category": data.service_category,
             "schedule_type": data.schedule_type,
             "walks_per_day": data.walks_per_day,
             "preferred_walk_times": data.preferred_walk_times,
@@ -5130,6 +5131,7 @@ async def complete_client_onboarding(
             "days_per_week": data.days_per_week,
             "preferred_days": data.preferred_days,
             "preferred_walker_id": data.preferred_walker_id,
+            "other_service": data.other_service,
             "billing_frequency": data.billing_frequency,
             "payment_method": data.payment_method,
             "payment_details": data.payment_details
@@ -5142,14 +5144,19 @@ async def complete_client_onboarding(
     created_pets = []
     pet_ids = []
     for pet_data in data.pets:
+        # Ensure age is stored as string
+        age_value = pet_data.get("age")
+        if age_value is not None and not isinstance(age_value, str):
+            age_value = str(age_value)
+        
         pet = {
             "id": str(uuid.uuid4()),
             "owner_id": current_user["id"],
             "name": pet_data.get("name", ""),
-            "type": pet_data.get("type", "dog"),
+            "species": pet_data.get("type", "dog"),
             "breed": pet_data.get("breed", ""),
-            "age": pet_data.get("age"),
-            "weight": pet_data.get("weight"),
+            "age": age_value,
+            "weight": pet_data.get("weight") if pet_data.get("weight") != "" else None,
             "notes": pet_data.get("notes", ""),
             "special_instructions": pet_data.get("special_instructions", ""),
             "created_at": datetime.now(timezone.utc).isoformat()
@@ -5159,62 +5166,128 @@ async def complete_client_onboarding(
         created_pets.append(pet)
         pet_ids.append(pet["id"])
     
-    # Determine service type based on walk duration
-    service_type_map = {30: "walk_30", 45: "walk_45", 60: "walk_60"}
-    service_type = service_type_map.get(data.walk_duration, "walk_30")
-    
     # Day name to number mapping (Monday=0 through Sunday=6)
     day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
     
-    # Create schedules based on schedule_type
+    # Create schedules based on service_category
     schedules_created = []
     
-    if data.schedule_type == "recurring":
-        # Create recurring schedules for each day/time combination
-        for day in data.preferred_days:
-            day_num = day_to_num.get(day, 0)
-            for walk_time in data.preferred_walk_times:
+    if data.service_category == "walks":
+        # Handle walks scheduling
+        service_type_map = {30: "walk_30", 45: "walk_45", 60: "walk_60"}
+        service_type = service_type_map.get(data.walk_duration, "walk_30")
+        
+        if data.schedule_type == "recurring":
+            # Create recurring schedules for each day/time combination
+            for day in data.preferred_days:
+                day_num = day_to_num.get(day, 0)
+                for walk_time in data.preferred_walk_times:
+                    recurring_schedule = {
+                        "id": str(uuid.uuid4()),
+                        "client_id": current_user["id"],
+                        "walker_id": data.preferred_walker_id if data.preferred_walker_id else None,
+                        "pet_ids": pet_ids,
+                        "service_type": service_type,
+                        "scheduled_time": walk_time,
+                        "day_of_week": day_num,
+                        "notes": f"Created during onboarding",
+                        "status": "active" if data.preferred_walker_id else "pending_assignment",
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "created_by": current_user["id"]
+                    }
+                    await db.recurring_schedules.insert_one(recurring_schedule)
+                    recurring_schedule.pop("_id", None)
+                    schedules_created.append(recurring_schedule)
+        else:
+            # Create one-time appointments for the next occurrence of each day/time
+            from datetime import timedelta
+            today = datetime.now(timezone.utc).date()
+            today_weekday = today.weekday()
+            
+            for day in data.preferred_days:
+                day_num = day_to_num.get(day, 0)
+                days_ahead = day_num - today_weekday
+                if days_ahead <= 0:
+                    days_ahead += 7
+                next_date = today + timedelta(days=days_ahead)
+                
+                for walk_time in data.preferred_walk_times:
+                    appointment = {
+                        "id": str(uuid.uuid4()),
+                        "client_id": current_user["id"],
+                        "walker_id": data.preferred_walker_id if data.preferred_walker_id else None,
+                        "pet_ids": pet_ids,
+                        "service_type": service_type,
+                        "scheduled_date": next_date.isoformat(),
+                        "scheduled_time": walk_time,
+                        "status": "scheduled",
+                        "notes": f"Created during onboarding",
+                        "is_recurring": False,
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.appointments.insert_one(appointment)
+                    appointment.pop("_id", None)
+                    schedules_created.append(appointment)
+    
+    elif data.service_category == "other" and data.other_service:
+        # Handle other services (Day Care, Overnights, etc.)
+        other = data.other_service
+        service_type = other.get("service_type", "")
+        schedule_type = other.get("schedule_type", "one_time")
+        duration_value = other.get("duration_value", 1)
+        preferred_days = other.get("preferred_days", [])
+        
+        if schedule_type == "recurring":
+            # Create recurring schedules for other services
+            for day in preferred_days:
+                day_num = day_to_num.get(day, 0)
                 recurring_schedule = {
                     "id": str(uuid.uuid4()),
                     "client_id": current_user["id"],
-                    "walker_id": data.preferred_walker_id if data.preferred_walker_id else None,
+                    "walker_id": None,  # Admin will assign
                     "pet_ids": pet_ids,
                     "service_type": service_type,
-                    "scheduled_time": walk_time,
+                    "scheduled_time": "",
                     "day_of_week": day_num,
-                    "notes": f"Created during onboarding",
-                    "status": "active" if data.preferred_walker_id else "pending_assignment",
+                    "duration_value": duration_value,
+                    "notes": f"Created during onboarding - {service_type}",
+                    "status": "pending_assignment",
                     "created_at": datetime.now(timezone.utc).isoformat(),
                     "created_by": current_user["id"]
                 }
                 await db.recurring_schedules.insert_one(recurring_schedule)
                 recurring_schedule.pop("_id", None)
                 schedules_created.append(recurring_schedule)
-    else:
-        # Create one-time appointments for the next occurrence of each day/time
-        from datetime import timedelta
-        today = datetime.now(timezone.utc).date()
-        today_weekday = today.weekday()  # Monday=0, Sunday=6
-        
-        for day in data.preferred_days:
-            day_num = day_to_num.get(day, 0)
-            # Calculate the next occurrence of this day
-            days_ahead = day_num - today_weekday
-            if days_ahead <= 0:  # Target day already happened this week
-                days_ahead += 7
-            next_date = today + timedelta(days=days_ahead)
+        else:
+            # Create one-time appointment(s) for other services
+            from datetime import timedelta
+            today = datetime.now(timezone.utc).date()
             
-            for walk_time in data.preferred_walk_times:
+            # Create appointments for the duration_value days starting from next preferred day
+            if preferred_days:
+                day_num = day_to_num.get(preferred_days[0], 0)
+                today_weekday = today.weekday()
+                days_ahead = day_num - today_weekday
+                if days_ahead <= 0:
+                    days_ahead += 7
+                start_date = today + timedelta(days=days_ahead)
+            else:
+                start_date = today + timedelta(days=1)
+            
+            for i in range(duration_value):
+                appt_date = start_date + timedelta(days=i)
                 appointment = {
                     "id": str(uuid.uuid4()),
                     "client_id": current_user["id"],
-                    "walker_id": data.preferred_walker_id if data.preferred_walker_id else None,
+                    "walker_id": None,
                     "pet_ids": pet_ids,
                     "service_type": service_type,
-                    "scheduled_date": next_date.isoformat(),
-                    "scheduled_time": walk_time,
+                    "scheduled_date": appt_date.isoformat(),
+                    "scheduled_time": "",
                     "status": "scheduled",
-                    "notes": f"Created during onboarding",
+                    "notes": f"Created during onboarding - {service_type}",
+                    "duration_value": 1,
+                    "duration_type": "days" if "day" in service_type else "nights",
                     "is_recurring": False,
                     "created_at": datetime.now(timezone.utc).isoformat()
                 }
@@ -5222,12 +5295,13 @@ async def complete_client_onboarding(
                 appointment.pop("_id", None)
                 schedules_created.append(appointment)
     
-    # Create notification for admin(s) - new client needs pricing/walker assignment
+    # Create notification for admin(s)
     admins = await db.users.find({"role": "admin", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
     needs_walker = not data.preferred_walker_id
-    notification_msg = f"New client {data.full_name} has completed onboarding"
+    service_desc = "walks" if data.service_category == "walks" else data.other_service.get("service_type", "service") if data.other_service else "service"
+    notification_msg = f"New client {data.full_name} has completed onboarding for {service_desc}"
     if needs_walker:
-        notification_msg += " and needs a walker assigned to their schedule."
+        notification_msg += " and needs a walker/sitter assigned."
     else:
         notification_msg += ". Schedule is ready for service."
     
@@ -5250,7 +5324,8 @@ async def complete_client_onboarding(
         "pets_created": len(created_pets),
         "pets": created_pets,
         "schedules_created": len(schedules_created),
-        "schedule_type": data.schedule_type,
+        "service_category": data.service_category,
+        "schedule_type": data.schedule_type if data.service_category == "walks" else (data.other_service.get("schedule_type") if data.other_service else "one_time"),
         "needs_walker_assignment": needs_walker
     }
 
