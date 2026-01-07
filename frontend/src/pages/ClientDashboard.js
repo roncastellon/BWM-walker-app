@@ -138,9 +138,14 @@ const ClientDashboard = () => {
     }
   };
 
-  const upcomingAppts = appointments.filter(a => 
-    a.status === 'scheduled' || a.status === 'in_progress'
-  );
+  const upcomingAppts = appointments
+    .filter(a => a.status === 'scheduled' || a.status === 'in_progress')
+    .sort((a, b) => {
+      // Sort by date first, then by time
+      const dateCompare = a.scheduled_date?.localeCompare(b.scheduled_date || '');
+      if (dateCompare !== 0) return dateCompare;
+      return (a.scheduled_time || '').localeCompare(b.scheduled_time || '');
+    });
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
   const walkerContacts = contacts.filter(c => c.role === 'walker');
   const adminContacts = contacts.filter(c => c.role === 'admin');
