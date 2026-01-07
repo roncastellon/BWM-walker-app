@@ -721,7 +721,19 @@ const CalendarPage = () => {
 
               <div className="space-y-2">
                 <Label>Service *</Label>
-                <Select value={formData.service_type} onValueChange={(value) => setFormData({ ...formData, service_type: value })}>
+                <Select 
+                  value={formData.service_type} 
+                  onValueChange={(value) => {
+                    const durationType = getDurationTypeForService(value);
+                    setFormData({ 
+                      ...formData, 
+                      service_type: value,
+                      duration_type: durationType,
+                      duration_value: 1,
+                      scheduled_time: isDayNightService(value) ? '' : formData.scheduled_time
+                    });
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a service" />
                   </SelectTrigger>
@@ -729,6 +741,8 @@ const CalendarPage = () => {
                     {services.map((service) => (
                       <SelectItem key={service.id} value={service.service_type}>
                         {service.name} - ${service.price.toFixed(2)}
+                        {getDurationTypeForService(service.service_type) === 'days' ? '/day' : ''}
+                        {getDurationTypeForService(service.service_type) === 'nights' ? '/night' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -744,19 +758,46 @@ const CalendarPage = () => {
                     onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Time *</Label>
-                  <Select value={formData.scheduled_time} onValueChange={(value) => setFormData({ ...formData, scheduled_time: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>{time}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {isDayNightService(formData.service_type) ? (
+                  <div className="space-y-2">
+                    <Label>
+                      {getDurationTypeForService(formData.service_type) === 'days' 
+                        ? 'Number of Days *' 
+                        : 'Number of Nights *'}
+                    </Label>
+                    <Select 
+                      value={formData.duration_value?.toString() || '1'} 
+                      onValueChange={(value) => setFormData({ ...formData, duration_value: parseInt(value) })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 14, 21, 30].map((num) => (
+                          <SelectItem key={num} value={num.toString()}>
+                            {num} {getDurationTypeForService(formData.service_type) === 'days' 
+                              ? (num === 1 ? 'Day' : 'Days') 
+                              : (num === 1 ? 'Night' : 'Nights')}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>Time *</Label>
+                    <Select value={formData.scheduled_time} onValueChange={(value) => setFormData({ ...formData, scheduled_time: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>{time}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
