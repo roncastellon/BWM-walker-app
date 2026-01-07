@@ -884,3 +884,38 @@ agent_communication:
     message: "✅ BOWWOWMEOW NEW FEATURES TESTING COMPLETE - Both requested features PASSED (100% success rate)! Comprehensive testing completed: 1) ✅ Accounts Receivable Aging Report - Backend endpoint GET /api/reports/receivable-aging working perfectly with admin authentication, proper 4-bucket structure (Current 0-30, 30 Days 31-60, 60 Days 61-90, 90+ Days), complete response with grand_total, total_invoices, and detailed invoice breakdowns per bucket. Non-admin access properly blocked with 403. Test data shows $255 total across 9 invoices all in Current bucket. 2) ✅ Freeze/Unfreeze User Functionality - Both /users/walkers and /users/clients endpoints working correctly with include_frozen parameter. Without parameter returns only active users, with include_frozen=true returns all users including frozen ones. Freeze/unfreeze operations working perfectly - frozen users properly removed from active lists and restored when unfrozen. Found 2 frozen walkers and 2 frozen clients in test data. All functionality working as expected for both features."
 
 
+
+## Latest Changes (Jan 7, 2026)
+
+### Apple Pay & Apple Cash Payment Options
+- Added to ClientOnboardingPage.js
+- Added to StaffOnboardingPage.js  
+- Added to WalkerDashboard.js
+- Added to SitterDashboard.js
+- Added to AdminInvoicesPage.js (payment settings + payroll)
+- Added to BillingPage.js (client payment options)
+- Backend server.py updated with apple_pay and apple_cash fields
+
+### Recurring Scheduling Feature
+- Backend: Added RecurringSchedule model and endpoints
+  - POST /recurring-schedules - create recurring schedule
+  - GET /recurring-schedules - list schedules
+  - PUT /recurring-schedules/{id}/pause - pause schedule
+  - PUT /recurring-schedules/{id}/resume - resume schedule
+  - PUT /recurring-schedules/{id}/stop - stop schedule
+  - DELETE /recurring-schedules/{id} - delete (admin only)
+  - PUT /recurring-schedules/{id} - update with one_time or future change type
+  - PUT /appointments/{id}/cancel - cancel with one_time or future option
+- Frontend SchedulePage.js updated with:
+  - One-Time vs Recurring toggle when booking
+  - Recurring schedules section showing active/paused/stopped schedules
+  - Pause/Resume/Stop controls for recurring schedules
+  - Edit modal for appointments with cancel options
+
+### Test Credentials
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | demo_admin | demo123 |
+| Client | new_onboard_client | demo123 |
+| Walker | walker_test | demo123 |
+
