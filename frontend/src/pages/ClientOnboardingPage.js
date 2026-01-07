@@ -892,6 +892,8 @@ const ClientOnboardingPage = () => {
                   </p>
                 </div>
               )}
+                </>
+              )}
             </CardContent>
           </Card>
         )}
