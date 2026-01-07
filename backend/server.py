@@ -69,6 +69,10 @@ class ServiceType(str, Enum):
     WALK_30 = "walk_30"
     WALK_45 = "walk_45"
     WALK_60 = "walk_60"
+    # Day Care Services
+    DOGGY_DAY_CARE = "doggy_day_care"                    # Day care by number of days
+    DOGGY_DAY_CAMP = "doggy_day_camp"                    # Day camp by number of days
+    DAY_VISIT = "day_visit"                              # Day visit
     # Staying/Sitting Services (minimum 1 day)
     STAY_DAY = "stay_day"                                # Day stay (drop-off)
     STAY_OVERNIGHT = "stay_overnight"                    # Overnight stay
