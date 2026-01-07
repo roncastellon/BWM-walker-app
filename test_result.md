@@ -734,6 +734,8 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Implemented all requested features: 1) Chat enhancement with My Clients/Team/All dropdown and All broadcast button, 2) Calendar click-to-detail modal, 3) Invoice detail modal with company branding, 4) Company Info settings tab, 5) SendGrid email and Twilio SMS integration for invoices (ready but requires API keys). Please test all flows. Credentials: demo_admin/demo123, demo_walker/demo123, demo_client/demo123"
+  - agent: "main"
+    message: "NEW FEATURE IMPLEMENTED: Day/Night Duration for Scheduling. Backend: Added duration_type field to services and appointments ('minutes', 'days', 'nights'). Services like Doggy Day Care now return duration_type='days', and Overnight services return duration_type='nights'. Frontend: When selecting day care services, form shows 'Number of Days' dropdown instead of time picker. When selecting overnight services, form shows 'Number of Nights' dropdown. Service dropdown now shows '/day' or '/night' suffix next to prices. Fixed pet weight validation error (empty string to null conversion). Test credentials: new_onboard_client/demo123"
   - agent: "testing"
     message: "✅ BACKEND TESTING COMPLETE - All 7 backend tasks PASSED (100% success rate). Tested with demo credentials and new test users. All new endpoints working correctly: chat contacts with filters, appointment/invoice detail endpoints, company info settings, and email/SMS endpoints (properly returning errors when not configured). No critical issues found. Ready for frontend testing."
   - agent: "testing"
