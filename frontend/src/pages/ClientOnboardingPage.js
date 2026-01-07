@@ -84,6 +84,16 @@ const ClientOnboardingPage = () => {
     preferred_walker_id: '' // Optional walker preference
   });
   
+  // Service category selection for Step 3
+  const [serviceCategory, setServiceCategory] = useState(''); // 'walks' or 'other'
+  const [selectedOtherService, setSelectedOtherService] = useState('');
+  const [otherServiceSchedule, setOtherServiceSchedule] = useState({
+    schedule_type: 'one_time',
+    duration_value: 1,
+    preferred_days: ['Monday'],
+  });
+  const [services, setServices] = useState([]);
+  
   // Available walkers
   const [walkers, setWalkers] = useState([]);
   
@@ -91,18 +101,39 @@ const ClientOnboardingPage = () => {
   const [timeConflicts, setTimeConflicts] = useState([]);
   const [checkingConflicts, setCheckingConflicts] = useState(false);
 
-  // Fetch walkers on mount
+  // Fetch walkers and services on mount
   useEffect(() => {
-    const fetchWalkers = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/users/walkers');
-        setWalkers(res.data || []);
+        const [walkersRes, servicesRes] = await Promise.all([
+          api.get('/users/walkers'),
+          api.get('/services')
+        ]);
+        setWalkers(walkersRes.data || []);
+        setServices(servicesRes.data || []);
       } catch (error) {
-        console.error('Failed to load walkers');
+        console.error('Failed to load data');
       }
     };
-    fetchWalkers();
+    fetchData();
   }, [api]);
+  
+  // Helper to get duration type for a service
+  const getDurationTypeForService = (serviceType) => {
+    if (!serviceType) return 'minutes';
+    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day', 'day_visit'];
+    const nightServices = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location'];
+    
+    if (dayServices.some(s => serviceType.toLowerCase().includes(s))) return 'days';
+    if (nightServices.some(s => serviceType.toLowerCase().includes(s))) return 'nights';
+    return 'minutes';
+  };
+  
+  // Filter services for "Other" category (non-walk services)
+  const otherServices = services.filter(s => 
+    !s.service_type?.includes('walk') && 
+    s.service_type !== 'transport'
+  );
 
   // Conflict dialog state
   const [conflictDialog, setConflictDialog] = useState({
