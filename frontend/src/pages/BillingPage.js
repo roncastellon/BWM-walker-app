@@ -461,6 +461,104 @@ const BillingPage = () => {
                   )}
                 </div>
               </TabsContent>
+
+              {/* Apple Pay */}
+              <TabsContent value="apple_pay" className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center">
+                      <span className="text-white text-xl">🍎</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Pay with Apple Pay</h3>
+                      <p className="text-sm text-muted-foreground">Send via Apple Pay</p>
+                    </div>
+                  </div>
+
+                  {paymentInfo.apple_pay?.email || paymentInfo.apple_pay?.phone ? (
+                    <div className="space-y-3 p-4 rounded-xl bg-muted/50">
+                      {paymentInfo.apple_pay?.email && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Email</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{paymentInfo.apple_pay.email}</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.apple_pay.email)}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentInfo.apple_pay?.phone && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Phone</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{paymentInfo.apple_pay.phone}</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.apple_pay.phone)}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-muted-foreground">
+                          Include note: <strong>Invoice #{selectedInvoice?.id?.slice(0, 8)}</strong>
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">Apple Pay info not configured</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Apple Cash */}
+              <TabsContent value="apple_cash" className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center">
+                      <span className="text-white text-xl">🍎</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Pay with Apple Cash</h3>
+                      <p className="text-sm text-muted-foreground">Send via iMessage</p>
+                    </div>
+                  </div>
+
+                  {paymentInfo.apple_cash?.email || paymentInfo.apple_cash?.phone ? (
+                    <div className="space-y-3 p-4 rounded-xl bg-muted/50">
+                      {paymentInfo.apple_cash?.email && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Email</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{paymentInfo.apple_cash.email}</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.apple_cash.email)}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentInfo.apple_cash?.phone && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Phone</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{paymentInfo.apple_cash.phone}</span>
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => copyToClipboard(paymentInfo.apple_cash.phone)}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-muted-foreground">
+                          Include note: <strong>Invoice #{selectedInvoice?.id?.slice(0, 8)}</strong>
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">Apple Cash info not configured</p>
+                  )}
+                </div>
+              </TabsContent>
             </Tabs>
 
             {paymentInfo.instructions && (
