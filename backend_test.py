@@ -2223,6 +2223,167 @@ class WagWalkAPITester:
             else:
                 print("✅ Tag notifications endpoint working")
 
+    def test_recurring_schedule_functionality(self):
+        """Test recurring schedule functionality for BowWowMeow app"""
+        print("\n" + "=" * 70)
+        print("🔄 TESTING RECURRING SCHEDULE FUNCTIONALITY")
+        print("=" * 70)
+        
+        # Test with new_onboard_client credentials as specified in review request
+        client_login = {
+            "username": "new_onboard_client",
+            "password": "demo123"
+        }
+        success, response = self.run_test(
+            "New Onboard Client Login", "POST", "auth/login", 200,
+            data=client_login, description="Login with new_onboard_client credentials"
+        )
+        if success:
+            self.tokens['new_onboard_client'] = response.get('access_token')
+            self.users['new_onboard_client'] = response.get('user')
+        else:
+            print("⚠️  Could not login with new_onboard_client, using demo_client instead")
+            if not self.tokens.get('demo_client'):
+                print("⚠️  No client token available for recurring schedule tests")
+                return
+        
+        client_token = self.tokens.get('new_onboard_client') or self.tokens.get('demo_client')
+        client_user = self.users.get('new_onboard_client') or self.users.get('demo_client')
+        
+        if not client_token:
+            print("⚠️  No client token available for recurring schedule tests")
+            return
+        
+        # Get client's pets
+        success, pets = self.run_test(
+            "Get Client Pets for Recurring", "GET", "pets", 200,
+            token=client_token, description="Get client's pets for recurring schedule"
+        )
+        
+        if not success or not pets:
+            print("⚠️  No pets available for recurring schedule test")
+            return
+        
+        pet_id = pets[0]['id']
+        
+        # Test 1: Create recurring schedule
+        recurring_data = {
+            "pet_ids": [pet_id],
+            "service_type": "walk_30",  # 30-minute walk as specified in review
+            "scheduled_time": "10:00",
+            "day_of_week": 1,  # Tuesday (0=Monday, 1=Tuesday, etc.)
+            "notes": "Weekly recurring walk for testing"
+        }
+        
+        success, schedule_response = self.run_test(
+            "Create Recurring Schedule", "POST", "recurring-schedules", 200,
+            data=recurring_data, token=client_token,
+            description="Create recurring schedule for walk_30 service"
+        )
+        
+        if not success:
+            print("❌ Failed to create recurring schedule")
+            return
+        
+        schedule_id = schedule_response.get('id')
+        print(f"✅ Recurring schedule created with ID: {schedule_id}")
+        
+        # Test 2: Get recurring schedules
+        success, schedules = self.run_test(
+            "Get Recurring Schedules", "GET", "recurring-schedules", 200,
+            token=client_token, description="Get user's recurring schedules"
+        )
+        
+        if success:
+            print(f"✅ Retrieved {len(schedules)} recurring schedules")
+            # Verify our schedule is in the list
+            found_schedule = None
+            for schedule in schedules:
+                if schedule.get('id') == schedule_id:
+                    found_schedule = schedule
+                    break
+            
+            if found_schedule:
+                print("✅ Created schedule found in list")
+                print(f"   Status: {found_schedule.get('status')}")
+                print(f"   Service: {found_schedule.get('service_type')}")
+                print(f"   Day: {found_schedule.get('day_of_week')}")
+                print(f"   Time: {found_schedule.get('scheduled_time')}")
+            else:
+                print("⚠️  Created schedule not found in list")
+        
+        # Test 3: Pause recurring schedule
+        success, pause_response = self.run_test(
+            "Pause Recurring Schedule", "PUT", f"recurring-schedules/{schedule_id}/pause", 200,
+            token=client_token, description="Pause the recurring schedule"
+        )
+        
+        if success:
+            print("✅ Recurring schedule paused successfully")
+        
+        # Test 4: Resume recurring schedule
+        success, resume_response = self.run_test(
+            "Resume Recurring Schedule", "PUT", f"recurring-schedules/{schedule_id}/resume", 200,
+            token=client_token, description="Resume the paused recurring schedule"
+        )
+        
+        if success:
+            print("✅ Recurring schedule resumed successfully")
+        
+        # Test 5: Stop recurring schedule
+        success, stop_response = self.run_test(
+            "Stop Recurring Schedule", "PUT", f"recurring-schedules/{schedule_id}/stop", 200,
+            token=client_token, description="Stop the recurring schedule permanently"
+        )
+        
+        if success:
+            print("✅ Recurring schedule stopped successfully")
+        
+        # Test 6: Verify schedule status after stop
+        success, final_schedules = self.run_test(
+            "Verify Schedule Status", "GET", "recurring-schedules", 200,
+            token=client_token, description="Verify schedule status after stopping"
+        )
+        
+        if success:
+            stopped_schedule = None
+            for schedule in final_schedules:
+                if schedule.get('id') == schedule_id:
+                    stopped_schedule = schedule
+                    break
+            
+            if stopped_schedule and stopped_schedule.get('status') == 'stopped':
+                print("✅ Schedule status correctly updated to 'stopped'")
+            else:
+                print("⚠️  Schedule status not correctly updated")
+        
+        # Test 7: Test creating recurring schedule with walk_60 service
+        recurring_data_60 = {
+            "pet_ids": [pet_id],
+            "service_type": "walk_60",  # 60-minute walk as specified in review
+            "scheduled_time": "14:00",
+            "day_of_week": 3,  # Thursday
+            "notes": "Weekly 60-minute walk recurring schedule"
+        }
+        
+        success, schedule_60_response = self.run_test(
+            "Create Recurring Schedule (60min)", "POST", "recurring-schedules", 200,
+            data=recurring_data_60, token=client_token,
+            description="Create recurring schedule for walk_60 service"
+        )
+        
+        if success:
+            schedule_60_id = schedule_60_response.get('id')
+            print(f"✅ 60-minute recurring schedule created with ID: {schedule_60_id}")
+            
+            # Clean up by stopping this schedule too
+            self.run_test(
+                "Stop 60min Schedule", "PUT", f"recurring-schedules/{schedule_60_id}/stop", 200,
+                token=client_token, description="Clean up 60-minute recurring schedule"
+            )
+        
+        print("\n✅ Recurring schedule functionality testing completed!")
+
 def main():
     print("🐕 Starting WagWalk API Tests...")
     print("=" * 50)
