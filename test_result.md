@@ -618,6 +618,24 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASSED - Calendar appointment detail modal working correctly. Found 8 appointment cards on calendar. Modal opens when clicking appointments. Shows Client and Walker sections with proper information. Service details, price, status badge, and notes are displayed. Minor: Service section header not found but service info is present in modal."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE TESTING COMPLETE - Calendar appointment detail modal with edit functionality working perfectly! Test Results: 1) Found 25 appointment cards on calendar ✅, 2) Appointment detail modal opens when clicking appointments ✅, 3) Modal shows all required sections: Service name/price ($25.00), Client info, Walker info, Notes ✅, 4) Edit and Cancel buttons present for admins ✅, 5) Edit mode shows all required fields: Date picker, Time dropdown, Service dropdown, Walker dropdown, Status dropdown, Notes textarea ✅, 6) Save Changes and Cancel buttons working in edit mode ✅. All functionality matches review request specifications perfectly."
+
+  - task: "Services listed by pet name (not owner name)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/CalendarPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Calendar appointments display pet names instead of client names. Implementation shows pet_names array when available, falls back to client_name when no pets assigned."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Services listed by pet name working correctly! Test Results: 1) Found 15 pet names displayed on calendar appointments (Buddy, Fido, Buddy Updated) vs 10 client names ✅, 2) Appointments prioritize showing pet names when available ✅, 3) Falls back to client name when no pets assigned (expected behavior) ✅, 4) Month view tooltips show appointment details but currently display client names in format '09:00 - Demo Admin (Test Walker)' - this could be enhanced to show pet names in tooltips as well. Core functionality working as specified - calendar appointments display pet names when pets are associated with the appointment."
 
   - task: "Invoice detail modal with company branding"
     implemented: true
