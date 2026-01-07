@@ -1093,6 +1093,9 @@ async def get_pets(owner_id: Optional[str] = None, current_user: dict = Depends(
     for pet in pets:
         if pet.get('weight') == '' or pet.get('weight') == 'null':
             pet['weight'] = None
+        # Ensure age is a string
+        if pet.get('age') is not None and not isinstance(pet.get('age'), str):
+            pet['age'] = str(pet['age'])
     return pets
 
 @api_router.get("/pets/{pet_id}", response_model=Pet)
@@ -1103,6 +1106,9 @@ async def get_pet(pet_id: str):
     # Handle empty string weight values
     if pet.get('weight') == '' or pet.get('weight') == 'null':
         pet['weight'] = None
+    # Ensure age is a string
+    if pet.get('age') is not None and not isinstance(pet.get('age'), str):
+        pet['age'] = str(pet['age'])
     return pet
 
 @api_router.delete("/pets/{pet_id}")
