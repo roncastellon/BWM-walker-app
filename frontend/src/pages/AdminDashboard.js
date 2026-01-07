@@ -31,11 +31,31 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [paysheets, setPaysheets] = useState([]);
   const [newClientNotifications, setNewClientNotifications] = useState([]);
+  const [recurringSchedules, setRecurringSchedules] = useState([]);
+  
+  // Walker change dialog state
+  const [walkerChangeDialog, setWalkerChangeDialog] = useState({
+    open: false,
+    schedule: null,
+    selectedWalkerId: '',
+    changeType: 'one_time', // 'one_time' (first/default) or 'permanent'
+    specificDate: ''
+  });
 
   useEffect(() => {
     fetchData();
     fetchNewClientNotifications();
+    fetchRecurringSchedules();
   }, []);
+
+  const fetchRecurringSchedules = async () => {
+    try {
+      const res = await api.get('/recurring-schedules');
+      setRecurringSchedules(res.data || []);
+    } catch (error) {
+      console.error('Failed to fetch recurring schedules');
+    }
+  };
 
   const fetchNewClientNotifications = async () => {
     try {
