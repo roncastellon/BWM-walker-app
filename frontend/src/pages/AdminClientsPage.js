@@ -102,6 +102,62 @@ const AdminClientsPage = () => {
     notes: '',
   });
 
+  // Walker conflict state
+  const [walkerConflicts, setWalkerConflicts] = useState([]);
+  const [checkingWalkerConflicts, setCheckingWalkerConflicts] = useState(false);
+  const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
+  const [conflictAlternatives, setConflictAlternatives] = useState([]);
+
+  // Check walker conflicts when selecting walker in admin
+  const checkAdminWalkerConflicts = async (walkerId, clientData) => {
+    if (!walkerId || !clientData?.onboarding_data) {
+      setWalkerConflicts([]);
+      return;
+    }
+
+    setCheckingWalkerConflicts(true);
+    try {
+      const onboardingData = clientData.onboarding_data;
+      const serviceTypeMap = {30: "walk_30", 45: "walk_45", 60: "walk_60"};
+      const serviceType = serviceTypeMap[onboardingData.walk_duration] || "walk_30";
+
+      const res = await api.post('/walkers/check-schedule-conflicts', {
+        walker_id: walkerId,
+        schedule_type: onboardingData.schedule_type || 'recurring',
+        preferred_days: onboardingData.preferred_days || [],
+        preferred_times: onboardingData.preferred_walk_times || [],
+        service_type: serviceType
+      });
+
+      if (res.data.has_conflicts) {
+        setWalkerConflicts(res.data.conflicts);
+        setConflictAlternatives(res.data.alternatives);
+        setConflictDialogOpen(true);
+      } else {
+        setWalkerConflicts([]);
+      }
+    } catch (error) {
+      console.error('Failed to check walker conflicts', error);
+    } finally {
+      setCheckingWalkerConflicts(false);
+    }
+  };
+
+  // Handle admin letting app assign walker
+  const handleAdminLetAppAssign = () => {
+    setWalkingSchedule({...walkingSchedule, preferred_walker_id: ''});
+    setWalkerConflicts([]);
+    setConflictDialogOpen(false);
+    toast.info('Walker will be auto-assigned based on availability.');
+  };
+
+  // Handle admin choosing different walker
+  const handleAdminChooseDifferent = () => {
+    setWalkingSchedule({...walkingSchedule, preferred_walker_id: ''});
+    setWalkerConflicts([]);
+    setConflictDialogOpen(false);
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
