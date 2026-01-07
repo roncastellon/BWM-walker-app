@@ -37,6 +37,8 @@ const SchedulePage = () => {
     is_recurring: false,
     day_of_week: null,
     selected_days: [], // For multi-day scheduling (day care, overnight, etc.)
+    duration_value: 1, // Number of days/nights
+    duration_type: 'minutes', // 'minutes', 'days', or 'nights'
   });
   const [recurringSchedules, setRecurringSchedules] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -45,7 +47,25 @@ const SchedulePage = () => {
 
   const ALL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
-  // Check if service allows multi-day scheduling
+  // Determine duration type based on service type
+  const getDurationTypeForService = (serviceType) => {
+    if (!serviceType) return 'minutes';
+    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day'];
+    const nightServices = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location'];
+    
+    if (dayServices.some(s => serviceType.toLowerCase().includes(s))) return 'days';
+    if (nightServices.some(s => serviceType.toLowerCase().includes(s))) return 'nights';
+    return 'minutes';
+  };
+  
+  // Check if service uses days or nights (not minutes)
+  const isDayNightService = (serviceType) => {
+    if (!serviceType) return false;
+    const durationType = getDurationTypeForService(serviceType);
+    return durationType === 'days' || durationType === 'nights';
+  };
+  
+  // Check if service allows multi-day scheduling (legacy function)
   const isMultiDayService = (serviceType) => {
     if (!serviceType) return false;
     return serviceType.includes('day') || 
