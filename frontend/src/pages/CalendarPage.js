@@ -373,6 +373,18 @@ const CalendarPage = () => {
                 Add Service
               </Button>
             )}
+            <Select value={selectedServiceCategory} onValueChange={setSelectedServiceCategory}>
+              <SelectTrigger className="w-[160px]" data-testid="filter-service">
+                <SelectValue placeholder="Filter by service" />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_CATEGORIES.map((category) => (
+                  <SelectItem key={category.value} value={category.value}>
+                    {category.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={selectedWalker} onValueChange={setSelectedWalker}>
               <SelectTrigger className="w-[180px]" data-testid="filter-walker">
                 <SelectValue placeholder="Filter by walker" />
