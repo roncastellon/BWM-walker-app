@@ -370,6 +370,27 @@ class Appointment(BaseModel):
     distance_meters: Optional[float] = None
     is_tracking: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # Recurring schedule fields
+    is_recurring: bool = False
+    recurring_schedule_id: Optional[str] = None  # Links to parent recurring schedule
+    is_one_time_exception: bool = False  # True if this is a one-time modification to a recurring schedule
+
+class RecurringSchedule(BaseModel):
+    """Represents a recurring schedule that generates appointments weekly"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    client_id: str
+    walker_id: Optional[str] = None
+    pet_ids: List[str]
+    service_type: ServiceType
+    scheduled_time: str  # Time of day
+    day_of_week: int  # 0=Monday, 6=Sunday
+    notes: Optional[str] = None
+    status: str = "active"  # active, paused, stopped
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    paused_at: Optional[datetime] = None
+    stopped_at: Optional[datetime] = None
+    created_by: str  # user_id of who created it
 
 class AppointmentCreate(BaseModel):
     pet_ids: List[str]
