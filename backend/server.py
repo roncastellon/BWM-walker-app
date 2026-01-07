@@ -1095,7 +1095,7 @@ class AdminPetCreate(BaseModel):
     name: str
     species: str = "dog"
     breed: Optional[str] = None
-    age: Optional[int] = None
+    age: Optional[str] = None  # Changed to string
     weight: Optional[float] = None
     notes: Optional[str] = None
 
