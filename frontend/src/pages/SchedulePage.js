@@ -484,7 +484,33 @@ const SchedulePage = () => {
                     </Popover>
                   </div>
 
-                  {isPetSittingService(formData.service_type) ? (
+                  {/* Show different inputs based on service type */}
+                  {isDayNightService(formData.service_type) ? (
+                    <div className="space-y-2">
+                      <Label>
+                        {getDurationTypeForService(formData.service_type) === 'days' 
+                          ? 'Number of Days' 
+                          : 'Number of Nights'}
+                      </Label>
+                      <Select
+                        value={formData.duration_value?.toString() || '1'}
+                        onValueChange={(value) => setFormData({ ...formData, duration_value: parseInt(value) })}
+                      >
+                        <SelectTrigger data-testid="select-duration">
+                          <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7, 14, 21, 30].map((num) => (
+                            <SelectItem key={num} value={num.toString()}>
+                              {num} {getDurationTypeForService(formData.service_type) === 'days' 
+                                ? (num === 1 ? 'Day' : 'Days') 
+                                : (num === 1 ? 'Night' : 'Nights')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : isPetSittingService(formData.service_type) ? (
                     <div className="space-y-2">
                       <Label>End Date</Label>
                       <Popover>
