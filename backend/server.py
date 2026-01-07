@@ -399,6 +399,16 @@ class AppointmentCreate(BaseModel):
     scheduled_time: str
     walker_id: Optional[str] = None
     notes: Optional[str] = None
+    is_recurring: bool = False  # If true, creates a recurring schedule
+    day_of_week: Optional[int] = None  # Required if is_recurring is true
+
+class RecurringScheduleCreate(BaseModel):
+    pet_ids: List[str]
+    service_type: ServiceType
+    scheduled_time: str
+    day_of_week: int  # 0=Monday, 6=Sunday
+    walker_id: Optional[str] = None
+    notes: Optional[str] = None
 
 class Invoice(BaseModel):
     model_config = ConfigDict(extra="ignore")
