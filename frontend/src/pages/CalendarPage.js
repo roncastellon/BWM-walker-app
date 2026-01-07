@@ -167,7 +167,9 @@ const CalendarPage = () => {
       scheduled_date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
       scheduled_time: '',
       notes: '',
-      status: 'scheduled'
+      status: 'scheduled',
+      duration_value: 1,
+      duration_type: 'minutes'
     });
     setSelectedClientPets([]);
     setAddDialogOpen(true);
@@ -183,7 +185,9 @@ const CalendarPage = () => {
       scheduled_date: appointmentDetail.scheduled_date || '',
       scheduled_time: appointmentDetail.scheduled_time || '',
       notes: appointmentDetail.notes || '',
-      status: appointmentDetail.status || 'scheduled'
+      status: appointmentDetail.status || 'scheduled',
+      duration_value: appointmentDetail.duration_value || 1,
+      duration_type: appointmentDetail.duration_type || 'minutes'
     });
     fetchClientPets(appointmentDetail.client_id);
     setEditMode(true);
