@@ -1663,6 +1663,175 @@ async def update_recurring_schedule(
         )
         return {"message": "Schedule updated for all future appointments"}
 
+@api_router.put("/recurring-schedules/{schedule_id}/change-walker")
+async def change_recurring_schedule_walker(
+    schedule_id: str,
+    walker_id: str,
+    change_type: str = "one_time",  # "one_time" (default/first) or "permanent"
+    specific_date: Optional[str] = None,  # Required for one_time changes
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Change the walker for a recurring schedule (ADMIN ONLY)
+    - one_time: Only changes walker for a specific date, reverts to original walker next week
+    - permanent: Changes walker for all future occurrences
+    """
+    # Admin only
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Only admin can change walkers on recurring schedules")
+    
+    schedule = await db.recurring_schedules.find_one({"id": schedule_id}, {"_id": 0})
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Recurring schedule not found")
+    
+    # Verify the new walker exists
+    new_walker = await db.users.find_one({"id": walker_id, "role": "walker"}, {"_id": 0})
+    if not new_walker:
+        raise HTTPException(status_code=404, detail="Walker not found")
+    
+    if change_type == "one_time":
+        # One-time change - create an exception appointment for that specific date
+        if not specific_date:
+            # Calculate next occurrence if no date provided
+            day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+            today = datetime.now(timezone.utc).date()
+            today_weekday = today.weekday()
+            day_num = schedule.get('day_of_week', 0)
+            days_ahead = day_num - today_weekday
+            if days_ahead <= 0:
+                days_ahead += 7
+            specific_date = (today + timedelta(days=days_ahead)).isoformat()
+        
+        # Check if there's already an exception for this date
+        existing_exception = await db.appointments.find_one({
+            "recurring_schedule_id": schedule_id,
+            "scheduled_date": specific_date,
+            "is_one_time_exception": True
+        }, {"_id": 0})
+        
+        if existing_exception:
+            # Update existing exception
+            await db.appointments.update_one(
+                {"id": existing_exception["id"]},
+                {"$set": {"walker_id": walker_id}}
+            )
+            return {
+                "message": f"Walker changed for {specific_date} only. Original walker will resume next week.",
+                "change_type": "one_time",
+                "date": specific_date,
+                "new_walker": new_walker.get('full_name', new_walker.get('username'))
+            }
+        else:
+            # Create new exception appointment
+            exception_appt = {
+                "id": str(uuid.uuid4()),
+                "client_id": schedule['client_id'],
+                "walker_id": walker_id,
+                "pet_ids": schedule['pet_ids'],
+                "service_type": schedule['service_type'],
+                "scheduled_date": specific_date,
+                "scheduled_time": schedule['scheduled_time'],
+                "status": "scheduled",
+                "notes": f"One-time walker change from recurring schedule",
+                "is_recurring": True,
+                "recurring_schedule_id": schedule_id,
+                "is_one_time_exception": True,
+                "original_walker_id": schedule.get('walker_id'),  # Store original for reference
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.appointments.insert_one(exception_appt)
+            
+            return {
+                "message": f"Walker changed for {specific_date} only. Original walker will resume next week.",
+                "change_type": "one_time",
+                "date": specific_date,
+                "appointment_id": exception_appt["id"],
+                "new_walker": new_walker.get('full_name', new_walker.get('username'))
+            }
+    
+    else:  # permanent
+        # Permanent change - update the recurring schedule itself
+        old_walker_id = schedule.get('walker_id')
+        
+        await db.recurring_schedules.update_one(
+            {"id": schedule_id},
+            {"$set": {
+                "walker_id": walker_id,
+                "walker_changed_at": datetime.now(timezone.utc).isoformat(),
+                "walker_changed_by": current_user['id'],
+                "previous_walker_id": old_walker_id
+            }}
+        )
+        
+        return {
+            "message": "Walker permanently changed for all future walks.",
+            "change_type": "permanent",
+            "new_walker": new_walker.get('full_name', new_walker.get('username'))
+        }
+
+@api_router.get("/recurring-schedules/{schedule_id}/upcoming")
+async def get_upcoming_recurring_appointments(
+    schedule_id: str,
+    weeks: int = 4,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get upcoming appointments for a recurring schedule, including any one-time exceptions.
+    Shows what walker is assigned for each upcoming date.
+    """
+    schedule = await db.recurring_schedules.find_one({"id": schedule_id}, {"_id": 0})
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    # Calculate upcoming dates
+    today = datetime.now(timezone.utc).date()
+    today_weekday = today.weekday()
+    day_num = schedule.get('day_of_week', 0)
+    
+    upcoming = []
+    for week in range(weeks):
+        days_ahead = day_num - today_weekday + (week * 7)
+        if days_ahead < 0:
+            days_ahead += 7
+        target_date = today + timedelta(days=days_ahead)
+        date_str = target_date.isoformat()
+        
+        # Check for one-time exception
+        exception = await db.appointments.find_one({
+            "recurring_schedule_id": schedule_id,
+            "scheduled_date": date_str,
+            "is_one_time_exception": True
+        }, {"_id": 0})
+        
+        if exception:
+            walker = await db.users.find_one({"id": exception.get('walker_id')}, {"_id": 0, "id": 1, "full_name": 1, "username": 1})
+            upcoming.append({
+                "date": date_str,
+                "time": exception.get('scheduled_time', schedule['scheduled_time']),
+                "walker_id": exception.get('walker_id'),
+                "walker_name": walker.get('full_name', walker.get('username', 'Unknown')) if walker else 'Unassigned',
+                "is_exception": True,
+                "status": exception.get('status', 'scheduled'),
+                "appointment_id": exception.get('id')
+            })
+        else:
+            walker = await db.users.find_one({"id": schedule.get('walker_id')}, {"_id": 0, "id": 1, "full_name": 1, "username": 1})
+            upcoming.append({
+                "date": date_str,
+                "time": schedule['scheduled_time'],
+                "walker_id": schedule.get('walker_id'),
+                "walker_name": walker.get('full_name', walker.get('username', 'Unknown')) if walker else 'Unassigned',
+                "is_exception": False,
+                "status": "scheduled"
+            })
+    
+    return {
+        "schedule_id": schedule_id,
+        "service_type": schedule['service_type'],
+        "default_walker_id": schedule.get('walker_id'),
+        "upcoming": upcoming
+    }
+
 @api_router.put("/appointments/{appointment_id}/cancel")
 async def cancel_appointment(
     appointment_id: str,
