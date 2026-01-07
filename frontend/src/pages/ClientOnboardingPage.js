@@ -602,6 +602,48 @@ const ClientOnboardingPage = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Preferred Walker (Optional) */}
+              {walkers.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Preferred Walker (Optional)
+                  </Label>
+                  <Select 
+                    value={walkSchedule.preferred_walker_id} 
+                    onValueChange={(v) => setWalkSchedule({...walkSchedule, preferred_walker_id: v})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="No preference - Admin will assign" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No preference</SelectItem>
+                      {walkers.map((walker) => (
+                        <SelectItem key={walker.id} value={walker.id}>
+                          {walker.full_name || walker.username}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    If you don't select a walker, the admin will assign one to your schedule.
+                  </p>
+                </div>
+              )}
+
+              {/* Time Conflicts Warning */}
+              {timeConflicts.length > 0 && (
+                <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                  <p className="font-medium text-amber-800 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    Some time slots may not be available
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    The admin will review your schedule and may suggest alternative times if needed.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
