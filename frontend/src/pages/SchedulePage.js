@@ -81,16 +81,18 @@ const SchedulePage = () => {
 
   const fetchData = async () => {
     try {
-      const [servicesRes, apptsRes, petsRes, walkersRes] = await Promise.all([
+      const [servicesRes, apptsRes, petsRes, walkersRes, recurringRes] = await Promise.all([
         api.get('/services'),
         api.get('/appointments'),
         api.get('/pets'),
         api.get('/users/walkers'),
+        api.get('/recurring-schedules'),
       ]);
       setServices(servicesRes.data);
       setAppointments(apptsRes.data);
       setPets(petsRes.data);
       setWalkers(walkersRes.data);
+      setRecurringSchedules(recurringRes.data || []);
     } catch (error) {
       toast.error('Failed to load data');
     } finally {
