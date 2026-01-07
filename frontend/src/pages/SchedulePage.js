@@ -457,8 +457,6 @@ const SchedulePage = () => {
                           {service.name} - ${service.price?.toFixed(2)}
                         </SelectItem>
                       ))}
-                        </SelectItem>
-                      ))}
                     </SelectContent>
                   </Select>
                   
