@@ -34,7 +34,13 @@ const SchedulePage = () => {
     scheduled_time: '',
     walker_id: '',
     notes: '',
+    is_recurring: false,
+    day_of_week: null,
   });
+  const [recurringSchedules, setRecurringSchedules] = useState([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [changeType, setChangeType] = useState('one_time'); // 'one_time' or 'future'
 
   useEffect(() => {
     fetchData();
