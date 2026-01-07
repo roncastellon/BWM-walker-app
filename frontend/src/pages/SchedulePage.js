@@ -448,7 +448,7 @@ const SchedulePage = () => {
                           <p>• 2nd dog: +$25.00 (half price)</p>
                           <p>• Holiday surcharge: +$10.00/dog/night</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Holidays include day before, day of, and day after: New Year's, Memorial Day, July 4th, Labor Day, Thanksgiving, Christmas
+                            Holidays include day before, day of, and day after: New Year&apos;s, Memorial Day, July 4th, Labor Day, Thanksgiving, Christmas
                           </p>
                         </div>
                       ) : (
