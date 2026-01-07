@@ -1276,7 +1276,38 @@ async def get_services():
             correct_type = get_service_duration_type(service.get("service_type", ""))
             service["duration_type"] = correct_type
     
+    # Sort by display_order if present, otherwise by name
+    services.sort(key=lambda s: (s.get('display_order', 999), s.get('name', '')))
+    
     return services
+
+@api_router.post("/services/set-order")
+async def set_services_order(current_user: dict = Depends(get_current_user)):
+    """Set the display order for all services (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Define the standard order
+    order_map = {
+        'walk_30': 1,
+        'walk_45': 2,
+        'walk_60': 3,
+        'doggy_day_care': 4,
+        'petsit_your_location': 5,
+        'petsit_our_location': 6,
+        'transport': 7,
+        'concierge': 8,
+    }
+    
+    updated = 0
+    for service_type, order in order_map.items():
+        result = await db.services.update_one(
+            {'service_type': service_type},
+            {'$set': {'display_order': order}}
+        )
+        updated += result.modified_count
+    
+    return {"message": f"Updated display order for {updated} services"}
 
 @api_router.post("/services", response_model=ServicePricing)
 async def create_service(service: ServicePricing, current_user: dict = Depends(get_current_user)):
