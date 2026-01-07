@@ -1409,7 +1409,10 @@ async def create_recurring_schedule(schedule_data: RecurringScheduleCreate, curr
         schedule_dict['stopped_at'] = schedule_dict['stopped_at'].isoformat()
     
     await db.recurring_schedules.insert_one(schedule_dict)
-    return schedule_dict
+    
+    # Return the created schedule from database to avoid serialization issues
+    created_schedule = await db.recurring_schedules.find_one({"id": schedule.id}, {"_id": 0})
+    return created_schedule
 
 @api_router.get("/recurring-schedules")
 async def get_recurring_schedules(current_user: dict = Depends(get_current_user)):
