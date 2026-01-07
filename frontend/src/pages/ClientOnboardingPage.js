@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../components/ui/checkbox';
 import { 
   User, PawPrint, Calendar, CreditCard, ArrowRight, ArrowLeft, 
-  CheckCircle, Plus, Trash2, Dog, Cat, Clock
+  CheckCircle, Plus, Trash2, Dog, Cat, Clock, Repeat, CalendarDays, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
