@@ -343,7 +343,8 @@ class ServicePricing(BaseModel):
     name: str
     description: str = ""
     price: float
-    duration_minutes: int = 30
+    duration_minutes: Optional[int] = None  # For walks/visits with time duration
+    duration_type: str = "minutes"  # "minutes", "days", or "nights"
     is_active: bool = True
 
 class GPSCoordinate(BaseModel):
