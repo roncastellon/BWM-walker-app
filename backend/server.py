@@ -4683,7 +4683,7 @@ async def complete_client_onboarding(
     data: ClientOnboardingData,
     current_user: dict = Depends(get_current_user)
 ):
-    """Complete client onboarding and create pets"""
+    """Complete client onboarding, create pets, and create schedules"""
     if current_user["role"] != "client":
         raise HTTPException(status_code=403, detail="Only clients can complete onboarding")
     
@@ -4698,10 +4698,13 @@ async def complete_client_onboarding(
         "onboarding_completed": True,
         "onboarding_completed_at": datetime.now(timezone.utc).isoformat(),
         "onboarding_data": {
+            "schedule_type": data.schedule_type,
             "walks_per_day": data.walks_per_day,
             "preferred_walk_times": data.preferred_walk_times,
+            "walk_duration": data.walk_duration,
             "days_per_week": data.days_per_week,
             "preferred_days": data.preferred_days,
+            "preferred_walker_id": data.preferred_walker_id,
             "billing_frequency": data.billing_frequency,
             "payment_method": data.payment_method,
             "payment_details": data.payment_details
@@ -4712,6 +4715,7 @@ async def complete_client_onboarding(
     
     # Create pets
     created_pets = []
+    pet_ids = []
     for pet_data in data.pets:
         pet = {
             "id": str(uuid.uuid4()),
@@ -4728,17 +4732,89 @@ async def complete_client_onboarding(
         await db.pets.insert_one(pet)
         pet.pop("_id", None)
         created_pets.append(pet)
+        pet_ids.append(pet["id"])
     
-    # Create notification for admin(s) - new client needs pricing
+    # Determine service type based on walk duration
+    service_type_map = {30: "walk_30", 45: "walk_45", 60: "walk_60"}
+    service_type = service_type_map.get(data.walk_duration, "walk_30")
+    
+    # Day name to number mapping (Monday=0 through Sunday=6)
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    
+    # Create schedules based on schedule_type
+    schedules_created = []
+    
+    if data.schedule_type == "recurring":
+        # Create recurring schedules for each day/time combination
+        for day in data.preferred_days:
+            day_num = day_to_num.get(day, 0)
+            for walk_time in data.preferred_walk_times:
+                recurring_schedule = {
+                    "id": str(uuid.uuid4()),
+                    "client_id": current_user["id"],
+                    "walker_id": data.preferred_walker_id if data.preferred_walker_id else None,
+                    "pet_ids": pet_ids,
+                    "service_type": service_type,
+                    "scheduled_time": walk_time,
+                    "day_of_week": day_num,
+                    "notes": f"Created during onboarding",
+                    "status": "active" if data.preferred_walker_id else "pending_assignment",
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "created_by": current_user["id"]
+                }
+                await db.recurring_schedules.insert_one(recurring_schedule)
+                recurring_schedule.pop("_id", None)
+                schedules_created.append(recurring_schedule)
+    else:
+        # Create one-time appointments for the next occurrence of each day/time
+        from datetime import timedelta
+        today = datetime.now(timezone.utc).date()
+        today_weekday = today.weekday()  # Monday=0, Sunday=6
+        
+        for day in data.preferred_days:
+            day_num = day_to_num.get(day, 0)
+            # Calculate the next occurrence of this day
+            days_ahead = day_num - today_weekday
+            if days_ahead <= 0:  # Target day already happened this week
+                days_ahead += 7
+            next_date = today + timedelta(days=days_ahead)
+            
+            for walk_time in data.preferred_walk_times:
+                appointment = {
+                    "id": str(uuid.uuid4()),
+                    "client_id": current_user["id"],
+                    "walker_id": data.preferred_walker_id if data.preferred_walker_id else None,
+                    "pet_ids": pet_ids,
+                    "service_type": service_type,
+                    "scheduled_date": next_date.isoformat(),
+                    "scheduled_time": walk_time,
+                    "status": "scheduled",
+                    "notes": f"Created during onboarding",
+                    "is_recurring": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.appointments.insert_one(appointment)
+                appointment.pop("_id", None)
+                schedules_created.append(appointment)
+    
+    # Create notification for admin(s) - new client needs pricing/walker assignment
     admins = await db.users.find({"role": "admin", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
+    needs_walker = not data.preferred_walker_id
+    notification_msg = f"New client {data.full_name} has completed onboarding"
+    if needs_walker:
+        notification_msg += " and needs a walker assigned to their schedule."
+    else:
+        notification_msg += ". Schedule is ready for service."
+    
     for admin in admins:
         notification = {
             "id": str(uuid.uuid4()),
             "user_id": admin["id"],
             "type": "new_client_pricing",
-            "message": f"New client {data.full_name} has completed onboarding and needs pricing setup.",
+            "message": notification_msg,
             "client_id": current_user["id"],
             "client_name": data.full_name,
+            "needs_walker_assignment": needs_walker,
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
@@ -4747,7 +4823,10 @@ async def complete_client_onboarding(
     return {
         "message": "Onboarding completed successfully",
         "pets_created": len(created_pets),
-        "pets": created_pets
+        "pets": created_pets,
+        "schedules_created": len(schedules_created),
+        "schedule_type": data.schedule_type,
+        "needs_walker_assignment": needs_walker
     }
 
 @api_router.get("/admin/new-client-notifications")
