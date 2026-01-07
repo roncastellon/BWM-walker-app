@@ -46,6 +46,23 @@ const CalendarPage = () => {
     { value: 'transport', label: 'Transport', match: ['transport'] },
   ];
   
+  // Helper functions for day/night services
+  const getDurationTypeForService = (serviceType) => {
+    if (!serviceType) return 'minutes';
+    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day'];
+    const nightServices = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location'];
+    
+    if (dayServices.some(s => serviceType.toLowerCase().includes(s))) return 'days';
+    if (nightServices.some(s => serviceType.toLowerCase().includes(s))) return 'nights';
+    return 'minutes';
+  };
+  
+  const isDayNightService = (serviceType) => {
+    if (!serviceType) return false;
+    const durationType = getDurationTypeForService(serviceType);
+    return durationType === 'days' || durationType === 'nights';
+  };
+  
   // Admin add/edit appointment state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -58,7 +75,9 @@ const CalendarPage = () => {
     scheduled_date: '',
     scheduled_time: '',
     notes: '',
-    status: 'scheduled'
+    status: 'scheduled',
+    duration_value: 1,
+    duration_type: 'minutes'
   });
 
   useEffect(() => {
