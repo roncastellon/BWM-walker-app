@@ -229,10 +229,12 @@ const AdminClientsPage = () => {
     });
     setCustomPricing(defaultPricing);
     setWalkingSchedule({
+      service_type: 'walk_30',
       walks_per_day: 1,
       days: [],
       preferred_times: [],
       preferred_walker_id: '',
+      duration_value: 1,
       notes: '',
     });
   };
