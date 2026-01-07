@@ -648,6 +648,162 @@ const SchedulePage = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Recurring Schedules Section */}
+        {recurringSchedules.length > 0 && (
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Repeat className="w-5 h-5 text-primary" />
+                Recurring Schedules
+              </CardTitle>
+              <CardDescription>Weekly repeating appointments</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recurringSchedules.map((schedule) => {
+                  const service = services.find(s => s.service_type === schedule.service_type);
+                  return (
+                    <div
+                      key={schedule.id}
+                      className={`flex items-center justify-between p-4 rounded-xl ${
+                        schedule.status === 'active' ? 'bg-sky-50 border border-sky-200' :
+                        schedule.status === 'paused' ? 'bg-amber-50 border border-amber-200' :
+                        'bg-gray-50 border border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-xl ${
+                          schedule.status === 'active' ? 'bg-sky-100 text-sky-600' :
+                          schedule.status === 'paused' ? 'bg-amber-100 text-amber-600' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {getServiceIcon(schedule.service_type)}
+                        </div>
+                        <div>
+                          <p className="font-medium">{service?.name || schedule.service_type}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Every {getDayName(schedule.day_of_week)} at {schedule.scheduled_time}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          className={`rounded-full ${
+                            schedule.status === 'active' ? 'bg-sky-100 text-sky-800' :
+                            schedule.status === 'paused' ? 'bg-amber-100 text-amber-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {schedule.status}
+                        </Badge>
+                        {schedule.status === 'active' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => handlePauseSchedule(schedule.id)}
+                          >
+                            <Pause className="w-4 h-4 mr-1" />
+                            Pause
+                          </Button>
+                        )}
+                        {schedule.status === 'paused' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => handleResumeSchedule(schedule.id)}
+                          >
+                            <Play className="w-4 h-4 mr-1" />
+                            Resume
+                          </Button>
+                        )}
+                        {schedule.status !== 'stopped' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full text-red-600 hover:bg-red-50"
+                            onClick={() => handleStopSchedule(schedule.id)}
+                          >
+                            <StopCircle className="w-4 h-4 mr-1" />
+                            Stop
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Edit/Cancel Appointment Modal */}
+        <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Manage Appointment</DialogTitle>
+              <DialogDescription>
+                {selectedAppointment?.is_recurring ? 
+                  'This is part of a recurring schedule' : 
+                  'Choose an action for this appointment'}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedAppointment && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-muted/50">
+                  <p className="font-medium">{services.find(s => s.service_type === selectedAppointment.service_type)?.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedAppointment.scheduled_date} at {selectedAppointment.scheduled_time}
+                  </p>
+                </div>
+
+                {selectedAppointment.is_recurring && (
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Cancel Type</Label>
+                    <div className="space-y-2">
+                      <Button
+                        variant={changeType === 'one_time' ? 'default' : 'outline'}
+                        className="w-full justify-start rounded-full"
+                        onClick={() => setChangeType('one_time')}
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        One-Time Cancel (just this appointment)
+                      </Button>
+                      <Button
+                        variant={changeType === 'future' ? 'default' : 'outline'}
+                        className="w-full justify-start rounded-full"
+                        onClick={() => setChangeType('future')}
+                      >
+                        <StopCircle className="w-4 h-4 mr-2" />
+                        Stop All Future (cancel recurring schedule)
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    className="flex-1 rounded-full"
+                    onClick={() => setEditModalOpen(false)}
+                  >
+                    Keep Appointment
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="flex-1 rounded-full"
+                    onClick={() => handleCancelAppointment(selectedAppointment.id, changeType)}
+                  >
+                    Cancel Appointment
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
