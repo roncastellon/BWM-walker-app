@@ -1224,8 +1224,28 @@ async def get_services():
 async def create_service(service: ServicePricing, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
-    await db.services.insert_one(service.model_dump())
-    return service
+    
+    service_dict = service.model_dump()
+    
+    # Generate a service_type slug if it looks like a custom name (has spaces or capital letters)
+    if ' ' in service_dict['service_type'] or service_dict['service_type'][0].isupper():
+        # Create a slug from the name: "Doggy Day Camp" -> "doggy_day_camp"
+        service_dict['service_type'] = service_dict['name'].lower().replace(' ', '_').replace('-', '_')
+    
+    # Ensure we have a unique service_type
+    existing = await db.services.find_one({"service_type": service_dict['service_type']}, {"_id": 0})
+    if existing:
+        # Append a number to make it unique
+        base_type = service_dict['service_type']
+        counter = 1
+        while existing:
+            service_dict['service_type'] = f"{base_type}_{counter}"
+            existing = await db.services.find_one({"service_type": service_dict['service_type']}, {"_id": 0})
+            counter += 1
+    
+    await db.services.insert_one(service_dict)
+    service_dict.pop('_id', None)
+    return service_dict
 
 # Pet Sitting Price Calculator
 @api_router.post("/services/calculate-petsit-price")
