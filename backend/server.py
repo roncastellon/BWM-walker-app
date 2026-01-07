@@ -1386,6 +1386,168 @@ async def create_appointment(appt_data: AppointmentCreate, current_user: dict = 
     await db.appointments.insert_one(appt_dict)
     return appointment
 
+# Recurring Schedule Routes
+@api_router.post("/recurring-schedules")
+async def create_recurring_schedule(schedule_data: RecurringScheduleCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new recurring schedule"""
+    schedule = RecurringSchedule(
+        client_id=current_user['id'] if current_user['role'] == 'client' else schedule_data.client_id if hasattr(schedule_data, 'client_id') else current_user['id'],
+        created_by=current_user['id'],
+        **schedule_data.model_dump()
+    )
+    schedule_dict = schedule.model_dump()
+    schedule_dict['created_at'] = schedule_dict['created_at'].isoformat()
+    await db.recurring_schedules.insert_one(schedule_dict)
+    return schedule_dict
+
+@api_router.get("/recurring-schedules")
+async def get_recurring_schedules(current_user: dict = Depends(get_current_user)):
+    """Get recurring schedules for the current user or all for admin"""
+    query = {}
+    if current_user['role'] == 'client':
+        query['client_id'] = current_user['id']
+    elif current_user['role'] == 'walker':
+        query['walker_id'] = current_user['id']
+    
+    schedules = await db.recurring_schedules.find(query, {"_id": 0}).to_list(500)
+    return schedules
+
+@api_router.put("/recurring-schedules/{schedule_id}/pause")
+async def pause_recurring_schedule(schedule_id: str, current_user: dict = Depends(get_current_user)):
+    """Pause a recurring schedule"""
+    schedule = await db.recurring_schedules.find_one({"id": schedule_id}, {"_id": 0})
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    # Check permissions
+    if current_user['role'] not in ['admin'] and schedule['client_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.recurring_schedules.update_one(
+        {"id": schedule_id},
+        {"$set": {"status": "paused", "paused_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Schedule paused"}
+
+@api_router.put("/recurring-schedules/{schedule_id}/resume")
+async def resume_recurring_schedule(schedule_id: str, current_user: dict = Depends(get_current_user)):
+    """Resume a paused recurring schedule"""
+    schedule = await db.recurring_schedules.find_one({"id": schedule_id}, {"_id": 0})
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    if current_user['role'] not in ['admin'] and schedule['client_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.recurring_schedules.update_one(
+        {"id": schedule_id},
+        {"$set": {"status": "active", "paused_at": None}}
+    )
+    return {"message": "Schedule resumed"}
+
+@api_router.put("/recurring-schedules/{schedule_id}/stop")
+async def stop_recurring_schedule(schedule_id: str, current_user: dict = Depends(get_current_user)):
+    """Stop a recurring schedule permanently (but keep history)"""
+    schedule = await db.recurring_schedules.find_one({"id": schedule_id}, {"_id": 0})
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    if current_user['role'] not in ['admin'] and schedule['client_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.recurring_schedules.update_one(
+        {"id": schedule_id},
+        {"$set": {"status": "stopped", "stopped_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Schedule stopped"}
+
+@api_router.delete("/recurring-schedules/{schedule_id}")
+async def delete_recurring_schedule(schedule_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a recurring schedule (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Only admin can delete schedules")
+    
+    result = await db.recurring_schedules.delete_one({"id": schedule_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return {"message": "Schedule deleted"}
+
+@api_router.put("/recurring-schedules/{schedule_id}")
+async def update_recurring_schedule(
+    schedule_id: str, 
+    update_data: dict,
+    change_type: str = "future",  # "one_time" or "future"
+    specific_date: Optional[str] = None,  # Required if change_type is "one_time"
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a recurring schedule - either one-time exception or permanent change"""
+    schedule = await db.recurring_schedules.find_one({"id": schedule_id}, {"_id": 0})
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    if current_user['role'] not in ['admin'] and schedule['client_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if change_type == "one_time" and specific_date:
+        # Create a one-time exception appointment
+        exception_appt = {
+            "id": str(uuid.uuid4()),
+            "client_id": schedule['client_id'],
+            "walker_id": update_data.get('walker_id', schedule.get('walker_id')),
+            "pet_ids": update_data.get('pet_ids', schedule['pet_ids']),
+            "service_type": update_data.get('service_type', schedule['service_type']),
+            "scheduled_date": specific_date,
+            "scheduled_time": update_data.get('scheduled_time', schedule['scheduled_time']),
+            "status": "scheduled",
+            "notes": update_data.get('notes', schedule.get('notes')),
+            "is_recurring": True,
+            "recurring_schedule_id": schedule_id,
+            "is_one_time_exception": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.appointments.insert_one(exception_appt)
+        return {"message": "One-time change created", "appointment": exception_appt}
+    else:
+        # Update the recurring schedule for all future appointments
+        allowed_fields = ['walker_id', 'pet_ids', 'service_type', 'scheduled_time', 'day_of_week', 'notes']
+        update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
+        
+        await db.recurring_schedules.update_one(
+            {"id": schedule_id},
+            {"$set": update_dict}
+        )
+        return {"message": "Schedule updated for all future appointments"}
+
+@api_router.put("/appointments/{appointment_id}/cancel")
+async def cancel_appointment(
+    appointment_id: str,
+    cancel_type: str = "one_time",  # "one_time" or "future" (for recurring)
+    current_user: dict = Depends(get_current_user)
+):
+    """Cancel an appointment - one-time or stop all future recurring"""
+    appointment = await db.appointments.find_one({"id": appointment_id}, {"_id": 0})
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if current_user['role'] not in ['admin'] and appointment['client_id'] != current_user['id']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Cancel this specific appointment
+    await db.appointments.update_one(
+        {"id": appointment_id},
+        {"$set": {"status": "cancelled"}}
+    )
+    
+    # If recurring and cancelling future, stop the recurring schedule
+    if cancel_type == "future" and appointment.get('recurring_schedule_id'):
+        await db.recurring_schedules.update_one(
+            {"id": appointment['recurring_schedule_id']},
+            {"$set": {"status": "stopped", "stopped_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return {"message": "Appointment cancelled and recurring schedule stopped"}
+    
+    return {"message": "Appointment cancelled"}
+
 @api_router.get("/appointments", response_model=List[Appointment])
 async def get_appointments(current_user: dict = Depends(get_current_user)):
     query = {}
