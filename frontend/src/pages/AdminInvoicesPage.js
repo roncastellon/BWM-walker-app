@@ -2116,10 +2116,60 @@ const AdminBillingPage = () => {
                 </div>
               </div>
 
-              {!walkerPaymentInfo?.zelle_email && !walkerPaymentInfo?.venmo_username && !walkerPaymentInfo?.cashapp_tag && (
+              {/* Apple Pay Option */}
+              <div 
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.apple_pay_id || walkerPaymentInfo?.payment_methods?.apple_pay ? 'hover:border-gray-600 hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'}`}
+                onClick={() => (walkerPaymentInfo?.apple_pay_id || walkerPaymentInfo?.payment_methods?.apple_pay) && markPaysheetPaid(selectedPaysheet.id, 'Apple Pay')}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center">
+                    <span className="text-white text-lg">🍎</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">Apple Pay</p>
+                    {walkerPaymentInfo?.apple_pay_id || walkerPaymentInfo?.payment_methods?.apple_pay ? (
+                      <p className="text-sm text-gray-600">{walkerPaymentInfo?.apple_pay_id || walkerPaymentInfo?.payment_methods?.apple_pay}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Not configured</p>
+                    )}
+                  </div>
+                  {(walkerPaymentInfo?.apple_pay_id || walkerPaymentInfo?.payment_methods?.apple_pay) && (
+                    <Button size="sm" className="rounded-full bg-gray-900 hover:bg-gray-800">
+                      Pay & Mark Paid
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Apple Cash Option */}
+              <div 
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${walkerPaymentInfo?.apple_cash_id || walkerPaymentInfo?.payment_methods?.apple_cash ? 'hover:border-green-500 hover:bg-green-50' : 'opacity-50 cursor-not-allowed'}`}
+                onClick={() => (walkerPaymentInfo?.apple_cash_id || walkerPaymentInfo?.payment_methods?.apple_cash) && markPaysheetPaid(selectedPaysheet.id, 'Apple Cash')}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                    <span className="text-white text-lg">🍎</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">Apple Cash</p>
+                    {walkerPaymentInfo?.apple_cash_id || walkerPaymentInfo?.payment_methods?.apple_cash ? (
+                      <p className="text-sm text-green-600">{walkerPaymentInfo?.apple_cash_id || walkerPaymentInfo?.payment_methods?.apple_cash}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Not configured</p>
+                    )}
+                  </div>
+                  {(walkerPaymentInfo?.apple_cash_id || walkerPaymentInfo?.payment_methods?.apple_cash) && (
+                    <Button size="sm" className="rounded-full bg-green-500 hover:bg-green-600">
+                      Pay & Mark Paid
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {!walkerPaymentInfo?.zelle_email && !walkerPaymentInfo?.venmo_username && !walkerPaymentInfo?.cashapp_tag && !walkerPaymentInfo?.apple_pay_id && !walkerPaymentInfo?.apple_cash_id && !walkerPaymentInfo?.payment_methods?.apple_pay && !walkerPaymentInfo?.payment_methods?.apple_cash && (
                 <div className="p-4 rounded-xl bg-orange-50 border border-orange-200">
                   <p className="text-sm text-orange-700">
-                    <strong>No payment methods configured.</strong> Ask {walkerPaymentInfo?.full_name || 'the staff member'} to add their Zelle, Venmo, or CashApp info to their profile.
+                    <strong>No payment methods configured.</strong> Ask {walkerPaymentInfo?.full_name || 'the staff member'} to add their payment info to their profile.
                   </p>
                 </div>
               )}
