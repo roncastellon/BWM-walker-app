@@ -460,6 +460,40 @@ const ClientOnboardingPage = () => {
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
+              {/* Schedule Type - One-Time or Recurring */}
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Schedule Type</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant={walkSchedule.schedule_type === 'one_time' ? "default" : "outline"}
+                    className={`h-auto py-4 flex flex-col ${walkSchedule.schedule_type === 'one_time' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                    onClick={() => setWalkSchedule({...walkSchedule, schedule_type: 'one_time'})}
+                  >
+                    <CalendarDays className="w-6 h-6 mb-1" />
+                    <span className="text-lg font-bold">One-Time</span>
+                    <span className="text-xs opacity-80">Single appointment</span>
+                  </Button>
+                  <Button
+                    variant={walkSchedule.schedule_type === 'recurring' ? "default" : "outline"}
+                    className={`h-auto py-4 flex flex-col ${walkSchedule.schedule_type === 'recurring' ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                    onClick={() => setWalkSchedule({...walkSchedule, schedule_type: 'recurring'})}
+                  >
+                    <Repeat className="w-6 h-6 mb-1" />
+                    <span className="text-lg font-bold">Recurring</span>
+                    <span className="text-xs opacity-80">Repeats weekly</span>
+                  </Button>
+                </div>
+                {walkSchedule.schedule_type === 'recurring' && (
+                  <div className="p-3 rounded-lg bg-orange-50 border border-orange-200 text-sm text-orange-800">
+                    <p className="font-medium flex items-center gap-2">
+                      <Repeat className="w-4 h-4" />
+                      Your walks will repeat every week
+                    </p>
+                    <p className="text-xs mt-1">You can pause or stop recurring walks anytime from your dashboard.</p>
+                  </div>
+                )}
+              </div>
+
               {/* Days per week */}
               <div className="space-y-3">
                 <Label className="text-base font-semibold">How many days per week?</Label>
