@@ -1736,6 +1736,78 @@ const AdminClientsPage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Walker Conflict Dialog */}
+        <Dialog open={conflictDialogOpen} onOpenChange={setConflictDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-amber-600">
+                <AlertTriangle className="w-5 h-5" />
+                Walker Schedule Conflict
+              </DialogTitle>
+              <DialogDescription>
+                The selected walker is not available for some of the requested times.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Show conflicts */}
+              {walkerConflicts.length > 0 && (
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                  <p className="font-medium text-amber-800 text-sm mb-2">Conflicting times:</p>
+                  <ul className="space-y-1">
+                    {walkerConflicts.map((conflict, idx) => (
+                      <li key={idx} className="text-sm text-amber-700">
+                        • {conflict.day} at {conflict.time}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Options */}
+              <div className="space-y-3">
+                <p className="font-medium text-gray-800">What would you like to do?</p>
+                
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-auto py-3 px-4"
+                  onClick={handleAdminChooseDifferent}
+                >
+                  <div className="text-left">
+                    <p className="font-medium">Choose a different walker</p>
+                    <p className="text-xs text-muted-foreground">Select another walker from the list</p>
+                  </div>
+                </Button>
+
+                <Button
+                  className="w-full justify-start h-auto py-3 px-4 bg-green-500 hover:bg-green-600"
+                  onClick={handleAdminLetAppAssign}
+                >
+                  <div className="text-left">
+                    <p className="font-medium">Auto-assign available walker(s)</p>
+                    <p className="text-xs opacity-80">System will assign the next available walker</p>
+                  </div>
+                </Button>
+              </div>
+
+              {/* Show alternatives if available */}
+              {conflictAlternatives.length > 0 && (
+                <div className="pt-3 border-t">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Available walkers for conflicting times:
+                  </p>
+                  {conflictAlternatives.map((alt, idx) => (
+                    <div key={idx} className="text-sm">
+                      <span className="font-medium">{alt.day} {alt.time}:</span>{' '}
+                      {alt.available_walkers.map(w => w.name).join(', ')}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
