@@ -171,19 +171,23 @@ const AdminBillingPage = () => {
       // Generate service_type from name: "Doggy Day Camp" -> "doggy_day_camp"
       const serviceType = newService.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
       
-      await api.post('/services', {
+      const response = await api.post('/services', {
         service_type: serviceType,
         name: newService.name,
         price: parseFloat(newService.price),
         description: newService.description || '',
         duration_minutes: newService.duration ? parseInt(newService.duration) : 30
       });
-      toast.success('New service created');
+      
+      console.log('Service created:', response.data);
+      toast.success(`Service "${newService.name}" created successfully!`);
       setNewService({ name: '', price: '', description: '', duration: '' });
       setShowNewServiceForm(false);
       fetchAllData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create service');
+      console.error('Service creation error:', error.response?.data || error.message);
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || error.message || 'Failed to create service';
+      toast.error(`Error: ${errorMsg}`);
     }
   };
 
