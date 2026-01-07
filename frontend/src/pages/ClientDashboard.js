@@ -242,12 +242,12 @@ const ClientDashboard = () => {
               </Link>
             </div>
 
-            {/* Upcoming Walks/Stays */}
+            {/* Upcoming Appointments */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock className="w-5 h-5 text-orange-500" />
-                  Upcoming Walks & Stays
+                  Upcoming Services
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -263,7 +263,7 @@ const ClientDashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {upcomingAppts.slice(0, 5).map((appt) => (
+                    {upcomingAppts.slice(0, 8).map((appt) => (
                       <div
                         key={appt.id}
                         className="flex items-center justify-between p-3 rounded-lg bg-orange-50/50 border border-orange-100"
@@ -273,9 +273,9 @@ const ClientDashboard = () => {
                             <PawPrint className="w-5 h-5 text-orange-600" />
                           </div>
                           <div>
-                            <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
+                            <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
                             <p className="text-xs text-muted-foreground">
-                              {appt.scheduled_date} • {appt.scheduled_time}
+                              {appt.scheduled_date}{appt.scheduled_time ? ` • ${appt.scheduled_time}` : ''}
                             </p>
                           </div>
                         </div>
