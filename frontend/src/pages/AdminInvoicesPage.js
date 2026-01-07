@@ -168,18 +168,22 @@ const AdminBillingPage = () => {
       return;
     }
     try {
+      // Generate service_type from name: "Doggy Day Camp" -> "doggy_day_camp"
+      const serviceType = newService.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+      
       await api.post('/services', {
+        service_type: serviceType,
         name: newService.name,
         price: parseFloat(newService.price),
         description: newService.description || '',
-        duration: newService.duration ? parseInt(newService.duration) : null
+        duration_minutes: newService.duration ? parseInt(newService.duration) : 30
       });
       toast.success('New service created');
       setNewService({ name: '', price: '', description: '', duration: '' });
       setShowNewServiceForm(false);
       fetchAllData();
     } catch (error) {
-      toast.error('Failed to create service');
+      toast.error(error.response?.data?.detail || 'Failed to create service');
     }
   };
 
