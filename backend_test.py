@@ -2384,6 +2384,204 @@ class WagWalkAPITester:
         
         print("\n✅ Recurring schedule functionality testing completed!")
 
+    def test_day_night_duration_services_api(self):
+        """Test Services API returns correct duration_type for Day/Night Duration feature"""
+        print("\n🔍 Testing Services API Duration Types...")
+        
+        success, response = self.run_test(
+            "Get Services with Duration Types", "GET", "services", 200,
+            description="Get services list and verify duration_type fields for day/night scheduling"
+        )
+        
+        if success:
+            services = response if isinstance(response, list) else []
+            
+            # Expected duration types for specific services
+            expected_duration_types = {
+                'doggy_day_care': 'days',
+                'doggy_day_camp': 'days', 
+                'overnight': 'nights',
+                'petsit_our_location': 'nights',
+                'walk_30': 'minutes'
+            }
+            
+            found_services = {}
+            for service in services:
+                service_type = service.get('service_type', '')
+                duration_type = service.get('duration_type', '')
+                found_services[service_type] = duration_type
+            
+            # Verify each expected service has correct duration_type
+            all_correct = True
+            for service_type, expected_duration in expected_duration_types.items():
+                actual_duration = found_services.get(service_type)
+                if actual_duration == expected_duration:
+                    print(f"✅ {service_type} has correct duration_type: '{expected_duration}'")
+                else:
+                    print(f"❌ {service_type} has incorrect duration_type: expected '{expected_duration}', got '{actual_duration}'")
+                    all_correct = False
+            
+            if all_correct:
+                print("✅ All services have correct duration_type values")
+            else:
+                print("❌ Some services have incorrect duration_type values")
+                
+            # Show all found services for debugging
+            print("\n📋 All services found:")
+            for service in services:
+                print(f"   - {service.get('name', 'Unknown')} ({service.get('service_type', 'Unknown')}): duration_type='{service.get('duration_type', 'None')}'")
+
+    def test_service_duration_type_endpoints(self):
+        """Test Service Duration Type individual endpoints"""
+        print("\n🔍 Testing Service Duration Type Endpoints...")
+        
+        # Test doggy_day_care duration type endpoint
+        success, response = self.run_test(
+            "Get Doggy Day Care Duration Type", "GET", "services/doggy_day_care/duration-type", 200,
+            description="Get duration type for doggy_day_care service (should be 'days')"
+        )
+        
+        if success:
+            service_type = response.get('service_type')
+            duration_type = response.get('duration_type')
+            if service_type == 'doggy_day_care' and duration_type == 'days':
+                print("✅ Doggy Day Care duration type endpoint correct")
+            else:
+                print(f"❌ Doggy Day Care duration type endpoint incorrect: {response}")
+        
+        # Test overnight duration type endpoint
+        success, response = self.run_test(
+            "Get Overnight Duration Type", "GET", "services/overnight/duration-type", 200,
+            description="Get duration type for overnight service (should be 'nights')"
+        )
+        
+        if success:
+            service_type = response.get('service_type')
+            duration_type = response.get('duration_type')
+            if service_type == 'overnight' and duration_type == 'nights':
+                print("✅ Overnight duration type endpoint correct")
+            else:
+                print(f"❌ Overnight duration type endpoint incorrect: {response}")
+
+    def test_new_onboard_client_login(self):
+        """Test login with new_onboard_client credentials"""
+        print("\n🔍 Testing New Onboard Client Login...")
+        
+        # Test new_onboard_client login
+        client_login = {
+            "username": "new_onboard_client",
+            "password": "demo123"
+        }
+        success, response = self.run_test(
+            "New Onboard Client Login", "POST", "auth/login", 200,
+            data=client_login, description="Login with new_onboard_client/demo123 credentials"
+        )
+        if success:
+            self.tokens['new_onboard_client'] = response.get('access_token')
+            self.users['new_onboard_client'] = response.get('user')
+            print("✅ New onboard client login successful")
+
+    def test_day_duration_appointment_creation(self):
+        """Test Creating Appointment with Day Duration"""
+        print("\n🔍 Testing Day Duration Appointment Creation...")
+        
+        if not self.tokens.get('new_onboard_client'):
+            print("⚠️  Skipping day duration appointment test - no new_onboard_client token")
+            return
+        
+        # Get pets for the new onboard client
+        success, pets_response = self.run_test(
+            "Get New Client Pets", "GET", "pets", 200,
+            token=self.tokens['new_onboard_client'], description="Get new onboard client's pets"
+        )
+        
+        if not success or not pets_response:
+            print("⚠️  No pets found for new onboard client")
+            return
+        
+        pet_id = pets_response[0]['id']
+        
+        # Create appointment with day duration
+        appt_data = {
+            "pet_ids": [pet_id],
+            "service_type": "doggy_day_care",
+            "scheduled_date": "2026-01-15",
+            "scheduled_time": "",  # Empty for day-based services
+            "duration_value": 3,
+            "duration_type": "days"
+        }
+        
+        success, response = self.run_test(
+            "Create Day Duration Appointment", "POST", "appointments", 200,
+            data=appt_data, token=self.tokens['new_onboard_client'],
+            description="Create appointment with 3 days duration for doggy day care"
+        )
+        
+        if success:
+            # Verify the appointment was created with correct duration fields
+            if response.get('duration_value') == 3 and response.get('duration_type') == 'days':
+                print("✅ Day duration appointment created successfully with correct duration fields")
+                self.appointments['day_duration'] = response['id']
+            else:
+                print(f"⚠️  Day duration appointment created but duration fields incorrect: duration_value={response.get('duration_value')}, duration_type={response.get('duration_type')}")
+
+    def test_night_duration_appointment_creation(self):
+        """Test Creating Appointment with Night Duration"""
+        print("\n🔍 Testing Night Duration Appointment Creation...")
+        
+        if not self.tokens.get('new_onboard_client'):
+            print("⚠️  Skipping night duration appointment test - no new_onboard_client token")
+            return
+        
+        # Get pets for the new onboard client
+        success, pets_response = self.run_test(
+            "Get New Client Pets for Night", "GET", "pets", 200,
+            token=self.tokens['new_onboard_client'], description="Get new onboard client's pets for night appointment"
+        )
+        
+        if not success or not pets_response:
+            print("⚠️  No pets found for new onboard client")
+            return
+        
+        pet_id = pets_response[0]['id']
+        
+        # Create appointment with night duration
+        appt_data = {
+            "pet_ids": [pet_id],
+            "service_type": "overnight",
+            "scheduled_date": "2026-01-20",
+            "scheduled_time": "",  # Empty for night-based services
+            "duration_value": 2,
+            "duration_type": "nights"
+        }
+        
+        success, response = self.run_test(
+            "Create Night Duration Appointment", "POST", "appointments", 200,
+            data=appt_data, token=self.tokens['new_onboard_client'],
+            description="Create appointment with 2 nights duration for overnight service"
+        )
+        
+        if success:
+            # Verify the appointment was created with correct duration fields
+            if response.get('duration_value') == 2 and response.get('duration_type') == 'nights':
+                print("✅ Night duration appointment created successfully with correct duration fields")
+                self.appointments['night_duration'] = response['id']
+            else:
+                print(f"⚠️  Night duration appointment created but duration fields incorrect: duration_value={response.get('duration_value')}, duration_type={response.get('duration_type')}")
+
+    def test_day_night_duration_scheduling_feature(self):
+        """Test all Day/Night Duration scheduling features"""
+        print("\n" + "=" * 70)
+        print("🌅🌙  TESTING DAY/NIGHT DURATION SCHEDULING FEATURE")
+        print("=" * 70)
+        
+        # Run all day/night duration tests
+        self.test_day_night_duration_services_api()
+        self.test_service_duration_type_endpoints()
+        self.test_new_onboard_client_login()
+        self.test_day_duration_appointment_creation()
+        self.test_night_duration_appointment_creation()
+
 def main():
     print("🐕 Starting WagWalk API Tests...")
     print("=" * 50)
