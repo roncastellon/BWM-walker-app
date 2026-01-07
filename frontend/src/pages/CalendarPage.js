@@ -252,7 +252,20 @@ const CalendarPage = () => {
                           appt.walker_id === selectedWalker || 
                           (!appt.walker_id && selectedWalker === 'unassigned');
       const notCancelled = appt.status !== 'cancelled';
-      return dateMatch && walkerMatch && notCancelled;
+      
+      // Service category filter
+      let serviceMatch = true;
+      if (selectedServiceCategory !== 'all') {
+        const category = SERVICE_CATEGORIES.find(c => c.value === selectedServiceCategory);
+        if (category && category.match) {
+          serviceMatch = category.match.some(type => 
+            appt.service_type?.toLowerCase().includes(type.toLowerCase()) ||
+            type.toLowerCase().includes(appt.service_type?.toLowerCase())
+          );
+        }
+      }
+      
+      return dateMatch && walkerMatch && notCancelled && serviceMatch;
     });
   };
 
