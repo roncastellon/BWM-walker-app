@@ -1364,6 +1364,137 @@ async def check_walker_availability(walker_id: str, scheduled_date: str, schedul
     
     return {"available": True}
 
+@api_router.get("/walkers/{walker_id}/check-availability")
+async def api_check_walker_availability(
+    walker_id: str,
+    scheduled_date: str,
+    scheduled_time: str,
+    service_type: str = "walk_30",
+    current_user: dict = Depends(get_current_user)
+):
+    """API endpoint to check walker availability for a specific time slot"""
+    result = await check_walker_availability(walker_id, scheduled_date, scheduled_time, service_type=service_type)
+    return result
+
+@api_router.get("/walkers/find-available")
+async def find_available_walker(
+    scheduled_date: str,
+    scheduled_time: str,
+    service_type: str = "walk_30",
+    exclude_walker_id: str = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Find the next available walker for a given time slot"""
+    # Get all active walkers
+    walkers = await db.users.find(
+        {"role": "walker", "is_active": True, "frozen": {"$ne": True}},
+        {"_id": 0, "id": 1, "full_name": 1, "username": 1}
+    ).to_list(100)
+    
+    available_walkers = []
+    
+    for walker in walkers:
+        if exclude_walker_id and walker["id"] == exclude_walker_id:
+            continue
+        
+        availability = await check_walker_availability(
+            walker["id"], scheduled_date, scheduled_time, service_type=service_type
+        )
+        
+        if availability.get("available"):
+            available_walkers.append({
+                "id": walker["id"],
+                "name": walker.get("full_name") or walker.get("username", "Unknown")
+            })
+    
+    if available_walkers:
+        return {
+            "found": True,
+            "available_walkers": available_walkers,
+            "suggested_walker": available_walkers[0]  # First available
+        }
+    else:
+        return {
+            "found": False,
+            "message": "No walkers available at this time",
+            "available_walkers": []
+        }
+
+@api_router.post("/walkers/check-schedule-conflicts")
+async def check_schedule_conflicts(
+    data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Check if a walker has conflicts with a proposed schedule.
+    Used during onboarding to check multiple day/time combinations.
+    
+    Input: {
+        "walker_id": "...",
+        "schedule_type": "recurring" or "one_time",
+        "preferred_days": ["Monday", "Tuesday", ...],
+        "preferred_times": ["09:00", "14:00", ...],
+        "service_type": "walk_30"
+    }
+    """
+    walker_id = data.get("walker_id")
+    schedule_type = data.get("schedule_type", "recurring")
+    preferred_days = data.get("preferred_days", [])
+    preferred_times = data.get("preferred_times", [])
+    service_type = data.get("service_type", "walk_30")
+    
+    if not walker_id:
+        return {"has_conflicts": False, "conflicts": []}
+    
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    
+    conflicts = []
+    today = datetime.now(timezone.utc).date()
+    today_weekday = today.weekday()
+    
+    for day in preferred_days:
+        day_num = day_to_num.get(day, 0)
+        # Calculate next occurrence of this day
+        days_ahead = day_num - today_weekday
+        if days_ahead <= 0:
+            days_ahead += 7
+        next_date = today + timedelta(days=days_ahead)
+        date_str = next_date.isoformat()
+        
+        for walk_time in preferred_times:
+            availability = await check_walker_availability(
+                walker_id, date_str, walk_time, service_type=service_type
+            )
+            
+            if not availability.get("available"):
+                conflicts.append({
+                    "day": day,
+                    "time": walk_time,
+                    "date": date_str,
+                    "message": availability.get("message", "Walker not available")
+                })
+    
+    # Find alternative walkers for conflicting slots
+    alternatives = []
+    if conflicts:
+        for conflict in conflicts:
+            alt_result = await find_available_walker(
+                conflict["date"], conflict["time"], service_type, exclude_walker_id=walker_id,
+                current_user=current_user
+            )
+            if alt_result.get("found"):
+                alternatives.append({
+                    "day": conflict["day"],
+                    "time": conflict["time"],
+                    "available_walkers": alt_result["available_walkers"]
+                })
+    
+    return {
+        "has_conflicts": len(conflicts) > 0,
+        "conflicts": conflicts,
+        "alternatives": alternatives
+    }
+
 # Appointment Routes
 @api_router.post("/appointments", response_model=Appointment)
 async def create_appointment(appt_data: AppointmentCreate, current_user: dict = Depends(get_current_user)):
