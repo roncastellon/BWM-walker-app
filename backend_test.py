@@ -2649,6 +2649,12 @@ def main():
         print("=" * 70)
         tester.test_dog_park_social_feed()
         
+        # DAY/NIGHT DURATION SCHEDULING FEATURE TESTS
+        print("\n" + "=" * 70)
+        print("🌅🌙 TESTING DAY/NIGHT DURATION SCHEDULING FEATURE")
+        print("=" * 70)
+        tester.test_day_night_duration_scheduling_feature()
+        
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
     except Exception as e:
