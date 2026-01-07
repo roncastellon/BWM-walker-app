@@ -146,40 +146,55 @@ const SchedulePage = () => {
     
     try {
       if (formData.is_recurring) {
-        // Create recurring schedule
-        const dayOfWeek = selectedDate.getDay();
-        // Convert Sunday (0) to 6, and shift others down by 1 for Monday=0 format
-        const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        await api.post('/recurring-schedules', {
-          pet_ids: formData.pet_ids,
-          service_type: formData.service_type,
-          scheduled_time: isDayNight ? '' : formData.scheduled_time,
-          day_of_week: adjustedDay,
-          walker_id: formData.walker_id || null,
-          notes: formData.notes || null,
-        });
-        toast.success('Recurring schedule created! Services will repeat weekly.');
-      } else {
-        // Create one-time appointment
-        const appointmentData = {
-          pet_ids: formData.pet_ids,
-          service_type: formData.service_type,
-          scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
-          scheduled_time: isDayNight ? '' : formData.scheduled_time,
-          walker_id: formData.walker_id || null,
-          notes: formData.notes || null,
-          is_recurring: false,
-          duration_value: formData.duration_value || 1,
-          duration_type: durationType,
-        };
+        // Create recurring schedule(s) for selected days
+        const daysToSchedule = formData.selected_days.length > 0 
+          ? formData.selected_days 
+          : [ALL_DAYS[selectedDate.getDay() === 0 ? 6 : selectedDate.getDay() - 1]];
         
-        // Add end_date for multi-day bookings
-        if (isDayNight && endDate) {
-          appointmentData.end_date = format(endDate, 'yyyy-MM-dd');
+        // Map day names to day_of_week numbers (Monday=0, Sunday=6)
+        const dayMap = { 'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6 };
+        
+        for (const day of daysToSchedule) {
+          await api.post('/recurring-schedules', {
+            pet_ids: formData.pet_ids,
+            service_type: formData.service_type,
+            scheduled_time: isDayNight ? '' : formData.scheduled_time,
+            day_of_week: dayMap[day],
+            walker_id: formData.walker_id || null,
+            notes: formData.notes || null,
+          });
+        }
+        toast.success(`Recurring schedule created for ${daysToSchedule.join(', ')}! Services will repeat weekly.`);
+      } else {
+        // Create one-time appointment(s)
+        // If duration_value > 1 for day/night services, create multiple consecutive appointments
+        const appointmentsToCreate = isDayNight && formData.duration_value > 1 
+          ? formData.duration_value 
+          : 1;
+        
+        for (let i = 0; i < appointmentsToCreate; i++) {
+          const appointmentDate = new Date(selectedDate);
+          appointmentDate.setDate(appointmentDate.getDate() + i);
+          
+          const appointmentData = {
+            pet_ids: formData.pet_ids,
+            service_type: formData.service_type,
+            scheduled_date: format(appointmentDate, 'yyyy-MM-dd'),
+            scheduled_time: isDayNight ? '' : formData.scheduled_time,
+            walker_id: formData.walker_id || null,
+            notes: formData.notes || null,
+            is_recurring: false,
+            duration_value: 1,
+            duration_type: durationType,
+          };
+          
+          await api.post('/appointments', appointmentData);
         }
         
-        await api.post('/appointments', appointmentData);
-        toast.success('Appointment booked successfully!');
+        const successMsg = appointmentsToCreate > 1 
+          ? `${appointmentsToCreate} ${durationType === 'days' ? 'day' : 'night'} appointments booked successfully!`
+          : 'Appointment booked successfully!';
+        toast.success(successMsg);
       }
       setDialogOpen(false);
       setFormData({
