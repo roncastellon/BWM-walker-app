@@ -265,11 +265,13 @@ const BillingPage = () => {
             </DialogHeader>
 
             <Tabs defaultValue="card" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="card" className="text-xs">Card</TabsTrigger>
                 <TabsTrigger value="zelle" className="text-xs">Zelle</TabsTrigger>
                 <TabsTrigger value="venmo" className="text-xs">Venmo</TabsTrigger>
                 <TabsTrigger value="cashapp" className="text-xs">CashApp</TabsTrigger>
+                <TabsTrigger value="apple_pay" className="text-xs">🍎 Pay</TabsTrigger>
+                <TabsTrigger value="apple_cash" className="text-xs">🍎 Cash</TabsTrigger>
               </TabsList>
 
               {/* Credit Card */}
