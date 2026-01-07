@@ -393,7 +393,7 @@ const ClientOnboardingPage = () => {
             <PawPrint className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Welcome to BowWowMeow!</h1>
-          <p className="text-muted-foreground mt-2">Let's set up your profile in just a few steps</p>
+          <p className="text-muted-foreground mt-2">Let&apos;s set up your profile in just a few steps</p>
         </div>
 
         {renderStepIndicator()}
@@ -995,7 +995,7 @@ const ClientOnboardingPage = () => {
               <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
                 <p className="text-sm text-amber-800">
                   <strong>Note:</strong> Our team will review your preferences and set up your pricing. 
-                  You'll be notified once your account is ready for scheduling.
+                  You&apos;ll be notified once your account is ready for scheduling.
                 </p>
               </div>
             </CardContent>
