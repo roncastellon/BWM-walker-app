@@ -390,7 +390,9 @@ const CalendarPage = () => {
           </Badge>
         )}
       </div>
-      <p className={`${compact ? 'truncate' : ''}`}>{appt.client_name}</p>
+      <p className={`${compact ? 'truncate' : ''}`}>
+        {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name}
+      </p>
       {!compact && (
         <p className="text-xs text-muted-foreground capitalize">
           {appt.service_type?.replace(/_/g, ' ')} • {getWalkerName(appt.walker_id)}
