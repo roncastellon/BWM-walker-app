@@ -1402,6 +1402,12 @@ async def create_recurring_schedule(schedule_data: RecurringScheduleCreate, curr
     )
     schedule_dict = schedule.model_dump()
     schedule_dict['created_at'] = schedule_dict['created_at'].isoformat()
+    # Handle optional datetime fields
+    if schedule_dict.get('paused_at'):
+        schedule_dict['paused_at'] = schedule_dict['paused_at'].isoformat()
+    if schedule_dict.get('stopped_at'):
+        schedule_dict['stopped_at'] = schedule_dict['stopped_at'].isoformat()
+    
     await db.recurring_schedules.insert_one(schedule_dict)
     return schedule_dict
 
