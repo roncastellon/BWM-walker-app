@@ -307,7 +307,7 @@ class Pet(BaseModel):
     name: str
     species: str = "dog"
     breed: Optional[str] = None
-    age: Optional[int] = None
+    age: Optional[str] = None  # Changed to string to handle empty values
     weight: Optional[float] = None
     notes: Optional[str] = None
     photo_url: Optional[str] = None
