@@ -782,6 +782,42 @@ const AdminClientsPage = () => {
                     {/* Schedule Tab */}
                     <TabsContent value="schedule" className="space-y-4 mt-4">
                       <div className="space-y-4">
+                        {/* Service Type Selection */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2 text-base font-semibold">
+                            <PawPrint className="w-4 h-4" />
+                            Service Type
+                          </Label>
+                          <Select
+                            value={walkingSchedule.service_type || 'walk_30'}
+                            onValueChange={(value) => setWalkingSchedule({ 
+                              ...walkingSchedule, 
+                              service_type: value,
+                              // Reset duration when changing service type
+                              duration_value: 1
+                            })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select service" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {services.map((service) => {
+                                const durationType = service.service_type?.includes('day') ? 'days' : 
+                                                    service.service_type?.includes('overnight') || service.service_type?.includes('petsit') ? 'nights' : 'minutes';
+                                let priceLabel = `$${service.price?.toFixed(2)}`;
+                                if (durationType === 'days') priceLabel += '/day';
+                                if (durationType === 'nights') priceLabel += '/night';
+                                return (
+                                  <SelectItem key={service.id} value={service.service_type}>
+                                    {service.name} - {priceLabel}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Days of Week Selection */}
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
@@ -805,82 +841,135 @@ const AdminClientsPage = () => {
                             {walkingSchedule.days.length} day(s) selected
                           </p>
                         </div>
-                        
-                        <div className="space-y-2">
-                          <Label className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            Walks Per Day
-                          </Label>
-                          <Select
-                            value={walkingSchedule.walks_per_day.toString()}
-                            onValueChange={(value) => setWalkingSchedule({ 
-                              ...walkingSchedule, 
-                              walks_per_day: parseInt(value),
-                              preferred_times: walkingSchedule.preferred_times.slice(0, parseInt(value))
-                            })}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1 walk</SelectItem>
-                              <SelectItem value="2">2 walks</SelectItem>
-                              <SelectItem value="3">3 walks</SelectItem>
-                              <SelectItem value="4">4 walks</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label>Preferred Walk Times</Label>
-                          <div className="space-y-2">
-                            {walkingSchedule.preferred_times.map((time, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <Select
-                                  value={time}
-                                  onValueChange={(value) => updatePreferredTime(index, value)}
-                                >
-                                  <SelectTrigger className="w-32">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent className="max-h-60">
-                                    {TIME_SLOTS.map((slot) => (
-                                      <SelectItem key={slot} value={slot}>{slot}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <span className="text-sm text-muted-foreground">Walk {index + 1}</span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removePreferredTime(index)}
-                                  className="text-destructive"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            {walkingSchedule.preferred_times.length < walkingSchedule.walks_per_day && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={addPreferredTime}
-                                className="rounded-full"
+
+                        {/* Duration - Show different options based on service type */}
+                        {walkingSchedule.service_type?.includes('walk') ? (
+                          <>
+                            <div className="space-y-2">
+                              <Label className="flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                Walks Per Day
+                              </Label>
+                              <Select
+                                value={walkingSchedule.walks_per_day?.toString() || '1'}
+                                onValueChange={(value) => setWalkingSchedule({ 
+                                  ...walkingSchedule, 
+                                  walks_per_day: parseInt(value),
+                                  preferred_times: walkingSchedule.preferred_times?.slice(0, parseInt(value)) || []
+                                })}
                               >
-                                <Plus className="w-4 h-4 mr-1" />
-                                Add Time
-                              </Button>
-                            )}
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">1 walk</SelectItem>
+                                  <SelectItem value="2">2 walks</SelectItem>
+                                  <SelectItem value="3">3 walks</SelectItem>
+                                  <SelectItem value="4">4 walks</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label>Preferred Walk Times</Label>
+                              <div className="space-y-2">
+                                {(walkingSchedule.preferred_times || []).map((time, index) => (
+                                  <div key={index} className="flex items-center gap-2">
+                                    <Select
+                                      value={time}
+                                      onValueChange={(value) => updatePreferredTime(index, value)}
+                                    >
+                                      <SelectTrigger className="w-32">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent className="max-h-60">
+                                        {TIME_SLOTS.map((slot) => (
+                                          <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <span className="text-sm text-muted-foreground">Walk {index + 1}</span>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removePreferredTime(index)}
+                                      className="text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                                {(walkingSchedule.preferred_times?.length || 0) < (walkingSchedule.walks_per_day || 1) && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={addPreferredTime}
+                                    className="rounded-full"
+                                  >
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    Add Time
+                                  </Button>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Time slots are in 15-minute increments
+                              </p>
+                            </div>
+                          </>
+                        ) : walkingSchedule.service_type?.includes('day') || walkingSchedule.service_type?.includes('concierge') ? (
+                          <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              Days Per Booking
+                            </Label>
+                            <div className="flex flex-wrap gap-2">
+                              {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                                <Button
+                                  key={num}
+                                  type="button"
+                                  variant={(walkingSchedule.duration_value || 1) === num ? 'default' : 'outline'}
+                                  size="sm"
+                                  className={`rounded-full w-10 h-10 ${(walkingSchedule.duration_value || 1) === num ? 'bg-purple-500 hover:bg-purple-600' : ''}`}
+                                  onClick={() => setWalkingSchedule({ ...walkingSchedule, duration_value: num })}
+                                >
+                                  {num}
+                                </Button>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {walkingSchedule.duration_value || 1} day(s) per booking
+                            </p>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            Time slots are in 15-minute increments
-                          </p>
-                        </div>
+                        ) : (walkingSchedule.service_type?.includes('overnight') || walkingSchedule.service_type?.includes('petsit')) ? (
+                          <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              Nights Per Booking
+                            </Label>
+                            <div className="flex flex-wrap gap-2">
+                              {[1, 2, 3, 4, 5, 6, 7, 14].map((num) => (
+                                <Button
+                                  key={num}
+                                  type="button"
+                                  variant={(walkingSchedule.duration_value || 1) === num ? 'default' : 'outline'}
+                                  size="sm"
+                                  className={`rounded-full w-10 h-10 ${(walkingSchedule.duration_value || 1) === num ? 'bg-indigo-500 hover:bg-indigo-600' : ''}`}
+                                  onClick={() => setWalkingSchedule({ ...walkingSchedule, duration_value: num })}
+                                >
+                                  {num}
+                                </Button>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {walkingSchedule.duration_value || 1} night(s) per booking
+                            </p>
+                          </div>
+                        ) : null}
                         
                         <div className="space-y-2">
-                          <Label>Preferred Walker (Optional)</Label>
+                          <Label>Preferred Walker/Sitter (Optional)</Label>
                           <Select
                             value={walkingSchedule.preferred_walker_id || 'any'}
                             onValueChange={(value) => {
@@ -895,7 +984,7 @@ const AdminClientsPage = () => {
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Any available walker" />
+                              <SelectValue placeholder="Any available" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="any">Any available walker</SelectItem>
