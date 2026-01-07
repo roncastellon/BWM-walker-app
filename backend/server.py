@@ -403,6 +403,7 @@ class AppointmentCreate(BaseModel):
     day_of_week: Optional[int] = None  # Required if is_recurring is true
 
 class RecurringScheduleCreate(BaseModel):
+    client_id: Optional[str] = None  # Admin can set this, clients auto-filled
     pet_ids: List[str]
     service_type: ServiceType
     scheduled_time: str
