@@ -1295,6 +1295,37 @@ async def get_holiday_dates_endpoint(year: int):
     holidays = get_holiday_dates(year)
     return {"year": year, "holiday_dates": sorted(holidays)}
 
+@api_router.get("/services/{service_type}/duration-type")
+async def get_service_duration_type_endpoint(service_type: str):
+    """Get the duration type for a service (minutes, days, or nights)"""
+    duration_type = get_service_duration_type(service_type)
+    return {"service_type": service_type, "duration_type": duration_type}
+
+@api_router.post("/services/update-duration-types")
+async def update_services_duration_types(current_user: dict = Depends(get_current_user)):
+    """
+    Update all services to have correct duration_type based on their service_type.
+    Admin only endpoint.
+    """
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    services = await db.services.find({}, {"_id": 0}).to_list(100)
+    updated_count = 0
+    
+    for service in services:
+        service_type = service.get("service_type", "")
+        correct_duration_type = get_service_duration_type(service_type)
+        
+        if service.get("duration_type") != correct_duration_type:
+            await db.services.update_one(
+                {"id": service["id"]},
+                {"$set": {"duration_type": correct_duration_type}}
+            )
+            updated_count += 1
+    
+    return {"message": f"Updated {updated_count} services", "updated_count": updated_count}
+
 # Helper function to get time slots within buffer range (15 min before and after)
 def get_buffer_time_slots(time_str: str, buffer_minutes: int = 15) -> list:
     """Get list of time slots within buffer range of given time"""
