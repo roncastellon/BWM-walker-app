@@ -1,86 +1,96 @@
 <analysis>**original_problem_statement:**
-The original goal was to build a dog walker/pet sitting app named BowWowMeow with scheduling, a calendar, a client list, and invoicing.
+The user wants to continue developing the BowWowMeow pet care application. The initial request was to resolve deployment blockers. Subsequent requests included fixing the PWA icon, adding Apple Pay/Cash, implementing a comprehensive recurring scheduling system, fixing a service creation bug, and refactoring the scheduling flow to support services priced by day/night instead of minutes.
 
-Over the course of the session, the user requested and the agent worked on the following features:
-- **Dog Park Page:** A social feed for all users to post pictures and stories about pets, with tagging and filtering. The page should have a green irregular oval icon.
-- **Walker Trade Notifications:** When a walker initiates a trade, the requestee should see a red octagon notification on their home page. Clicking it should allow them to review and accept/reject the trade. The notification must contain details of the trade (walker, dog, time). This should work for future-dated walks as well.
-- **First-Time Client Onboarding:** A multi-step wizard for new clients to enter personal info, pet details, preferred walk schedules (days per week, times per day), and billing preferences (weekly/monthly, with Venmo, Zelle, CashApp, PayPal, Check/Cash options, explicitly excluding credit cards). Upon completion, an admin should be notified to set the client's pricing.
-- **Admin Pricing Setup:** When an admin clicks the notification for a new client, they should be taken to a page where they can see the client's requested schedule and set up their specific pricing.
-- **First-Time Staff Onboarding:** A profile setup for new walkers/sitters to enter their name, address, phone, email, and date of birth. They must also select their preferred payment method (Zelle, Venmo, CashApp) and provide their payment ID.
-- **Admin User Management:** Admins need the ability to delete test profiles and freeze or lock any user account to prevent them from logging in.
-- **Accounts Receivable Aging Report:** A new report in the Reports section for admins to see unpaid invoices bucketed by age: Current, 30 days, 60 days, and 90+ days, with totals for each bucket.
+PRODUCT REQUIREMENTS:
+- Admins and clients must be able to schedule services as either One-Time or Recurring (weekly).
+- Recurring schedules must be editable (pause, stop, change walker) by admins.
+- The system must check for walker availability conflicts and offer alternatives (Assign Next Available or Choose another).
+- When an admin changes a walker on a recurring schedule, they must choose if it's a One-time change or a Permanent change.
+- Services like Doggy Day Care and Overnights should be scheduled by number of days and number of nights respectively, not minutes.
+- All service types (walks, day visits, overnights) should be available for scheduling.
+- The Made with Emergent branding badge must be removed.
 
 **User's preferred language**: en-US
 
 **what currently exists?**
-A full-stack BowWowMeow application (FastAPI, React, MongoDB) with Admin, Client, and Walker/Sitter roles. The application now includes:
-- **Dog Park:** A fully functional social feed page where users can create posts with text and images, tag pets/people, and like/delete posts. The feature has been tested.
-- **Walker Trade System:** Walkers receive a prominent red octagon notification for incoming trade requests on their dashboard. The notification and review modal display detailed information about the trade (requester, pet, date, and time), with nicely formatted dates for future walks. The backend logic to swap the walker on the appointment upon acceptance has been verified.
-- **Client Onboarding:** A complete 4-step onboarding wizard for new clients that captures personal info, pet details, recurring schedule preferences, and non-credit card payment methods. It successfully creates a notification for the admin upon completion.
-- **Staff Onboarding:** A functional onboarding page for new walkers/sitters that captures personal details, date of birth, and payment preferences (Zelle, Venmo, CashApp) with their corresponding ID.
-- **Admin User Management:** Backend endpoints and frontend UI buttons have been added for admins to Freeze and Delete users from the Client and Walker management pages. The delete function includes a comprehensive confirmation dialog. However, the Freeze/Unfreeze functionality is buggy.
+A full-stack FastAPI/React/MongoDB application, BowWowMeow, with established Admin, Client, and Walker/Sitter roles. The application includes a Dog Park social feed, an A/R Aging report, user management, and PWA functionality. Recent additions include:
+- **Payment Options:** Apple Pay and Apple Cash have been added to all payment selection UIs and backend models.
+- **Recurring Schedules:** A foundational system for one-time vs. recurring schedules is implemented on the , , and . Backend endpoints and models exist to support creating and managing these schedules.
+- **Walker Conflict Checking:** A basic conflict check is in place that alerts the user and offers to assign the next available walker.
+- **Admin Walker Change:** A UI and backend endpoint exists for admins to change a walker on a recurring schedule (one-time or permanent).
+- **Service Creation:** A bug preventing the creation of custom services was fixed.
+- **UI Updates:** The Emergent badge was removed from , and several Add Walk buttons were renamed to Add Service.
 
 **Last working item**:
-- **Last item agent was working:** The user requested a new Accounts Receivable aging report to bucket unpaid invoices. The agent acknowledged the request and was about to start implementation.
-- **Status:** NOT STARTED
+- **Last item agent was working:** The user specified that Doggy Day Care and Overnights should be scheduled by number of days/nights, not minutes, while still allowing for one-time or recurring options. The agent was starting to work on refactoring the service model and scheduling forms to accommodate this new requirement.
+- **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** backend testing agent
+- **Which testing method agent to use?** both
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1: Freeze/Unfreeze button logic is broken (P0)**
-    - **Description:** When an admin clicks Freeze on a user's account, the button text is supposed to change to Unfreeze to allow the action to be reversed. The user pointed out this wasn't happening, and the agent's attempt to demonstrate it failed, with the button remaining as Freeze. The  flag is not being correctly reflected in the UI state after the API call.
-    - **Attempted fixes:** The agent implemented the backend endpoints and frontend UI, but did not debug why the state wasn't updating correctly on the frontend after a user was frozen.
-    - **Next debug checklist:**
-        1. In  and , check the  function.
-        2. Verify the API response from  is being correctly processed.
-        3. Ensure the state update ( or ) correctly triggers a re-render with the new  status, causing the button to conditionally render as Unfreeze.
-    - **Why fix this issue and what will be achieved with the fix?** Admins need a reliable way to both lock and unlock user accounts. Without the Unfreeze option, a frozen account is permanent.
-    - **Status:** BLOCKED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** both
-    - **Blocked on other issue:** None
+- **Issue 1: Implement Day/Night Based Duration for Specific Services (P0)**
+  - **Description:** The current scheduling system is hardcoded to use . This needs to be refactored to support services measured in days (for Day Care) and nights (for Overnights).
+  - **Attempted fixes:** The agent acknowledged the requirement but has not yet implemented the code changes.
+  - **Next debug checklist:**
+    1.  Modify the  and  models in  to support a duration unit (e.g., 'minutes', 'days', 'nights') alongside a numeric duration value.
+    2.  Update the backend logic for creating appointments and checking for conflicts to correctly interpret day/night based durations. The conflict logic should allow non-walk services to overlap.
+    3.  On the frontend (, , ), conditionally render an input field for Number of Days/Nights instead of a time/minute selector when a relevant service is chosen.
+    4.  Ensure the form submission sends the correct duration and unit to the backend.
+  - **Why fix this issue and what will be achieved with the fix?** This is critical to make the scheduling feature usable for the business's core service offerings beyond simple walks.
+  - **Status:** IN PROGRESS
+  - **Is recurring issue?** N
+  - **Should Test frontend/backend/both after fix?** both
+  - **Blocked on other issue:** None
+
+- **Issue 2: Service Creation Fails on Deployed App (P1)**
+  - **Description:** The user reported that creating a new service fails on the live, deployed application, even after a fix was successfully tested in the preview environment.
+  - **Attempted fixes:** The agent confirmed the fix works by calling the deployed API directly. Enhanced error logging was added to the frontend to capture more specific error details from the user's browser. The agent suspects a browser caching or deployment pipeline issue.
+  - **Next debug checklist:**
+    1.  Ask the user to try creating a service with a completely unique name to rule out duplicate name issues.
+    2.  Ask the user for the *exact* error message that now appears (since enhanced logging was added).
+    3.  If it persists, investigate deployed application logs for clues.
+  - **Why fix this issue and what will be achieved with the fix?** Admins cannot manage their services, which is a core business function.
+  - **Status:** USER VERIFICATION PENDING
+  - **Is recurring issue?** Y
+  - **Should Test frontend/backend/both after fix?** both
+  - **Blocked on other issue:** None
 
 **In progress Task List**:
-- **Task 1: Implement Accounts Receivable Aging Report (P0)**
-    - **Where to resume:** Start by creating a new backend endpoint (e.g., ) in . This endpoint will query all unpaid invoices and categorize them into buckets (0-30, 31-60, 61-90, 90+ days). Then, create a new component in the frontend to display this data in the Reports section.
-    - **What will be achieved with this?** Admins will gain crucial financial insight into outstanding revenue.
-    - **Status:** NOT STARTED
-    - **Should Test frontend/backend/both after fix?** both
-    - **Blocked on something:** None
-- **Task 2: Fix Admin Pricing Setup for New Clients (P1)**
-    - **Where to resume:** The flow for an admin to set pricing for a new client is broken. The client's onboarding preferences (schedule, payment method) are not being displayed in the admin's pricing setup modal. The agent found that the  flag and related data were not being correctly fetched or passed to the  component.
-    - **What will be achieved with this?** This will complete the new client onboarding-to-billing lifecycle, a critical business workflow.
-    - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** frontend
-    - **Blocked on something:** None
+- **Task 1: Complete Recurring Scheduling Feature (P0)**
+  - **Where to resume:** The feature is partially built but is blocked until the duration logic is refactored (Issue #1). The frontend forms need to be updated to handle day/night selection.
+  - **What will be achieved with this?** A complete and flexible scheduling system that supports all service types for both single and recurring appointments.
+  - **Status:** BLOCKED
+  - **Should Test frontend/backend/both after fix?** both
+  - **Blocked on something:** Issue 1: Implement Day/Night Based Duration for Specific Services
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-  - **Task 1: Full Regression Test (P1):** The testing agent has not been run since major features like client/staff onboarding and advanced trade logic were added. A full suite run is needed to catch regressions.
-  - **Task 2: Enable Editing Payment Methods (P1):** Staff can set payment methods during onboarding, but there is no UI to edit them later from their profile page.
-  - **Task 3: Refine Sitter/Walker Roles (P1):** The backend  model may need refactoring to properly support a single user performing both walker and sitter roles.
+  - **Task 1 (P1): Full Regression Test:** After the current scheduling features are stable, perform a full regression test covering service creation, one-time/recurring scheduling for all service types, walker conflict checks, and admin controls.
+  - **Task 2 (P1): Enhance Conflict Checking:** Implement the user's request to suggest alternative *time slots* on the same day if a walker is unavailable, not just suggesting a different walker.
+  - **Task 3 (P1): Multi-Day Selection in Onboarding:** Ensure the client onboarding flow () properly supports selecting multiple days for services like Day Care.
+
 - **Future Tasks:**
-  - **Task 4: Refactor  (P2):** The main backend file has grown significantly and is a monolith. It should be broken down into smaller modules using FastAPI's .
-  - **Task 5: Refactor Frontend Pages (P2):** , , and  have all become very large and handle too much state. They should be broken into smaller, more manageable components.
-  - **Task 6: Implement Sitter Scheduling Logic (P1):** Backend needs to enforce scheduling rules for sitters (e.g., minimum 1 day booking).
+  - **Task 4 (P2): Refactor :** Decompose the monolithic  into smaller, domain-specific routers (e.g., , , ).
+  - **Task 5 (P2): Refactor Frontend Pages:** Break down large, complex components like , , and  into smaller, more manageable child components.
+  - **Task 6 (P2): Enable Editing Staff Payment Methods:** Allow staff to edit their payment details (Zelle, Venmo, etc.) from their profile after they have completed onboarding.
 
 **Completed work in this session**
-- **Dog Park Social Feed:** A new page () with a social feed, post creation modal, tagging, and liking functionality. Tested by both backend and frontend agents.
-- **Walker Trade Notification UI:** Implemented a red octagon notification on the  for pending trade requests.
-- **Detailed Trade Request Info:** Updated the trade notification and modal to include the requester's name, pet's name, and the appointment time/date.
-- **Client Onboarding Flow:** Created a 4-step wizard () for new clients, redirecting them on first login.
-- **Admin Notification for New Clients:** Added a banner on  that alerts admins when a new client has finished onboarding and needs pricing set.
-- **Staff Onboarding Flow:** Created an onboarding page () for new walkers/sitters to set up their profile and payment information.
-- **User Management Backend:** Added API endpoints in  to delete a user () and freeze/unfreeze an account ().
-- **User Management Frontend:** Added Freeze and Delete buttons to  and .
+- **Deployment Health:** Resolved deployment blockers by cleaning the  file and verifying the application's readiness.
+- **PWA Icon:** Successfully redesigned and implemented the final version of the PWA app icon based on iterative user feedback.
+- **PWA Install Instructions:** Added a user-friendly modal with instructions for installing the app on both iOS and Android, accessible from the login page.
+- **Payment Methods:** Integrated Apple Pay and Apple Cash as payment options across the application.
+- **Service Creation Fix:** Repaired the backend logic that was preventing admins from creating new, custom-named services.
+- **Branding Removal:** Removed the Made with Emergent badge from the application footer.
+- **Service Scheduling Expansion:** Modified the scheduling UI to show all service types (not just walks) and updated the backend to allow non-walk services to have overlapping schedules.
+- **UI Naming Convention:** Updated various Add Walk buttons and labels to the more generic Add Service.
 
 **Earlier issues found/mentioned but not fixed**
 - **Issue 1: Client Dashboard Data Loading Error**
-    - **Debug checklist:** After completing onboarding, the agent noted a minor data loading error on the . The console log in the screenshots was not investigated. Check the  hook in  that fetches initial data and see if it handles the state of a brand-new user correctly.
-    - **Why to solve this issue and what will be achieved with this?** Provides a clean user experience for new clients immediately after onboarding.
-    - **Should Test frontend/backend/both after fix:** frontend
-    - **Is recurring issue?** N
+  - **Debug checklist:** This issue from a previous handoff was not addressed. Check the  hook in  to analyze how it fetches data for a new user immediately after onboarding and handle cases where data might be absent.
+  - **Why to solve this issue and what will be achieved with this?** Ensures a smooth, error-free experience for new clients on their first login.
+  - **Should Test frontend/backend/both after fix:** frontend
+  - **Is recurring issue?** N
 
 **Known issue recurrence from previous fork**
 - None.
@@ -89,97 +99,93 @@ A full-stack BowWowMeow application (FastAPI, React, MongoDB) with Admin, Client
 
 
 **Key Technical Concepts**
-- **Backend:** FastAPI, MongoDB (), Pydantic, JWT.
-- **Frontend:** React, React Router, Tailwind CSS, Shadcn UI, .
-- **Architecture:** Full-stack application. Technical debt is increasing in  and several large frontend page components.
+- **Recurring Schedules:** Implemented using a dedicated  MongoDB collection. The backend creates appointments one week in advance and provides API endpoints to manage the status (active, paused, stopped) and assigned walker.
+- **Conditional UI Rendering:** Heavy use of React state to conditionally display UI elements based on user selections, such as showing a Recurring toggle or switching between inputs for minutes, days, or nights.
+- **API Design:** New endpoints were added for managing recurring schedules (), checking walker availability (), and finding the next available walker.
 
 **key DB schema**
 - **users:**
-    - 
-    - 
-    -  (for account freezing)
-    - , , 
-    - 
-    - 
-- **dog_park_posts:** (New Collection) 
-- **onboarding_submissions:** (New Collection) Stores the multi-step onboarding data for clients before pricing is set.
+    - Added 
+    - Added 
+- **services:**
+    -  is now a flexible string, auto-generated from the service name.
+- **recurring_schedules:** (New Collection)
+    - , , , , , , ,  ('active', 'paused', 'stopped').
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
-- : Heavily modified with new endpoints for Dog Park, client/staff onboarding, and user management (delete/freeze).
-- : New page for the social feed feature.
-- : New page for the client onboarding wizard.
-- : New page for the staff onboarding wizard.
-- : Modified for the trade request UI and onboarding checks.
-- : Modified to add user management buttons and pricing setup logic.
-- : Modified to add user management buttons.
-- : Modified to include new routes.
-- : Modified to add the Dog Park navigation link.
+- 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 
 **Areas that need refactoring**:
-- **CRITICAL (Backend):**  is now extremely large and difficult to maintain. It urgently needs to be broken into routers for each domain (auth, users, appointments, dogpark, etc.).
-- **CRITICAL (Frontend):** , , and  are managing too many features and complex states. They should be refactored into smaller, specialized components.
+- ** (Backend):** The file has become excessively large and complex. The logic for appointments and recurring schedules should be extracted into its own dedicated router.
+- **Scheduling Components (Frontend):** , , and the modal in  share complex scheduling logic. This should be extracted into a reusable, configurable component.
 
 **key api endpoints**
-- **Dog Park:** , , 
-- **Onboarding:** , , 
-- **User Management:** , 
-- **Pricing:** 
+- : Creates a new recurring schedule.
+- : Pauses, resumes, or stops a schedule.
+- : Admin-only endpoint to change the assigned walker.
+- : Checks for scheduling conflicts for a specific walker.
+- : Creates a new service (logic was fixed to be more flexible).
 
 **Critical Info for New Agent**
-- The user provides new feature requests rapidly, sometimes before the previous one is fully verified. It is crucial to complete and verify one task before moving on.
-- The highest priority is to implement the **Accounts Receivable Aging Report**.
-- After that, fix the two known bugs: the broken **Freeze/Unfreeze button** and the **Admin Pricing Setup** flow not showing client preferences.
-- The user is very detail-oriented about the UI. Use screenshots to verify UI changes.
-- The codebase has significant technical debt. Proposing a refactoring task for  and large frontend components should be a priority after the current tasks are cleared.
+- **Top Priority:** The immediate task is to refactor the scheduling flow to support services measured in days/nights instead of minutes. This is a hard blocker for the user.
+- **Deployment Bug:** Be aware of the recurring issue where service creation fails on the deployed app. The next step is to get a specific error message from the user's browser, as agent-side API calls have succeeded.
+- **User-Centric UI:** The user is highly attentive to UI details. Ensure that any changes match their specific requests (e.g., button text, option order).
+- **Incomplete Features:** The recurring scheduling and walker conflict features are new and have not been fully tested. They will require thorough regression testing after the current blocker is resolved.
 
 **documents and test reports created in this job**
--  (Updated for the Dog Park feature).
+- None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Request:** Add an accounts receivable aging report. (NOT STARTED)
-2.  **Request:** How do you unfreeze an account? (Agent attempted to show, but revealed a bug).
-3.  **Request:** After deploying, I need to be able to delete test profiles and freeze accounts. (IN PROGRESS - Buggy)
-4.  **Confirmation:** The staff onboarding with payment methods is working. (DONE)
-5.  **Request:** Staff onboarding should include payment method selection (Zelle, Venmo, CashApp) and ID. (DONE)
-6.  **Request:** New walkers/sitters should go through a first-time profile setup. (DONE)
-7.  **Request:** Call deployer agent. (Agent did a health check instead, which passed).
-8.  **Confirmation:** The client pricing setup flow is implemented. (IN PROGRESS - Buggy)
-9.  **Request:** When an admin opens a new client's profile, there should be a spot to set up their pricing. (IN PROGRESS - Buggy)
-10. **Confirmation:** The client onboarding flow is complete. (IN PROGRESS - Buggy, admin part is not working)
+- The overnights and day visits do not need minutes the should say number of days for the doggy Day Care and offer recurring or 1 time. And over nights are number of nights and offer 1 time or recurring - **PENDING (CURRENT TASK)**
+- If you click on add walk it brings you to the schedule page where you have the choice. The add walk button should just say add service... - Resolved.
+- ...When I did try to add a doggy Day Care schedule it failed. It also didnt offer me the ability to schedule multiple days in setting it up" - Partially resolved; failure investigated, multi-day scheduling is part of the current task.
+- "On setting appointments... you need to be able to schedule the other services and the times can overlap" - Resolved.
+- "Can we remove the Emergent link at the bottom of every page?" - Resolved.
+- "Failed again...cant do a hard reset with my phone. Logged out and logged back in...failed again - Pending user verification regarding service creation bug.
+- I just redeployed - User action.
+- Failed again - User feedback on service creation bug.
+- Ok...that worked - User confirmation that service creation fix worked in the preview environment.
+- I need to redeploy - User request.
 
 **Project Health Check:**
 - **Broken:**
-    - The Freeze/Unfreeze functionality is not working as expected; the UI state does not update to show an Unfreeze option.
-    - The admin workflow to set pricing for new clients is broken; the client's onboarding data is not displayed.
-- **Mocked:** Twilio and SendGrid integrations remain unconfigured.
+    - The scheduling logic is incomplete and does not support services priced by day/night.
+    - Service creation is reportedly failing on the deployed application for the user.
+- **Mocked:**
+    - Twilio and SendGrid integrations are installed but not configured with API keys.
 
 **3rd Party Integrations**
-- **Stripe (Payments):** Integrated for credit card payments (uses a test key).
-- **Twilio (SMS):** SDK installed. Requires user API key.
-- **Capacitor (Mobile):** Integrated for mobile app packaging.
+- **Stripe:** Used for payments (with a test key).
+- **lucide-react:** Used for UI icons.
 - **OpenStreetMap / Leaflet:** Integrated for GPS tracking.
-- **SendGrid (Email):** SDK installed. Requires user API key.
+- **Twilio:** SDK installed, requires user key.
+- **SendGrid:** SDK installed, requires user key.
+- **Capacitor:** Integrated for mobile app packaging.
 
 **Testing status**
-- **Testing agent used after significant changes:** YES, for the Dog Park feature. Not used for the onboarding or user management features.
+- **Testing agent used after significant changes:** YES (via  and  for backend APIs).
 - **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** None.
-- **Known regressions:** The Freeze/Unfreeze button state is a new bug introduced in this session. The client pricing setup flow is also a new, incomplete feature with bugs.
+- **Test files created:** None
+- **Known regressions:** Service creation failing on the deployed app could be a regression or a deployment issue.
 
 **Credentials to test flow:**
-| Role | Username | Password | Notes |
-|---|---|---|---|
-| Admin |  |  | |
-| Client |  |  | Existing client |
-| Walker |  |  | Existing walker |
-| Sitter |  |  | Existing sitter |
-| New Client |  |  | For testing onboarding flow |
-| New Walker |  |  | For testing staff onboarding |
+| Role | Username | Password |
+|---|---|---|
+| Admin |  |  |
+| Client |  |  |
+| Walker |  |  |
+| Client (New) |  |  |
 
 **What agent forgot to execute**
-- The agent did not fully debug and fix the Unfreeze button UI bug after the user pointed it out.
-- The agent did not resolve the issue where client onboarding data was not appearing in the admin's pricing setup modal, leaving the feature incomplete.
-- The agent noticed a minor data loading error on the client dashboard after onboarding but never investigated or fixed it.</analysis>
+- The agent did not address the Client Dashboard Data Loading Error for new users, an issue carried over from a previous session.
+- The agent did not fully implement the user's request for conflict checking to suggest alternative *time slots* for the same day; it was only implemented to suggest an alternative *walker*.</analysis>

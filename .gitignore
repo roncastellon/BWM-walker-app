@@ -108,3 +108,7 @@ frontend/node_modules/.cache/default-development/19.pack
 .env.production
 backend/.env
 frontend/.env
+-e 
+# Environment files
+*.env
+*.env.*
