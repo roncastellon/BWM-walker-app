@@ -435,7 +435,45 @@ const SchedulePage = () => {
                   )}
                 </div>
 
-                {/* Price Estimate for Pet Sitting */}
+                {/* One-Time vs Recurring Toggle */}
+                {!isPetSittingService(formData.service_type) && (
+                  <div className="space-y-3 p-4 rounded-xl bg-secondary/10">
+                    <Label className="text-base font-medium">Schedule Type</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        variant={!formData.is_recurring ? 'default' : 'outline'}
+                        className="rounded-full h-auto py-3 flex flex-col items-center gap-1"
+                        onClick={() => setFormData({ ...formData, is_recurring: false })}
+                      >
+                        <CalendarIcon className="w-5 h-5" />
+                        <span className="font-medium">One-Time</span>
+                        <span className="text-xs opacity-70">Single appointment</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={formData.is_recurring ? 'default' : 'outline'}
+                        className="rounded-full h-auto py-3 flex flex-col items-center gap-1"
+                        onClick={() => setFormData({ ...formData, is_recurring: true })}
+                      >
+                        <Repeat className="w-5 h-5" />
+                        <span className="font-medium">Recurring</span>
+                        <span className="text-xs opacity-70">Repeats weekly</span>
+                      </Button>
+                    </div>
+                    {formData.is_recurring && (
+                      <div className="mt-2 p-3 rounded-lg bg-sky-50 text-sm text-sky-800">
+                        <p className="font-medium flex items-center gap-2">
+                          <Repeat className="w-4 h-4" />
+                          Weekly on {selectedDate ? format(selectedDate, 'EEEE') : 'selected day'}
+                        </p>
+                        <p className="text-xs mt-1 text-sky-600">
+                          This will create a recurring schedule that repeats every week until paused or stopped.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {isPetSittingService(formData.service_type) && priceEstimate && (
                   <div className="p-4 rounded-xl bg-secondary/10 space-y-3">
                     <div className="flex items-center justify-between">
