@@ -140,6 +140,10 @@ const SchedulePage = () => {
       toast.error('Please select at least one pet');
       return;
     }
+    
+    const durationType = getDurationTypeForService(formData.service_type);
+    const isDayNight = durationType === 'days' || durationType === 'nights';
+    
     try {
       if (formData.is_recurring) {
         // Create recurring schedule
@@ -149,18 +153,32 @@ const SchedulePage = () => {
         await api.post('/recurring-schedules', {
           pet_ids: formData.pet_ids,
           service_type: formData.service_type,
-          scheduled_time: formData.scheduled_time,
+          scheduled_time: isDayNight ? '' : formData.scheduled_time,
           day_of_week: adjustedDay,
           walker_id: formData.walker_id || null,
           notes: formData.notes || null,
         });
-        toast.success('Recurring schedule created! Walks will repeat weekly.');
+        toast.success('Recurring schedule created! Services will repeat weekly.');
       } else {
         // Create one-time appointment
-        await api.post('/appointments', {
-          ...formData,
+        const appointmentData = {
+          pet_ids: formData.pet_ids,
+          service_type: formData.service_type,
           scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
-        });
+          scheduled_time: isDayNight ? '' : formData.scheduled_time,
+          walker_id: formData.walker_id || null,
+          notes: formData.notes || null,
+          is_recurring: false,
+          duration_value: formData.duration_value || 1,
+          duration_type: durationType,
+        };
+        
+        // Add end_date for multi-day bookings
+        if (isDayNight && endDate) {
+          appointmentData.end_date = format(endDate, 'yyyy-MM-dd');
+        }
+        
+        await api.post('/appointments', appointmentData);
         toast.success('Appointment booked successfully!');
       }
       setDialogOpen(false);
@@ -173,6 +191,9 @@ const SchedulePage = () => {
         notes: '',
         is_recurring: false,
         day_of_week: null,
+        selected_days: [],
+        duration_value: 1,
+        duration_type: 'minutes',
       });
       setEndDate(null);
       setPriceEstimate(null);
