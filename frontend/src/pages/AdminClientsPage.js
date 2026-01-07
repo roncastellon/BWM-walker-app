@@ -393,13 +393,19 @@ const AdminClientsPage = () => {
     }
     
     if (selectedClient.walkingSchedule) {
-      setWalkingSchedule(selectedClient.walkingSchedule);
+      setWalkingSchedule({
+        ...selectedClient.walkingSchedule,
+        service_type: selectedClient.walkingSchedule.service_type || 'walk_30',
+        duration_value: selectedClient.walkingSchedule.duration_value || 1,
+      });
     } else {
       setWalkingSchedule({
+        service_type: 'walk_30',
         walks_per_day: 1,
         days: [],
         preferred_times: [],
         preferred_walker_id: '',
+        duration_value: 1,
         notes: '',
       });
     }
