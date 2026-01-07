@@ -334,9 +334,24 @@ const ClientOnboardingPage = () => {
       const data = {
         ...personalInfo,
         pets: pets.filter(p => p.name), // Only include pets with names
-        ...walkSchedule,
+        service_category: serviceCategory,
         ...billing
       };
+      
+      // Include walk schedule if walks selected
+      if (serviceCategory === 'walks') {
+        Object.assign(data, walkSchedule);
+      }
+      
+      // Include other service data if other selected
+      if (serviceCategory === 'other') {
+        data.other_service = {
+          service_type: selectedOtherService,
+          schedule_type: otherServiceSchedule.schedule_type,
+          duration_value: otherServiceSchedule.duration_value,
+          preferred_days: otherServiceSchedule.preferred_days,
+        };
+      }
       
       await api.post('/client/onboarding', data);
       toast.success('Welcome to BowWowMeow! Your profile has been set up.');
