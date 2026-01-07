@@ -102,6 +102,81 @@ const ClientOnboardingPage = () => {
     };
     fetchWalkers();
   }, [api]);
+
+  // Conflict dialog state
+  const [conflictDialog, setConflictDialog] = useState({
+    open: false,
+    conflicts: [],
+    alternatives: [],
+    selectedWalkerName: ''
+  });
+
+  // Check walker availability when walker is selected
+  const checkWalkerConflicts = async (walkerId) => {
+    if (!walkerId) {
+      setTimeConflicts([]);
+      return;
+    }
+
+    setCheckingConflicts(true);
+    try {
+      const walker = walkers.find(w => w.id === walkerId);
+      const walkerName = walker?.full_name || walker?.username || 'Selected walker';
+      
+      // Determine service type from walk duration
+      const serviceTypeMap = {30: "walk_30", 45: "walk_45", 60: "walk_60"};
+      const serviceType = serviceTypeMap[walkSchedule.walk_duration] || "walk_30";
+
+      const res = await api.post('/walkers/check-schedule-conflicts', {
+        walker_id: walkerId,
+        schedule_type: walkSchedule.schedule_type,
+        preferred_days: walkSchedule.preferred_days,
+        preferred_times: walkSchedule.preferred_walk_times,
+        service_type: serviceType
+      });
+
+      if (res.data.has_conflicts) {
+        setTimeConflicts(res.data.conflicts);
+        setConflictDialog({
+          open: true,
+          conflicts: res.data.conflicts,
+          alternatives: res.data.alternatives,
+          selectedWalkerName: walkerName
+        });
+      } else {
+        setTimeConflicts([]);
+      }
+    } catch (error) {
+      console.error('Failed to check conflicts', error);
+    } finally {
+      setCheckingConflicts(false);
+    }
+  };
+
+  // Handle walker selection with conflict check
+  const handleWalkerSelect = (walkerId) => {
+    setWalkSchedule({...walkSchedule, preferred_walker_id: walkerId});
+    if (walkerId) {
+      checkWalkerConflicts(walkerId);
+    } else {
+      setTimeConflicts([]);
+    }
+  };
+
+  // Handle conflict resolution - let app assign
+  const handleLetAppAssign = () => {
+    setWalkSchedule({...walkSchedule, preferred_walker_id: ''});
+    setTimeConflicts([]);
+    setConflictDialog({...conflictDialog, open: false});
+    toast.info('The admin will assign an available walker to your schedule.');
+  };
+
+  // Handle conflict resolution - choose different walker
+  const handleChooseDifferent = () => {
+    setWalkSchedule({...walkSchedule, preferred_walker_id: ''});
+    setTimeConflicts([]);
+    setConflictDialog({...conflictDialog, open: false});
+  };
   
   // Step 4: Billing
   const [billing, setBilling] = useState({
