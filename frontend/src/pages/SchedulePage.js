@@ -11,7 +11,7 @@ import { Calendar } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
-import { CalendarIcon, Clock, Plus, PawPrint, Car, Moon, Sparkles, Home, Building2, AlertCircle } from 'lucide-react';
+import { CalendarIcon, Clock, Plus, PawPrint, Car, Moon, Sparkles, Home, Building2, AlertCircle, Repeat, Pause, Play, StopCircle, Pencil, X } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { toast } from 'sonner';
 
