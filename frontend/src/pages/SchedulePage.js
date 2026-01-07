@@ -387,7 +387,7 @@ const SchedulePage = () => {
                         ...formData, 
                         service_type: value,
                         duration_type: durationType,
-                        duration_value: 1, // Reset to 1 when changing service
+                        duration_value: 1,
                       });
                       if (!isPetSittingService(value)) {
                         setEndDate(null);
@@ -399,55 +399,64 @@ const SchedulePage = () => {
                       <SelectValue placeholder="Select a service" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Walks */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Walks</div>
+                      {/* All services in one list with clear categories */}
+                      {services.filter(s => s.service_type?.includes('walk')).length > 0 && (
+                        <SelectItem value="_header_walks" disabled className="font-semibold text-muted-foreground">
+                          — Walks —
+                        </SelectItem>
+                      )}
                       {services.filter(s => s.service_type?.includes('walk')).map((service) => (
                         <SelectItem key={service.id} value={service.service_type}>
-                          <div className="flex items-center gap-2">
-                            {getServiceIcon(service.service_type)}
-                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
-                          </div>
+                          {service.name} - ${service.price?.toFixed(2)}
                         </SelectItem>
                       ))}
                       
-                      {/* Day Care / Day Visits */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Day Care (# of Days)</div>
                       {services.filter(s => 
-                        s.service_type?.includes('day') || 
-                        s.service_type?.includes('visit') ||
-                        s.service_type?.includes('concierge')
+                        (s.service_type?.includes('day') || s.service_type?.includes('concierge')) && 
+                        !s.service_type?.includes('walk')
+                      ).length > 0 && (
+                        <SelectItem value="_header_daycare" disabled className="font-semibold text-muted-foreground">
+                          — Day Care (# of Days) —
+                        </SelectItem>
+                      )}
+                      {services.filter(s => 
+                        (s.service_type?.includes('day') || s.service_type?.includes('concierge')) && 
+                        !s.service_type?.includes('walk')
                       ).map((service) => (
                         <SelectItem key={service.id} value={service.service_type}>
-                          <div className="flex items-center gap-2">
-                            {getServiceIcon(service.service_type)}
-                            <span>{service.name} - ${service.price?.toFixed(2)}{getDurationTypeForService(service.service_type) === 'days' ? '/day' : ''}</span>
-                          </div>
+                          {service.name} - ${service.price?.toFixed(2)}{getDurationTypeForService(service.service_type) === 'days' ? '/day' : ''}
                         </SelectItem>
                       ))}
                       
-                      {/* Overnight / Extended Stays */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Overnight & Stays (# of Nights)</div>
+                      {services.filter(s => 
+                        s.service_type?.includes('overnight') || 
+                        s.service_type?.includes('stay') ||
+                        s.service_type?.includes('petsit')
+                      ).length > 0 && (
+                        <SelectItem value="_header_overnight" disabled className="font-semibold text-muted-foreground">
+                          — Overnight & Stays (# of Nights) —
+                        </SelectItem>
+                      )}
                       {services.filter(s => 
                         s.service_type?.includes('overnight') || 
                         s.service_type?.includes('stay') ||
                         s.service_type?.includes('petsit')
                       ).map((service) => (
                         <SelectItem key={service.id} value={service.service_type}>
-                          <div className="flex items-center gap-2">
-                            {getServiceIcon(service.service_type)}
-                            <span>{service.name} - ${service.price?.toFixed(2)}{getDurationTypeForService(service.service_type) === 'nights' ? '/night' : ''}</span>
-                          </div>
+                          {service.name} - ${service.price?.toFixed(2)}{getDurationTypeForService(service.service_type) === 'nights' ? '/night' : ''}
                         </SelectItem>
                       ))}
                       
-                      {/* Transport */}
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">Transport</div>
+                      {services.filter(s => s.service_type?.includes('transport')).length > 0 && (
+                        <SelectItem value="_header_transport" disabled className="font-semibold text-muted-foreground">
+                          — Transport —
+                        </SelectItem>
+                      )}
                       {services.filter(s => s.service_type?.includes('transport')).map((service) => (
                         <SelectItem key={service.id} value={service.service_type}>
-                          <div className="flex items-center gap-2">
-                            {getServiceIcon(service.service_type)}
-                            <span>{service.name} - ${service.price?.toFixed(2)}</span>
-                          </div>
+                          {service.name} - ${service.price?.toFixed(2)}
+                        </SelectItem>
+                      ))}
                         </SelectItem>
                       ))}
                     </SelectContent>
