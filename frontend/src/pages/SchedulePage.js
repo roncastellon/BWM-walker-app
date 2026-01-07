@@ -489,36 +489,65 @@ const SchedulePage = () => {
                 </div>
 
                 {/* One-Time vs Recurring Toggle */}
-                {!isPetSittingService(formData.service_type) && (
-                  <div className="space-y-3 p-4 rounded-xl bg-secondary/10">
-                    <Label className="text-base font-medium">Schedule Type</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        type="button"
-                        variant={!formData.is_recurring ? 'default' : 'outline'}
-                        className="rounded-full h-auto py-3 flex flex-col items-center gap-1"
-                        onClick={() => setFormData({ ...formData, is_recurring: false })}
-                      >
-                        <CalendarIcon className="w-5 h-5" />
-                        <span className="font-medium">One-Time</span>
-                        <span className="text-xs opacity-70">Single appointment</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={formData.is_recurring ? 'default' : 'outline'}
-                        className="rounded-full h-auto py-3 flex flex-col items-center gap-1"
-                        onClick={() => setFormData({ ...formData, is_recurring: true })}
-                      >
-                        <Repeat className="w-5 h-5" />
-                        <span className="font-medium">Recurring</span>
-                        <span className="text-xs opacity-70">Repeats weekly</span>
-                      </Button>
+                <div className="space-y-3 p-4 rounded-xl bg-secondary/10">
+                  <Label className="text-base font-medium">Schedule Type</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      type="button"
+                      variant={!formData.is_recurring ? 'default' : 'outline'}
+                      className="rounded-full h-auto py-3 flex flex-col items-center gap-1"
+                      onClick={() => setFormData({ ...formData, is_recurring: false, selected_days: [] })}
+                    >
+                      <CalendarIcon className="w-5 h-5" />
+                      <span className="font-medium">One-Time</span>
+                      <span className="text-xs opacity-70">Single appointment</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={formData.is_recurring ? 'default' : 'outline'}
+                      className="rounded-full h-auto py-3 flex flex-col items-center gap-1"
+                      onClick={() => setFormData({ ...formData, is_recurring: true })}
+                    >
+                      <Repeat className="w-5 h-5" />
+                      <span className="font-medium">Recurring</span>
+                      <span className="text-xs opacity-70">Repeats weekly</span>
+                    </Button>
+                  </div>
+                  
+                  {/* Multi-day selection for recurring */}
+                  {formData.is_recurring && (
+                    <div className="mt-3 space-y-2">
+                      <Label className="text-sm font-medium">Select Days</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {ALL_DAYS.map((day) => (
+                          <Button
+                            key={day}
+                            type="button"
+                            variant={formData.selected_days.includes(day) ? 'default' : 'outline'}
+                            size="sm"
+                            className="rounded-full"
+                            onClick={() => {
+                              const newDays = formData.selected_days.includes(day)
+                                ? formData.selected_days.filter(d => d !== day)
+                                : [...formData.selected_days, day];
+                              setFormData({ ...formData, selected_days: newDays });
+                            }}
+                          >
+                            {day.slice(0, 3)}
+                          </Button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Select the days you want this service scheduled
+                      </p>
                     </div>
-                    {formData.is_recurring && (
-                      <div className="mt-2 p-3 rounded-lg bg-sky-50 text-sm text-sky-800">
-                        <p className="font-medium flex items-center gap-2">
-                          <Repeat className="w-4 h-4" />
-                          Weekly on {selectedDate ? format(selectedDate, 'EEEE') : 'selected day'}
+                  )}
+                  
+                  {formData.is_recurring && formData.selected_days.length > 0 && (
+                    <div className="mt-2 p-3 rounded-lg bg-sky-50 text-sm text-sky-800">
+                      <p className="font-medium flex items-center gap-2">
+                        <Repeat className="w-4 h-4" />
+                        Weekly on {formData.selected_days.join(', ')}
                         </p>
                         <p className="text-xs mt-1 text-sky-600">
                           This will create a recurring schedule that repeats every week until paused or stopped.
