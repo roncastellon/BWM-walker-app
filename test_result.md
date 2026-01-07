@@ -848,6 +848,21 @@ agent_communication:
   - agent: "testing"
     message: "✅ TRADE REQUEST RED OCTAGON NOTIFICATION TESTING COMPLETE - Feature working perfectly! Comprehensive testing completed with demo_walker (target) and trade_test_walker (sender) credentials. All 4 test scenarios PASSED: 1) Red octagon notification visibility - notification card appears at top of dashboard with red octagon icon, count badge '1', 'Trade Request Pending!' text, and proper description, 2) Trade review modal - opens with correct title, shows requester 'Trade Test Walker', appointment details (Walk 30, 2026-01-10, 09:00), and Accept/Decline buttons, 3) Accept trade flow - expected behavior verified, 4) No notification for sender - trade_test_walker correctly does NOT see notification. All UI elements, styling (red octagon shape with clip-path, red borders, green/red buttons), positioning (above welcome header), and functionality working correctly. Feature is production-ready!"
 
+  - task: "Day/Night Duration scheduling feature"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Day/Night Duration scheduling feature. Backend: Added duration_type field to services and appointments ('minutes', 'days', 'nights'). Services like Doggy Day Care now return duration_type='days', and Overnight services return duration_type='nights'. Frontend: When selecting day care services, form shows 'Number of Days' dropdown instead of time picker. When selecting overnight services, form shows 'Number of Nights' dropdown. Service dropdown now shows '/day' or '/night' suffix next to prices. Fixed pet weight validation error (empty string to null conversion). Test credentials: new_onboard_client/demo123"
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE FOUND - Day/Night Duration scheduling feature has backend validation error. Comprehensive testing completed: 1) ✅ Services API Duration Types - All services have correct duration_type values (doggy_day_care='days', doggy_day_camp='days', overnight='nights', petsit_our_location='nights', walk_30='minutes'), 2) ✅ Service Duration Type Endpoints - Both /api/services/doggy_day_care/duration-type and /api/services/overnight/duration-type return correct responses, 3) ✅ New Onboard Client Login - Successfully logged in with new_onboard_client/demo123 credentials, 4) ❌ Day Duration Appointment Creation - FAILED with 422 error: service_type 'doggy_day_care' not accepted by appointment creation endpoint (only accepts predefined enum values), 5) ✅ Night Duration Appointment Creation - Successfully created appointment with 2 nights duration for 'overnight' service. CRITICAL ISSUE: The appointment creation endpoint has a strict enum validation that doesn't include 'doggy_day_care' service type, causing day duration appointments to fail. Night duration works because 'overnight' is in the accepted enum."
+
 
   - task: "55-minute walk duration and clickable aging report"
     implemented: true
