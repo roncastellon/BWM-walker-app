@@ -554,52 +554,193 @@ const ClientOnboardingPage = () => {
           </Card>
         )}
 
-        {/* Step 3: Walk Schedule */}
+        {/* Step 3: Service Schedule */}
         {step === 3 && (
           <Card className="rounded-2xl shadow-lg">
             <CardHeader className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <Calendar className="w-6 h-6" />
                 <div>
-                  <CardTitle>Walk Schedule</CardTitle>
-                  <CardDescription className="text-green-100">Set your preferred walking schedule</CardDescription>
+                  <CardTitle>Service Schedule</CardTitle>
+                  <CardDescription className="text-green-100">Choose your service and schedule</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              {/* Schedule Type - One-Time or Recurring */}
+              {/* Service Category Selection */}
               <div className="space-y-3">
-                <Label className="text-base font-semibold">Schedule Type</Label>
+                <Label className="text-base font-semibold">Choose Service Type</Label>
                 <div className="grid grid-cols-2 gap-3">
                   <Button
-                    variant={walkSchedule.schedule_type === 'one_time' ? "default" : "outline"}
-                    className={`h-auto py-4 flex flex-col ${walkSchedule.schedule_type === 'one_time' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
-                    onClick={() => setWalkSchedule({...walkSchedule, schedule_type: 'one_time'})}
+                    variant={serviceCategory === 'walks' ? "default" : "outline"}
+                    className={`h-auto py-4 flex flex-col ${serviceCategory === 'walks' ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                    onClick={() => {
+                      setServiceCategory('walks');
+                      setSelectedOtherService('');
+                    }}
                   >
-                    <CalendarDays className="w-6 h-6 mb-1" />
-                    <span className="text-lg font-bold">One-Time</span>
-                    <span className="text-xs opacity-80">Single appointment</span>
+                    <Dog className="w-6 h-6 mb-1" />
+                    <span className="text-lg font-bold">Walks</span>
+                    <span className="text-xs opacity-80">Daily dog walking</span>
                   </Button>
                   <Button
-                    variant={walkSchedule.schedule_type === 'recurring' ? "default" : "outline"}
-                    className={`h-auto py-4 flex flex-col ${walkSchedule.schedule_type === 'recurring' ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
-                    onClick={() => setWalkSchedule({...walkSchedule, schedule_type: 'recurring'})}
+                    variant={serviceCategory === 'other' ? "default" : "outline"}
+                    className={`h-auto py-4 flex flex-col ${serviceCategory === 'other' ? 'bg-purple-500 hover:bg-purple-600' : ''}`}
+                    onClick={() => {
+                      setServiceCategory('other');
+                    }}
                   >
-                    <Repeat className="w-6 h-6 mb-1" />
-                    <span className="text-lg font-bold">Recurring</span>
-                    <span className="text-xs opacity-80">Repeats weekly</span>
+                    <PawPrint className="w-6 h-6 mb-1" />
+                    <span className="text-lg font-bold">Other Services</span>
+                    <span className="text-xs opacity-80">Day Care, Overnights, etc.</span>
                   </Button>
                 </div>
-                {walkSchedule.schedule_type === 'recurring' && (
-                  <div className="p-3 rounded-lg bg-orange-50 border border-orange-200 text-sm text-orange-800">
-                    <p className="font-medium flex items-center gap-2">
-                      <Repeat className="w-4 h-4" />
-                      Your walks will repeat every week
-                    </p>
-                    <p className="text-xs mt-1">You can pause or stop recurring walks anytime from your dashboard.</p>
-                  </div>
-                )}
               </div>
+
+              {/* Other Services Dropdown */}
+              {serviceCategory === 'other' && (
+                <div className="space-y-4 p-4 rounded-lg bg-purple-50 border border-purple-200">
+                  <div className="space-y-2">
+                    <Label className="text-base font-semibold">Select Service</Label>
+                    <Select 
+                      value={selectedOtherService} 
+                      onValueChange={setSelectedOtherService}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a service..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {otherServices.map((service) => {
+                          const durationType = getDurationTypeForService(service.service_type);
+                          return (
+                            <SelectItem key={service.id} value={service.service_type}>
+                              {service.name} - ${service.price?.toFixed(2)}
+                              {durationType === 'days' ? '/day' : ''}
+                              {durationType === 'nights' ? '/night' : ''}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedOtherService && (
+                    <>
+                      {/* Schedule Type for Other Services */}
+                      <div className="space-y-2">
+                        <Label className="text-base font-semibold">Schedule Type</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            variant={otherServiceSchedule.schedule_type === 'one_time' ? "default" : "outline"}
+                            className={`h-auto py-3 flex flex-col ${otherServiceSchedule.schedule_type === 'one_time' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                            onClick={() => setOtherServiceSchedule({...otherServiceSchedule, schedule_type: 'one_time'})}
+                          >
+                            <CalendarDays className="w-5 h-5 mb-1" />
+                            <span className="font-bold">One-Time</span>
+                          </Button>
+                          <Button
+                            variant={otherServiceSchedule.schedule_type === 'recurring' ? "default" : "outline"}
+                            className={`h-auto py-3 flex flex-col ${otherServiceSchedule.schedule_type === 'recurring' ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                            onClick={() => setOtherServiceSchedule({...otherServiceSchedule, schedule_type: 'recurring'})}
+                          >
+                            <Repeat className="w-5 h-5 mb-1" />
+                            <span className="font-bold">Recurring</span>
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Duration for Day/Night Services */}
+                      {getDurationTypeForService(selectedOtherService) !== 'minutes' && (
+                        <div className="space-y-2">
+                          <Label className="text-base font-semibold">
+                            {getDurationTypeForService(selectedOtherService) === 'days' 
+                              ? 'Number of Days' 
+                              : 'Number of Nights'}
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                              <Button
+                                key={num}
+                                variant={otherServiceSchedule.duration_value === num ? "default" : "outline"}
+                                size="lg"
+                                className={`w-12 h-12 rounded-full ${otherServiceSchedule.duration_value === num ? 'bg-purple-500 hover:bg-purple-600' : ''}`}
+                                onClick={() => setOtherServiceSchedule({...otherServiceSchedule, duration_value: num})}
+                              >
+                                {num}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Days Selection for Recurring */}
+                      {otherServiceSchedule.schedule_type === 'recurring' && (
+                        <div className="space-y-2">
+                          <Label className="text-base font-semibold">Which days?</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {DAYS_OF_WEEK.map((day) => (
+                              <Badge
+                                key={day}
+                                variant={otherServiceSchedule.preferred_days.includes(day) ? "default" : "outline"}
+                                className={`cursor-pointer px-3 py-2 text-sm ${
+                                  otherServiceSchedule.preferred_days.includes(day) 
+                                    ? 'bg-purple-500 hover:bg-purple-600' 
+                                    : 'hover:bg-gray-100'
+                                }`}
+                                onClick={() => {
+                                  const newDays = otherServiceSchedule.preferred_days.includes(day)
+                                    ? otherServiceSchedule.preferred_days.filter(d => d !== day)
+                                    : [...otherServiceSchedule.preferred_days, day];
+                                  setOtherServiceSchedule({...otherServiceSchedule, preferred_days: newDays});
+                                }}
+                              >
+                                {day.slice(0, 3)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Walks Schedule Flow - Only shown when "Walks" is selected */}
+              {serviceCategory === 'walks' && (
+                <>
+                  {/* Schedule Type - One-Time or Recurring */}
+                  <div className="space-y-3">
+                    <Label className="text-base font-semibold">Schedule Type</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        variant={walkSchedule.schedule_type === 'one_time' ? "default" : "outline"}
+                        className={`h-auto py-4 flex flex-col ${walkSchedule.schedule_type === 'one_time' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                        onClick={() => setWalkSchedule({...walkSchedule, schedule_type: 'one_time'})}
+                      >
+                        <CalendarDays className="w-6 h-6 mb-1" />
+                        <span className="text-lg font-bold">One-Time</span>
+                        <span className="text-xs opacity-80">Single appointment</span>
+                      </Button>
+                      <Button
+                        variant={walkSchedule.schedule_type === 'recurring' ? "default" : "outline"}
+                        className={`h-auto py-4 flex flex-col ${walkSchedule.schedule_type === 'recurring' ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                        onClick={() => setWalkSchedule({...walkSchedule, schedule_type: 'recurring'})}
+                      >
+                        <Repeat className="w-6 h-6 mb-1" />
+                        <span className="text-lg font-bold">Recurring</span>
+                        <span className="text-xs opacity-80">Repeats weekly</span>
+                      </Button>
+                    </div>
+                    {walkSchedule.schedule_type === 'recurring' && (
+                      <div className="p-3 rounded-lg bg-orange-50 border border-orange-200 text-sm text-orange-800">
+                        <p className="font-medium flex items-center gap-2">
+                          <Repeat className="w-4 h-4" />
+                          Your walks will repeat every week
+                        </p>
+                        <p className="text-xs mt-1">You can pause or stop recurring walks anytime from your dashboard.</p>
+                      </div>
+                    )}
+                  </div>
 
               {/* Days per week */}
               <div className="space-y-3">
