@@ -2298,6 +2298,22 @@ async def stop_recurring_schedule(schedule_id: str, current_user: dict = Depends
     )
     return {"message": "Schedule stopped"}
 
+@api_router.get("/recurring-schedules")
+async def get_recurring_schedules(
+    client_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get recurring schedules, optionally filtered by client_id (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Only admin can view all schedules")
+    
+    query = {}
+    if client_id:
+        query["client_id"] = client_id
+    
+    schedules = await db.recurring_schedules.find(query, {"_id": 0}).to_list(500)
+    return schedules
+
 @api_router.delete("/recurring-schedules/{schedule_id}")
 async def delete_recurring_schedule(schedule_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a recurring schedule (admin only)"""
