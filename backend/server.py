@@ -1180,16 +1180,24 @@ async def setup_client_pricing(user_id: str, pricing_data: dict, current_user: d
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
+    # Verify user exists first
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+    
     # Update user with pricing info
     update_data = {
-        "pricing_setup_completed": pricing_data.get("pricing_setup_completed", True),
+        "pricing_setup_completed": True,  # Always set to True
         "billing_plan_id": pricing_data.get("billing_plan_id"),
         "custom_prices": pricing_data.get("custom_prices", {}),
         "pricing_notes": pricing_data.get("pricing_notes", ""),
         "pricing_setup_at": datetime.now(timezone.utc).isoformat()
     }
     
-    await db.users.update_one({"id": user_id}, {"$set": update_data})
+    result = await db.users.update_one({"id": user_id}, {"$set": update_data})
+    
+    if result.modified_count == 0 and result.matched_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to update user pricing")
     
     # Also save to custom_pricing collection for compatibility
     if pricing_data.get("custom_prices"):
