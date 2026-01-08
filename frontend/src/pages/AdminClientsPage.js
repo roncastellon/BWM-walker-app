@@ -1683,10 +1683,21 @@ SAMPLE APPOINTMENTS:`;
                 
                 {/* Pets */}
                 <div className="border-t pt-4">
-                  <h4 className="font-medium flex items-center gap-2 mb-3">
-                    <PawPrint className="w-4 h-4 text-primary" />
-                    Pets ({selectedClient.pets?.length || 0})
-                  </h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <PawPrint className="w-4 h-4 text-primary" />
+                      Pets ({selectedClient.pets?.length || 0})
+                    </h4>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full h-8"
+                      onClick={() => setAddPetDialogOpen(true)}
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add Pet
+                    </Button>
+                  </div>
                   {selectedClient.pets?.length > 0 ? (
                     <div className="space-y-2">
                       {selectedClient.pets.map((pet) => (
@@ -1700,7 +1711,11 @@ SAMPLE APPOINTMENTS:`;
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground text-sm">No pets added</p>
+                    <div className="text-center py-4 bg-muted/30 rounded-xl">
+                      <PawPrint className="w-8 h-8 mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-muted-foreground text-sm">No pets added yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">Click "Add Pet" to add one</p>
+                    </div>
                   )}
                 </div>
               </div>
