@@ -1254,9 +1254,10 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
             preferred_days = od.get("preferred_days", [])
             preferred_times = od.get("preferred_walk_times", [])
             walk_duration = od.get("walk_duration", 30)
-            schedule_type = od.get("schedule_type", "recurring")
+            # Treat None or missing schedule_type as "recurring" (default behavior)
+            schedule_type = od.get("schedule_type") or "recurring"
             
-            # Only create recurring schedules if we have days and times
+            # Only create recurring schedules if we have days and times and it's recurring
             if preferred_days and preferred_times and schedule_type == "recurring":
                 # Get pet IDs for this client
                 pets = await db.pets.find({"owner_id": client_id}, {"_id": 0, "id": 1}).to_list(100)
