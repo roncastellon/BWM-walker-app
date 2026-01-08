@@ -783,10 +783,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Walker trade requests"
-    - "Walker time-off requests"
-    - "Auto-invoice generation"
-    - "Appointment time slot limits (max 3 per slot)"
+    - "Recurring Schedules Grouped by Client on Admin Dashboard"
+    - "Add Pet to Existing Client from Admin Clients Page"
   stuck_tasks:
     - "Appointment time slot limits (max 3 per slot)"
   test_all: false
