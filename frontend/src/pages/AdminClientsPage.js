@@ -153,7 +153,7 @@ const AdminClientsPage = () => {
       setAddPetDialogOpen(false);
       
       // Also refresh the main clients list
-      fetchClients();
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to add pet');
     } finally {
