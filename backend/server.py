@@ -1446,6 +1446,76 @@ async def trigger_appointment_generation(user_id: str, weeks_ahead: int = 4, cur
         "diagnostic": diagnostic
     }
 
+
+@api_router.post("/users/{user_id}/force-create-schedule")
+async def force_create_schedule_from_onboarding(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Force create recurring schedules from onboarding data, ignoring existing schedules (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    client = await db.users.find_one({"id": user_id, "role": "client"}, {"_id": 0})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    od = client.get("onboarding_data") or {}
+    if not od:
+        raise HTTPException(status_code=400, detail="No onboarding data found for this client")
+    
+    preferred_days = od.get("preferred_days", [])
+    preferred_times = od.get("preferred_walk_times", [])
+    walk_duration = od.get("walk_duration", 30)
+    
+    if not preferred_days:
+        raise HTTPException(status_code=400, detail=f"No preferred_days in onboarding data. Available keys: {list(od.keys())}")
+    
+    if not preferred_times:
+        raise HTTPException(status_code=400, detail=f"No preferred_walk_times in onboarding data. Available keys: {list(od.keys())}")
+    
+    # Get pet IDs
+    pets = await db.pets.find({"owner_id": user_id}, {"_id": 0, "id": 1}).to_list(100)
+    pet_ids = [p["id"] for p in pets]
+    
+    # Delete any existing recurring schedules for this client
+    deleted = await db.recurring_schedules.delete_many({"client_id": user_id})
+    
+    # Map day names to numbers
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    service_type_map = {30: "walk_30", 45: "walk_45", 60: "walk_60"}
+    service_type = service_type_map.get(walk_duration, "walk_30")
+    
+    schedules_created = 0
+    for day in preferred_days:
+        day_num = day_to_num.get(day, 0)
+        for walk_time in preferred_times:
+            recurring_schedule = {
+                "id": str(uuid.uuid4()),
+                "client_id": user_id,
+                "walker_id": od.get("preferred_walker_id"),
+                "pet_ids": pet_ids,
+                "service_type": service_type,
+                "scheduled_time": walk_time,
+                "day_of_week": day_num,
+                "notes": "Force created from onboarding data",
+                "status": "active",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": current_user['id']
+            }
+            await db.recurring_schedules.insert_one(recurring_schedule)
+            schedules_created += 1
+    
+    # Now generate appointments
+    appointments_created = await generate_appointments_for_client(user_id, weeks_ahead=4)
+    
+    return {
+        "message": f"Force created {schedules_created} recurring schedules and {appointments_created} appointments",
+        "schedules_deleted": deleted.deleted_count,
+        "schedules_created": schedules_created,
+        "appointments_created": appointments_created,
+        "days": preferred_days,
+        "times": preferred_times
+    }
+
+
 @api_router.get("/users/{user_id}/custom-pricing")
 async def get_custom_pricing(user_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin' and current_user['id'] != user_id:
