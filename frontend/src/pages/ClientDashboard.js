@@ -425,45 +425,45 @@ const ClientDashboard = () => {
             {/* All My Schedules */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-sky-500" />
                     All My Schedules
-                    {filteredAppts.length > 0 && (
-                      <Badge variant="secondary" className="rounded-full ml-2">
-                        {filteredAppts.length}
-                      </Badge>
-                    )}
                   </CardTitle>
-                  {/* View Toggle */}
-                  <div className="flex gap-1 bg-muted rounded-full p-1">
-                    <Button
-                      size="sm"
-                      variant={scheduleView === 'day' ? 'default' : 'ghost'}
-                      className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'day' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
-                      onClick={() => setScheduleView('day')}
-                    >
-                      Day
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={scheduleView === 'week' ? 'default' : 'ghost'}
-                      className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'week' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
-                      onClick={() => setScheduleView('week')}
-                    >
-                      Week
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={scheduleView === 'month' ? 'default' : 'ghost'}
-                      className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'month' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
-                      onClick={() => setScheduleView('month')}
-                    >
-                      Month
-                    </Button>
-                  </div>
+                  {filteredAppts.length > 0 && (
+                    <Badge variant="secondary" className="rounded-full">
+                      {filteredAppts.length}
+                    </Badge>
+                  )}
                 </div>
-                <CardDescription>
+                {/* View Toggle - on its own row */}
+                <div className="flex gap-1 bg-muted rounded-full p-1 w-fit">
+                  <Button
+                    size="sm"
+                    variant={scheduleView === 'day' ? 'default' : 'ghost'}
+                    className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'day' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                    onClick={() => setScheduleView('day')}
+                  >
+                    Day
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={scheduleView === 'week' ? 'default' : 'ghost'}
+                    className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'week' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                    onClick={() => setScheduleView('week')}
+                  >
+                    Week
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={scheduleView === 'month' ? 'default' : 'ghost'}
+                    className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'month' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                    onClick={() => setScheduleView('month')}
+                  >
+                    Month
+                  </Button>
+                </div>
+                <CardDescription className="mt-1">
                   {scheduleView === 'day' && 'Showing today only'}
                   {scheduleView === 'week' && 'Showing next 7 days'}
                   {scheduleView === 'month' && 'Showing next 30 days'}
