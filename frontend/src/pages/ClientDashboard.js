@@ -959,17 +959,24 @@ const ClientDashboard = () => {
                 </div>
               </div>
 
-              {/* Pee & Poop Status */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Pee, Poop & Water Status */}
+              <div className="grid grid-cols-3 gap-2">
                 <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-100 text-center">
-                  <Droplets className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
-                  <p className="text-2xl font-bold text-yellow-700">{selectedCompletedWalk.pee_count || 0}</p>
-                  <p className="text-xs text-yellow-600">Pee Break{(selectedCompletedWalk.pee_count || 0) !== 1 ? 's' : ''}</p>
+                  <Droplets className="w-5 h-5 mx-auto text-yellow-500 mb-1" />
+                  <p className="text-xl font-bold text-yellow-700">{selectedCompletedWalk.pee_count || 0}</p>
+                  <p className="text-xs text-yellow-600">Pee</p>
                 </div>
                 <div className="p-3 rounded-lg bg-amber-50 border border-amber-100 text-center">
-                  <span className="text-2xl">💩</span>
-                  <p className="text-2xl font-bold text-amber-700">{selectedCompletedWalk.poop_count || 0}</p>
-                  <p className="text-xs text-amber-600">Poop{(selectedCompletedWalk.poop_count || 0) !== 1 ? 's' : ''}</p>
+                  <span className="text-xl">💩</span>
+                  <p className="text-xl font-bold text-amber-700">{selectedCompletedWalk.poop_count || 0}</p>
+                  <p className="text-xs text-amber-600">Poop</p>
+                </div>
+                <div className={`p-3 rounded-lg text-center ${selectedCompletedWalk.water_given ? 'bg-blue-50 border border-blue-100' : 'bg-gray-50 border border-gray-100'}`}>
+                  <span className="text-xl">💧</span>
+                  <p className={`text-xl font-bold ${selectedCompletedWalk.water_given ? 'text-blue-700' : 'text-gray-400'}`}>
+                    {selectedCompletedWalk.water_given ? '✓' : '—'}
+                  </p>
+                  <p className={`text-xs ${selectedCompletedWalk.water_given ? 'text-blue-600' : 'text-gray-400'}`}>Water</p>
                 </div>
               </div>
 
