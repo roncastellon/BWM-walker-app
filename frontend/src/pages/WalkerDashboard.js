@@ -622,7 +622,98 @@ const WalkerDashboard = () => {
 
           {/* SCHEDULE TAB */}
           <TabsContent value="schedule" className="space-y-4">
-            {/* Quick Actions */}
+            {/* Today's Schedule - FIRST */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-secondary" />
+                  Today&apos;s Walks
+                  <Badge variant="secondary" className="rounded-full ml-2">{todayAppointments.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {todayAppointments.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No walks scheduled today</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {todayAppointments.map((appt) => (
+                      <div
+                        key={appt.id}
+                        className={`flex items-center justify-between p-3 rounded-lg ${
+                          appt.status === 'in_progress' ? 'bg-orange-100 border border-orange-400' :
+                          appt.status === 'completed' ? 'bg-sky-50' : 'bg-muted/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            appt.status === 'in_progress' ? 'bg-orange-500 text-white' :
+                            appt.status === 'completed' ? 'bg-sky-100 text-sky-600' :
+                            'bg-sky-100 text-sky-600'
+                          }`}>
+                            {appt.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
+                            <p className="text-xs text-muted-foreground">{appt.scheduled_time} • {appt.client_name}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
+                            {appt.status?.replace('_', ' ')}
+                          </Badge>
+                          {appt.status === 'scheduled' && (
+                            <>
+                              <Button size="sm" variant="ghost" onClick={() => openTradeModal(appt)} className="h-8 w-8 p-0" title="Trade">
+                                <ArrowLeftRight className="w-4 h-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-8 w-8 p-0 text-destructive hover:text-destructive" title="Cancel">
+                                <X className="w-4 h-4" />
+                              </Button>
+                              {!activeWalk && (
+                                <Button size="sm" variant="outline" onClick={() => startWalk(appt.id)} className="rounded-full">
+                                  <Play className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Completed Walks Stats - SECOND */}
+            <Card className="rounded-xl border-green-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  Completed Walks
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-3 rounded-lg bg-green-50">
+                    <p className="text-2xl font-bold text-green-700">{completedStats.today}</p>
+                    <p className="text-xs text-green-600">Today</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-green-50">
+                    <p className="text-2xl font-bold text-green-700">{completedStats.week}</p>
+                    <p className="text-xs text-green-600">This Week</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-green-50">
+                    <p className="text-2xl font-bold text-green-700">{completedStats.month}</p>
+                    <p className="text-xs text-green-600">This Month</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions - THIRD */}
             <div className="grid grid-cols-2 gap-3">
               <Link to="/walker/schedule">
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
@@ -649,32 +740,6 @@ const WalkerDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Completed Walks Stats */}
-            <Card className="rounded-xl border-green-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  Completed Walks
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 rounded-lg bg-green-50">
-                    <p className="text-2xl font-bold text-green-700">{completedStats.today}</p>
-                    <p className="text-xs text-green-600">Today</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-green-50">
-                    <p className="text-2xl font-bold text-green-700">{completedStats.week}</p>
-                    <p className="text-xs text-green-600">This Week</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-green-50">
-                    <p className="text-2xl font-bold text-green-700">{completedStats.month}</p>
-                    <p className="text-xs text-green-600">This Month</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Pending Trade Requests */}
             {tradeRequests.length > 0 && (
