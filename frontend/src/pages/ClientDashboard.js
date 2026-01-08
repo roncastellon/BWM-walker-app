@@ -13,7 +13,7 @@ import { Label } from '../components/ui/label';
 import { 
   Calendar, CreditCard, PawPrint, Clock, ArrowRight, MessageCircle, 
   User, Plus, DollarSign, CalendarPlus, ShoppingBag, Eye, Send,
-  Dog, Cat, Bird, CheckCircle, Edit2, X, Trash2
+  Dog, Cat, Bird, CheckCircle, Edit2, X, Trash2, MapPin, Droplets, FileText, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,6 +36,11 @@ const ClientDashboard = () => {
   
   // Schedule view filter state
   const [scheduleView, setScheduleView] = useState('week'); // 'day', 'week', 'month'
+  
+  // Completed walks review state
+  const [completedWalksDate, setCompletedWalksDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedCompletedWalk, setSelectedCompletedWalk] = useState(null);
+  const [walkDetailModalOpen, setWalkDetailModalOpen] = useState(false);
 
   useEffect(() => {
     checkOnboardingStatus();
