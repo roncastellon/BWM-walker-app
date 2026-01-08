@@ -518,12 +518,32 @@ const AdminClientsPage = () => {
 • Has onboarding data: ${d.onboarding_data_exists ? 'Yes' : 'No'}
 • Preferred days: ${d.preferred_days?.length || 0}
 • Preferred times: ${d.preferred_times?.length || 0}
-• Schedule type: ${d.schedule_type || 'Not set'}`;
-        alert(msg);
+• Schedule type: ${d.schedule_type || 'Not set'}
+
+Would you like to try "Force Create Schedule"?`;
+        if (window.confirm(msg)) {
+          forceCreateSchedule();
+        }
       }
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to generate appointments');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const forceCreateSchedule = async () => {
+    if (!selectedClient) return;
+    setSaving(true);
+    try {
+      const response = await api.post(`/users/${selectedClient.id}/force-create-schedule`);
+      const data = response.data;
+      toast.success(`Created ${data.schedules_created} schedules and ${data.appointments_created} appointments`);
+      fetchData();
+    } catch (error) {
+      const detail = error.response?.data?.detail || 'Failed to create schedule';
+      alert(`Error: ${detail}`);
     } finally {
       setSaving(false);
     }
