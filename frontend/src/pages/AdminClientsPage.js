@@ -2202,6 +2202,111 @@ SAMPLE APPOINTMENTS:`;
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Add Pet Dialog (for adding pets to existing clients from view mode) */}
+        <Dialog open={addPetDialogOpen} onOpenChange={setAddPetDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <PawPrint className="w-5 h-5 text-primary" />
+                Add Pet for {selectedClient?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Add a new pet to this client's profile
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleAddPetToClient} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Pet Name *</Label>
+                  <Input
+                    value={newPetForm.name}
+                    onChange={(e) => setNewPetForm({ ...newPetForm, name: e.target.value })}
+                    placeholder="e.g., Buddy"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Species</Label>
+                  <Select
+                    value={newPetForm.species}
+                    onValueChange={(value) => setNewPetForm({ ...newPetForm, species: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dog">Dog</SelectItem>
+                      <SelectItem value="cat">Cat</SelectItem>
+                      <SelectItem value="bird">Bird</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Breed</Label>
+                <Input
+                  value={newPetForm.breed}
+                  onChange={(e) => setNewPetForm({ ...newPetForm, breed: e.target.value })}
+                  placeholder="e.g., Golden Retriever"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Age (years)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={newPetForm.age}
+                    onChange={(e) => setNewPetForm({ ...newPetForm, age: e.target.value })}
+                    placeholder="e.g., 3"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Weight (lbs)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={newPetForm.weight}
+                    onChange={(e) => setNewPetForm({ ...newPetForm, weight: e.target.value })}
+                    placeholder="e.g., 45"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea
+                  value={newPetForm.notes}
+                  onChange={(e) => setNewPetForm({ ...newPetForm, notes: e.target.value })}
+                  placeholder="Any special instructions, medical conditions, or behavioral notes..."
+                  rows={3}
+                />
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setAddPetDialogOpen(false);
+                    setNewPetForm({ name: '', species: 'dog', breed: '', age: '', weight: '', notes: '' });
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={savingPet || !newPetForm.name.trim()}>
+                  {savingPet ? 'Adding...' : 'Add Pet'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
