@@ -137,7 +137,7 @@ const AdminClientsPage = () => {
         name: newPetForm.name.trim(),
         species: newPetForm.species,
         breed: newPetForm.breed || null,
-        age: newPetForm.age ? parseInt(newPetForm.age) : null,
+        age: newPetForm.age || null,  // Send as string, not integer
         weight: newPetForm.weight ? parseFloat(newPetForm.weight) : null,
         notes: newPetForm.notes || null,
       });
@@ -155,7 +155,17 @@ const AdminClientsPage = () => {
       // Also refresh the main clients list
       fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add pet');
+      // Handle Pydantic validation errors
+      const errorDetail = error.response?.data?.detail;
+      if (Array.isArray(errorDetail)) {
+        // Pydantic validation error - extract message
+        const messages = errorDetail.map(e => e.msg || e.message).join(', ');
+        toast.error(messages || 'Validation error');
+      } else if (typeof errorDetail === 'string') {
+        toast.error(errorDetail);
+      } else {
+        toast.error('Failed to add pet');
+      }
     } finally {
       setSavingPet(false);
     }
