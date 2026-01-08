@@ -33,6 +33,9 @@ const ClientDashboard = () => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({ scheduled_date: '', scheduled_time: '', notes: '' });
   const [saving, setSaving] = useState(false);
+  
+  // Schedule view filter state
+  const [scheduleView, setScheduleView] = useState('week'); // 'day', 'week', 'month'
 
   useEffect(() => {
     checkOnboardingStatus();
