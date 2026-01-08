@@ -32,6 +32,7 @@ const AdminDashboard = () => {
   const [paysheets, setPaysheets] = useState([]);
   const [newClientNotifications, setNewClientNotifications] = useState([]);
   const [recurringSchedules, setRecurringSchedules] = useState([]);
+  const [expandedClients, setExpandedClients] = useState({}); // Track expanded client sections
   
   // Walker change dialog state
   const [walkerChangeDialog, setWalkerChangeDialog] = useState({
