@@ -1492,18 +1492,22 @@ async def force_create_schedule_from_onboarding(user_id: str, current_user: dict
         raise HTTPException(status_code=400, detail=f"No preferred_days in onboarding data. Data: {od}")
     
     # If no times found, generate default times based on walks_per_day
+    # Use times that match typical walk schedules (morning/afternoon)
     if not preferred_times:
-        default_times = ["09:00", "12:00", "15:00", "18:00"]
-        preferred_times = default_times[:walks_per_day]
-        if not preferred_times:
-            preferred_times = ["09:00"]  # Fallback
+        if walks_per_day >= 2:
+            preferred_times = ["11:00", "14:00"]  # Morning and afternoon
+        else:
+            preferred_times = ["11:00"]  # Just morning
     
     # Get pet IDs
     pets = await db.pets.find({"owner_id": user_id}, {"_id": 0, "id": 1}).to_list(100)
     pet_ids = [p["id"] for p in pets]
     
-    # Delete any existing recurring schedules for this client
-    deleted = await db.recurring_schedules.delete_many({"client_id": user_id})
+    # Delete ALL existing recurring schedules for this client
+    deleted_schedules = await db.recurring_schedules.delete_many({"client_id": user_id})
+    
+    # Delete ALL existing appointments for this client (to start fresh)
+    deleted_appointments = await db.appointments.delete_many({"client_id": user_id})
     
     # Map day names to numbers
     day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
@@ -1530,17 +1534,56 @@ async def force_create_schedule_from_onboarding(user_id: str, current_user: dict
             await db.recurring_schedules.insert_one(recurring_schedule)
             schedules_created += 1
     
-    # Now generate appointments
-    appointments_created = await generate_appointments_for_client(user_id, weeks_ahead=4)
+    # Now generate appointments starting from TODAY
+    appointments_created = await generate_appointments_from_today(user_id, pet_ids, preferred_days, preferred_times, service_type, weeks_ahead=4)
     
     return {
         "message": f"Force created {schedules_created} recurring schedules and {appointments_created} appointments",
-        "schedules_deleted": deleted.deleted_count,
+        "schedules_deleted": deleted_schedules.deleted_count,
+        "appointments_deleted": deleted_appointments.deleted_count,
         "schedules_created": schedules_created,
         "appointments_created": appointments_created,
         "days": preferred_days,
         "times": preferred_times
     }
+
+
+async def generate_appointments_from_today(client_id: str, pet_ids: list, days: list, times: list, service_type: str, weeks_ahead: int = 4):
+    """Generate appointments starting from today for the specified days and times"""
+    from datetime import date
+    
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    day_nums = [day_to_num.get(d, 0) for d in days]
+    
+    today = date.today()  # Use local date, not UTC
+    appointments_created = 0
+    
+    # Generate appointments for the next N weeks
+    for day_offset in range(weeks_ahead * 7):
+        target_date = today + timedelta(days=day_offset)
+        target_weekday = target_date.weekday()
+        
+        # Check if this day of week is in the client's preferred days
+        if target_weekday in day_nums:
+            for walk_time in times:
+                appointment = {
+                    "id": str(uuid.uuid4()),
+                    "client_id": client_id,
+                    "walker_id": None,  # Unassigned
+                    "pet_ids": pet_ids,
+                    "service_type": service_type,
+                    "scheduled_date": target_date.isoformat(),
+                    "scheduled_time": walk_time,
+                    "duration_value": 1,
+                    "status": "scheduled",
+                    "notes": "",
+                    "is_recurring": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.appointments.insert_one(appointment)
+                appointments_created += 1
+    
+    return appointments_created
 
 
 @api_router.get("/users/{user_id}/custom-pricing")
