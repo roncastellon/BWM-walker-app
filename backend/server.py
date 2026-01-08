@@ -298,6 +298,14 @@ class UserResponse(BaseModel):
     # Pay setup fields for walkers/sitters
     pay_setup_completed: Optional[bool] = None
     custom_pay_rates: Optional[Dict[str, float]] = None  # Custom pay rates per service
+    # Pricing fields for clients
+    pricing_setup_completed: Optional[bool] = None
+    billing_plan_id: Optional[str] = None
+    custom_prices: Optional[Dict[str, float]] = None
+    pricing_notes: Optional[str] = None
+    pricing_setup_at: Optional[str] = None
+    # Walking schedule
+    walkingSchedule: Optional[Dict] = None
 
 class TokenResponse(BaseModel):
     access_token: str
