@@ -195,6 +195,77 @@ const ClientDashboard = () => {
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
   const walkerContacts = contacts.filter(c => c.role === 'walker');
   const adminContacts = contacts.filter(c => c.role === 'admin');
+  
+  // Completed walks for the selected date
+  const completedWalks = appointments.filter(a => 
+    a.status === 'completed' && 
+    a.scheduled_date === completedWalksDate
+  ).sort((a, b) => (a.scheduled_time || '').localeCompare(b.scheduled_time || ''));
+  
+  // Navigate completed walks date (within last 5 days)
+  const navigateCompletedDate = (direction) => {
+    const current = new Date(completedWalksDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const fiveDaysAgo = new Date(today);
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    
+    if (direction === 'prev') {
+      current.setDate(current.getDate() - 1);
+      if (current >= fiveDaysAgo) {
+        setCompletedWalksDate(current.toISOString().split('T')[0]);
+      }
+    } else {
+      current.setDate(current.getDate() + 1);
+      if (current <= today) {
+        setCompletedWalksDate(current.toISOString().split('T')[0]);
+      }
+    }
+  };
+  
+  // Check if we can navigate (for disabling buttons)
+  const canNavigatePrev = () => {
+    const current = new Date(completedWalksDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const fiveDaysAgo = new Date(today);
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    current.setDate(current.getDate() - 1);
+    return current >= fiveDaysAgo;
+  };
+  
+  const canNavigateNext = () => {
+    const current = new Date(completedWalksDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    current.setDate(current.getDate() + 1);
+    return current <= today;
+  };
+  
+  // Open walk detail modal
+  const openWalkDetail = (walk) => {
+    setSelectedCompletedWalk(walk);
+    setWalkDetailModalOpen(true);
+  };
+  
+  // Format date for display
+  const formatCompletedDate = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (date.getTime() === today.getTime()) {
+      return 'Today';
+    }
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.getTime() === yesterday.getTime()) {
+      return 'Yesterday';
+    }
+    
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
 
   if (checkingOnboarding) {
     return (
