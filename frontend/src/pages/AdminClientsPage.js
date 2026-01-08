@@ -1510,6 +1510,9 @@ const AdminClientsPage = () => {
                         {saving ? 'Generating...' : 'Generate Appointments'}
                       </Button>
                     )}
+                    <Button variant="ghost" size="sm" onClick={viewScheduleDiagnostic} title="View schedule diagnostic info">
+                      <AlertCircle className="w-4 h-4" />
+                    </Button>
                     <Button variant="outline" size="sm" onClick={startEditClient} data-testid="edit-client-btn">
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
