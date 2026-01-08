@@ -1714,7 +1714,7 @@ SAMPLE APPOINTMENTS:`;
                     <div className="text-center py-4 bg-muted/30 rounded-xl">
                       <PawPrint className="w-8 h-8 mx-auto text-muted-foreground/50 mb-2" />
                       <p className="text-muted-foreground text-sm">No pets added yet</p>
-                      <p className="text-xs text-muted-foreground mt-1">Click "Add Pet" to add one</p>
+                      <p className="text-xs text-muted-foreground mt-1">Click &quot;Add Pet&quot; to add one</p>
                     </div>
                   )}
                 </div>
