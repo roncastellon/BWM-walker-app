@@ -501,6 +501,20 @@ const AdminClientsPage = () => {
     }
   };
 
+  const generateAppointmentsForClient = async () => {
+    if (!selectedClient) return;
+    setSaving(true);
+    try {
+      const response = await api.post(`/users/${selectedClient.id}/generate-appointments?weeks_ahead=4`);
+      toast.success(response.data.message || `Generated ${response.data.appointments_created} appointments`);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to generate appointments');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const initPricingMode = () => {
     // Initialize pricing form with default prices
     const defaultPrices = {};
