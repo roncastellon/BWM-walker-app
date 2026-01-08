@@ -1205,7 +1205,70 @@ async def setup_client_pricing(user_id: str, pricing_data: dict, current_user: d
         {"$set": {"read": True}}
     )
     
-    return {"message": "Pricing setup completed"}
+    # Generate appointments from recurring schedules for this client
+    # This is triggered when pricing is approved for a new client
+    appointments_created = await generate_appointments_for_client(user_id, weeks_ahead=4)
+    
+    return {"message": "Pricing setup completed", "appointments_created": appointments_created}
+
+
+async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4):
+    """
+    Generate appointments from recurring schedules for a specific client.
+    Creates appointments for the next N weeks.
+    """
+    # Get all active recurring schedules for this client
+    recurring_schedules = await db.recurring_schedules.find({
+        "client_id": client_id,
+        "status": {"$in": ["active", "pending_assignment"]}
+    }, {"_id": 0}).to_list(100)
+    
+    if not recurring_schedules:
+        return 0
+    
+    appointments_created = 0
+    today = datetime.now(timezone.utc).date()
+    
+    for schedule in recurring_schedules:
+        day_of_week = schedule.get("day_of_week", 0)
+        scheduled_time = schedule.get("scheduled_time", "09:00")
+        
+        # Generate appointments for the next N weeks
+        for week in range(weeks_ahead):
+            # Calculate the date for this day_of_week in this week
+            days_ahead = day_of_week - today.weekday()
+            if days_ahead < 0 or (days_ahead == 0 and week == 0):
+                days_ahead += 7
+            target_date = today + timedelta(days=days_ahead + (week * 7))
+            
+            # Check if appointment already exists for this date/time/client
+            existing = await db.appointments.find_one({
+                "client_id": client_id,
+                "scheduled_date": target_date.isoformat(),
+                "scheduled_time": scheduled_time,
+                "service_type": schedule.get("service_type")
+            })
+            
+            if not existing:
+                appointment = {
+                    "id": str(uuid.uuid4()),
+                    "client_id": client_id,
+                    "walker_id": schedule.get("walker_id"),
+                    "pet_ids": schedule.get("pet_ids", []),
+                    "service_type": schedule.get("service_type"),
+                    "scheduled_date": target_date.isoformat(),
+                    "scheduled_time": scheduled_time,
+                    "duration_value": schedule.get("duration_value", 1),
+                    "status": "scheduled",
+                    "notes": schedule.get("notes", ""),
+                    "is_recurring": True,
+                    "recurring_schedule_id": schedule.get("id"),
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.appointments.insert_one(appointment)
+                appointments_created += 1
+    
+    return appointments_created
 
 @api_router.get("/users/{user_id}/custom-pricing")
 async def get_custom_pricing(user_id: str, current_user: dict = Depends(get_current_user)):
