@@ -713,7 +713,7 @@ const WalkerDashboard = () => {
                           <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
                             {appt.status?.replace('_', ' ')}
                           </Badge>
-                          {appt.status === 'scheduled' && !activeWalk && (
+                          {appt.status === 'scheduled' && (
                             <>
                               <Button size="sm" variant="ghost" onClick={() => openTradeModal(appt)} className="h-8 w-8 p-0" title="Trade">
                                 <ArrowLeftRight className="w-4 h-4" />
@@ -721,9 +721,11 @@ const WalkerDashboard = () => {
                               <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-8 w-8 p-0 text-destructive hover:text-destructive" title="Cancel">
                                 <X className="w-4 h-4" />
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => startWalk(appt.id)} className="rounded-full">
-                                <Play className="w-3 h-3" />
-                              </Button>
+                              {!activeWalk && (
+                                <Button size="sm" variant="outline" onClick={() => startWalk(appt.id)} className="rounded-full">
+                                  <Play className="w-3 h-3" />
+                                </Button>
+                              )}
                             </>
                           )}
                         </div>
