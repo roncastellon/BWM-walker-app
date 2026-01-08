@@ -1205,6 +1205,12 @@ async def setup_client_pricing(user_id: str, pricing_data: dict, current_user: d
         {"$set": {"read": True}}
     )
     
+    # Activate any pending recurring schedules for this client
+    await db.recurring_schedules.update_many(
+        {"client_id": user_id, "status": "pending_assignment"},
+        {"$set": {"status": "active"}}
+    )
+    
     # Generate appointments from recurring schedules for this client
     # This is triggered when pricing is approved for a new client
     appointments_created = await generate_appointments_for_client(user_id, weeks_ahead=4)
