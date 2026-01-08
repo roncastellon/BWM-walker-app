@@ -471,6 +471,21 @@ backend:
         agent: "testing"
         comment: "✅ PASSED - Walker cancel appointment working correctly. Successfully tested with demo_walker credentials: POST /appointments/{id}/walker-cancel with mandatory reason 'Emergency - unable to complete walk due to illness' returned 200 status. Walker can successfully cancel scheduled appointments with required reason field."
 
+  - task: "Appointment generation flow when admin approves pricing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented appointment generation flow that triggers when admin approves pricing for a client. Added generate_appointments_for_client function and integrated it into PUT /users/{client_id}/pricing endpoint. Also added manual trigger endpoint POST /users/{client_id}/generate-appointments."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Appointment generation flow working correctly. Comprehensive testing completed: 1) Manual appointment generation endpoint (POST /api/users/{client_id}/generate-appointments?weeks_ahead=4) returns proper response with appointments_created count ✅, 2) Pricing approval endpoint (PUT /api/users/{client_id}/pricing) triggers appointment generation and includes appointments_created in response ✅, 3) Both endpoints handle clients with/without recurring schedules appropriately ✅, 4) Duplicate prevention working correctly ✅, 5) Response structure includes required appointments_created field ✅. All functionality matches review request specifications. No critical issues found."
+
 frontend:
   - task: "Global location permission prompt on app load"
     implemented: true
