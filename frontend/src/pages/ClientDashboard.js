@@ -283,28 +283,31 @@ const ClientDashboard = () => {
               </Link>
             </div>
 
-            {/* Upcoming Appointments */}
-            <Card className="rounded-xl">
+            {/* Today's Schedule */}
+            <Card className="rounded-xl border-orange-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock className="w-5 h-5 text-orange-500" />
-                  Upcoming Services
+                  Today&apos;s Schedule
+                  {todayAppts.length > 0 && (
+                    <Badge className="bg-orange-500 text-white rounded-full ml-2">
+                      {todayAppts.length}
+                    </Badge>
+                  )}
                 </CardTitle>
+                <CardDescription>
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {upcomingAppts.length === 0 ? (
+                {todayAppts.length === 0 ? (
                   <div className="text-center py-6 text-muted-foreground">
                     <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No upcoming appointments</p>
-                    <Link to="/schedule">
-                      <Button size="sm" className="mt-3 rounded-full bg-orange-500 hover:bg-orange-600">
-                        Book Now
-                      </Button>
-                    </Link>
+                    <p className="text-sm">No appointments scheduled for today</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {upcomingAppts.slice(0, 8).map((appt) => (
+                    {todayAppts.map((appt) => (
                       <div
                         key={appt.id}
                         className="flex items-center justify-between p-3 rounded-lg bg-orange-50/50 border border-orange-100"
@@ -316,7 +319,8 @@ const ClientDashboard = () => {
                           <div>
                             <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
                             <p className="text-xs text-muted-foreground">
-                              {appt.scheduled_date}{appt.scheduled_time ? ` • ${appt.scheduled_time}` : ''}
+                              {appt.scheduled_time || 'Time TBD'}
+                              {appt.walker_name && ` • ${appt.walker_name}`}
                             </p>
                           </div>
                         </div>
@@ -337,6 +341,114 @@ const ClientDashboard = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* All My Schedules */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-sky-500" />
+                    All My Schedules
+                    {filteredAppts.length > 0 && (
+                      <Badge variant="secondary" className="rounded-full ml-2">
+                        {filteredAppts.length}
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  {/* View Toggle */}
+                  <div className="flex gap-1 bg-muted rounded-full p-1">
+                    <Button
+                      size="sm"
+                      variant={scheduleView === 'day' ? 'default' : 'ghost'}
+                      className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'day' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                      onClick={() => setScheduleView('day')}
+                    >
+                      Day
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={scheduleView === 'week' ? 'default' : 'ghost'}
+                      className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'week' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                      onClick={() => setScheduleView('week')}
+                    >
+                      Week
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={scheduleView === 'month' ? 'default' : 'ghost'}
+                      className={`rounded-full h-7 px-3 text-xs ${scheduleView === 'month' ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                      onClick={() => setScheduleView('month')}
+                    >
+                      Month
+                    </Button>
+                  </div>
+                </div>
+                <CardDescription>
+                  {scheduleView === 'day' && 'Showing today only'}
+                  {scheduleView === 'week' && 'Showing next 7 days'}
+                  {scheduleView === 'month' && 'Showing next 30 days'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {filteredAppts.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No appointments for this period</p>
+                    <Link to="/schedule">
+                      <Button size="sm" className="mt-3 rounded-full bg-orange-500 hover:bg-orange-600">
+                        Book Now
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {filteredAppts.map((appt) => {
+                      const isToday = appt.scheduled_date === today;
+                      return (
+                        <div
+                          key={appt.id}
+                          className={`flex items-center justify-between p-3 rounded-lg border ${
+                            isToday 
+                              ? 'bg-orange-50/50 border-orange-200' 
+                              : 'bg-sky-50/30 border-sky-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              isToday ? 'bg-orange-100' : 'bg-sky-100'
+                            }`}>
+                              <PawPrint className={`w-5 h-5 ${isToday ? 'text-orange-600' : 'text-sky-600'}`} />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {isToday ? 'Today' : new Date(appt.scheduled_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                {appt.scheduled_time && ` • ${appt.scheduled_time}`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
+                              {appt.status}
+                            </Badge>
+                            {appt.status === 'scheduled' && (
+                              <>
+                                <Button size="sm" variant="ghost" onClick={() => openEditModal(appt)} className="h-8 w-8 p-0">
+                                  <Edit2 className="w-4 h-4" />
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
