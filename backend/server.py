@@ -372,7 +372,7 @@ class GPSCoordinate(BaseModel):
     timestamp: str
 
 class Appointment(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="allow")  # Allow extra fields for enriched data
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_id: str
     walker_id: Optional[str] = None
@@ -398,6 +398,15 @@ class Appointment(BaseModel):
     is_recurring: bool = False
     recurring_schedule_id: Optional[str] = None  # Links to parent recurring schedule
     is_one_time_exception: bool = False  # True if this is a one-time modification to a recurring schedule
+    # Enriched fields (added dynamically)
+    walker_name: Optional[str] = None
+    pee_count: Optional[int] = None
+    poop_count: Optional[int] = None
+    water_given: Optional[bool] = None
+    walker_notes: Optional[str] = None
+    actual_duration: Optional[int] = None
+    completed_at: Optional[str] = None
+    completion_data: Optional[Dict] = None
 
 class RecurringSchedule(BaseModel):
     """Represents a recurring schedule that generates appointments weekly"""
