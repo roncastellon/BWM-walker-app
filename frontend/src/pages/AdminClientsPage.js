@@ -110,6 +110,57 @@ const AdminClientsPage = () => {
   const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
   const [conflictAlternatives, setConflictAlternatives] = useState([]);
 
+  // Add Pet dialog state (for adding pets to existing clients in view mode)
+  const [addPetDialogOpen, setAddPetDialogOpen] = useState(false);
+  const [newPetForm, setNewPetForm] = useState({
+    name: '',
+    species: 'dog',
+    breed: '',
+    age: '',
+    weight: '',
+    notes: '',
+  });
+  const [savingPet, setSavingPet] = useState(false);
+
+  // Add pet to existing client (from view mode)
+  const handleAddPetToClient = async (e) => {
+    e.preventDefault();
+    if (!selectedClient || !newPetForm.name.trim()) {
+      toast.error('Pet name is required');
+      return;
+    }
+
+    setSavingPet(true);
+    try {
+      await api.post('/pets/admin', {
+        owner_id: selectedClient.id,
+        name: newPetForm.name.trim(),
+        species: newPetForm.species,
+        breed: newPetForm.breed || null,
+        age: newPetForm.age ? parseInt(newPetForm.age) : null,
+        weight: newPetForm.weight ? parseFloat(newPetForm.weight) : null,
+        notes: newPetForm.notes || null,
+      });
+
+      toast.success(`${newPetForm.name} added to ${selectedClient.full_name}'s pets!`);
+      
+      // Refresh client's pets
+      const petsRes = await api.get(`/pets?owner_id=${selectedClient.id}`);
+      setSelectedClient(prev => ({ ...prev, pets: petsRes.data }));
+      
+      // Reset form and close dialog
+      setNewPetForm({ name: '', species: 'dog', breed: '', age: '', weight: '', notes: '' });
+      setAddPetDialogOpen(false);
+      
+      // Also refresh the main clients list
+      fetchClients();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to add pet');
+    } finally {
+      setSavingPet(false);
+    }
+  };
+
   // Check walker conflicts when selecting walker in admin
   const checkAdminWalkerConflicts = async (walkerId, clientData) => {
     if (!walkerId || !clientData?.onboarding_data) {
