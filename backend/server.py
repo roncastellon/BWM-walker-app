@@ -1270,6 +1270,24 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     
     return appointments_created
 
+
+@api_router.post("/users/{user_id}/generate-appointments")
+async def trigger_appointment_generation(user_id: str, weeks_ahead: int = 4, current_user: dict = Depends(get_current_user)):
+    """Manually trigger appointment generation from recurring schedules for a client (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Check if client exists
+    client = await db.users.find_one({"id": user_id, "role": "client"}, {"_id": 0})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    appointments_created = await generate_appointments_for_client(user_id, weeks_ahead)
+    return {
+        "message": f"Generated {appointments_created} appointments for {client.get('full_name', 'client')}",
+        "appointments_created": appointments_created
+    }
+
 @api_router.get("/users/{user_id}/custom-pricing")
 async def get_custom_pricing(user_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin' and current_user['id'] != user_id:
