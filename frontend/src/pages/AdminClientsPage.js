@@ -461,8 +461,11 @@ const AdminClientsPage = () => {
         walkingSchedule: scheduleRes.data 
       });
       setEditMode(false);
+      // Fetch recurring schedules for this client
+      fetchClientSchedules(client.id);
     } catch (error) {
       setSelectedClient({ ...client, pets: [], walkingSchedule: null });
+      setClientRecurringSchedules([]);
     }
   };
 
