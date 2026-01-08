@@ -1228,18 +1228,24 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     
     appointments_created = 0
     today = datetime.now(timezone.utc).date()
+    today_weekday = today.weekday()  # Monday=0, Sunday=6
     
     for schedule in recurring_schedules:
         day_of_week = schedule.get("day_of_week", 0)
         scheduled_time = schedule.get("scheduled_time", "09:00")
         
+        # Calculate days until the next occurrence of this day_of_week
+        days_until_next = (day_of_week - today_weekday) % 7
+        # If it's today and we want to include today, days_until_next will be 0
+        # If day already passed this week, this gives us next week's occurrence
+        
         # Generate appointments for the next N weeks
         for week in range(weeks_ahead):
-            # Calculate the date for this day_of_week in this week
-            days_ahead = day_of_week - today.weekday()
-            if days_ahead < 0 or (days_ahead == 0 and week == 0):
-                days_ahead += 7
-            target_date = today + timedelta(days=days_ahead + (week * 7))
+            target_date = today + timedelta(days=days_until_next + (week * 7))
+            
+            # Skip if target_date is in the past (shouldn't happen but safety check)
+            if target_date < today:
+                continue
             
             # Check if appointment already exists for this date/time/client
             existing = await db.appointments.find_one({
