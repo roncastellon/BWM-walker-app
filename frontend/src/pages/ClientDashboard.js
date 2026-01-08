@@ -917,6 +917,135 @@ const ClientDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Walk Detail Modal */}
+      <Dialog open={walkDetailModalOpen} onOpenChange={setWalkDetailModalOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              Walk Details
+            </DialogTitle>
+            <DialogDescription>
+              {selectedCompletedWalk && (
+                <>
+                  {new Date(selectedCompletedWalk.scheduled_date + 'T00:00:00').toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                  {selectedCompletedWalk.scheduled_time && ` at ${selectedCompletedWalk.scheduled_time}`}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedCompletedWalk && (
+            <div className="space-y-4">
+              {/* Service & Walker Info */}
+              <div className="p-3 rounded-lg bg-green-50 border border-green-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium capitalize">{selectedCompletedWalk.service_type?.replace(/_/g, ' ')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Walker: {selectedCompletedWalk.walker_name || 'Not assigned'}
+                    </p>
+                  </div>
+                  {selectedCompletedWalk.actual_duration && (
+                    <Badge className="bg-green-100 text-green-700">
+                      {selectedCompletedWalk.actual_duration} min
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Pee & Poop Status */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-100 text-center">
+                  <Droplets className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
+                  <p className="text-2xl font-bold text-yellow-700">{selectedCompletedWalk.pee_count || 0}</p>
+                  <p className="text-xs text-yellow-600">Pee Break{(selectedCompletedWalk.pee_count || 0) !== 1 ? 's' : ''}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-100 text-center">
+                  <span className="text-2xl">💩</span>
+                  <p className="text-2xl font-bold text-amber-700">{selectedCompletedWalk.poop_count || 0}</p>
+                  <p className="text-xs text-amber-600">Poop{(selectedCompletedWalk.poop_count || 0) !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+
+              {/* Walker Notes */}
+              {selectedCompletedWalk.walker_notes && (
+                <div className="p-3 rounded-lg bg-sky-50 border border-sky-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="w-4 h-4 text-sky-500" />
+                    <p className="font-medium text-sm text-sky-700">Walker Notes</p>
+                  </div>
+                  <p className="text-sm text-gray-700">{selectedCompletedWalk.walker_notes}</p>
+                </div>
+              )}
+
+              {/* GPS Route */}
+              {selectedCompletedWalk.gps_route && selectedCompletedWalk.gps_route.length > 0 ? (
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4 text-blue-500" />
+                    <p className="font-medium text-sm text-blue-700">Walk Route</p>
+                  </div>
+                  <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden relative">
+                    {/* Simple route visualization */}
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+                      <div className="text-center">
+                        <MapPin className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                        <p className="text-sm">{selectedCompletedWalk.gps_route.length} GPS points recorded</p>
+                        {selectedCompletedWalk.distance_miles && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Distance: {selectedCompletedWalk.distance_miles.toFixed(2)} miles
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-100 text-center">
+                  <MapPin className="w-6 h-6 mx-auto text-gray-400 mb-1" />
+                  <p className="text-sm text-gray-500">No GPS route recorded</p>
+                </div>
+              )}
+
+              {/* Timestamps */}
+              <div className="grid grid-cols-2 gap-3 text-center text-sm">
+                {selectedCompletedWalk.started_at && (
+                  <div className="p-2 rounded bg-gray-50">
+                    <p className="text-xs text-gray-500">Started</p>
+                    <p className="font-medium">
+                      {new Date(selectedCompletedWalk.started_at).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                )}
+                {selectedCompletedWalk.completed_at && (
+                  <div className="p-2 rounded bg-gray-50">
+                    <p className="text-xs text-gray-500">Completed</p>
+                    <p className="font-medium">
+                      {new Date(selectedCompletedWalk.completed_at).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button onClick={() => setWalkDetailModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
