@@ -650,6 +650,32 @@ const WalkerDashboard = () => {
               </Card>
             </div>
 
+            {/* Completed Walks Stats */}
+            <Card className="rounded-xl border-green-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  Completed Walks
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-3 rounded-lg bg-green-50">
+                    <p className="text-2xl font-bold text-green-700">{completedStats.today}</p>
+                    <p className="text-xs text-green-600">Today</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-green-50">
+                    <p className="text-2xl font-bold text-green-700">{completedStats.week}</p>
+                    <p className="text-xs text-green-600">This Week</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-green-50">
+                    <p className="text-2xl font-bold text-green-700">{completedStats.month}</p>
+                    <p className="text-xs text-green-600">This Month</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Pending Trade Requests */}
             {tradeRequests.length > 0 && (
               <Card className="rounded-xl border-orange-200 bg-orange-50">
