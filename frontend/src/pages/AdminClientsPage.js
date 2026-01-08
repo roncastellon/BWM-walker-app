@@ -506,7 +506,21 @@ const AdminClientsPage = () => {
     setSaving(true);
     try {
       const response = await api.post(`/users/${selectedClient.id}/generate-appointments?weeks_ahead=4`);
-      toast.success(response.data.message || `Generated ${response.data.appointments_created} appointments`);
+      const data = response.data;
+      
+      if (data.appointments_created > 0) {
+        toast.success(`Generated ${data.appointments_created} appointments`);
+      } else {
+        // Show diagnostic info when 0 appointments generated
+        const d = data.diagnostic || {};
+        const msg = `No appointments generated. Debug info:
+• Existing schedules: ${d.existing_recurring_schedules || 0}
+• Has onboarding data: ${d.onboarding_data_exists ? 'Yes' : 'No'}
+• Preferred days: ${d.preferred_days?.length || 0}
+• Preferred times: ${d.preferred_times?.length || 0}
+• Schedule type: ${d.schedule_type || 'Not set'}`;
+        alert(msg);
+      }
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to generate appointments');
