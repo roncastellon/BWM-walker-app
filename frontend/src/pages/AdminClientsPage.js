@@ -461,10 +461,14 @@ const AdminClientsPage = () => {
         }
       }
       
-      // Save walking schedule
-      await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
+      // Save walking schedule and regenerate appointments
+      const scheduleResponse = await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
       
-      toast.success('Customer updated successfully!');
+      if (scheduleResponse.data.appointments_created > 0) {
+        toast.success(`Customer updated! Created ${scheduleResponse.data.appointments_created} appointments`);
+      } else {
+        toast.success('Customer updated successfully!');
+      }
       setEditMode(false);
       setSelectedClient(null);
       fetchData();
