@@ -2758,6 +2758,9 @@ def main():
         # Test demo user login first
         tester.test_demo_user_login()
         
+        # MAIN TEST FOR THIS REVIEW: Appointment generation flow
+        tester.test_appointment_generation_flow()
+        
         # Original tests
         tester.test_user_registration()
         tester.test_user_login()
