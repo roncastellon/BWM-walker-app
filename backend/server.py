@@ -1323,13 +1323,21 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     today = datetime.now(timezone.utc).date()
     today_weekday = today.weekday()  # Monday=0, Sunday=6
     
+    # Day-based services that don't need a specific time
+    day_services = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day']
+    
     for schedule in recurring_schedules:
         day_of_week = schedule.get("day_of_week", 0)
         scheduled_time = schedule.get("scheduled_time", "09:00")
+        service_type = schedule.get("service_type", "walk_30")
         
-        # Skip if no scheduled_time
+        # For day-based services, use a default time if empty
+        is_day_service = service_type in day_services
         if not scheduled_time:
-            continue
+            if is_day_service:
+                scheduled_time = "08:00"  # Default drop-off time for day services
+            else:
+                continue  # Skip non-day services without a time
         
         # Calculate days until the next occurrence of this day_of_week
         days_until_next = (day_of_week - today_weekday) % 7
