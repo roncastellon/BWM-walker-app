@@ -1544,7 +1544,7 @@ Would you like to try "Force Create Schedule"?`;
                         {saving ? 'Generating...' : 'Generate Appointments'}
                       </Button>
                     )}
-                    {selectedClient.pricing_setup_completed && (
+                    {(selectedClient.pricing_setup_completed || selectedClient.onboarding_completed) && (
                       <Button variant="destructive" size="sm" onClick={forceCreateSchedule} disabled={saving}>
                         <Repeat className="w-4 h-4 mr-1" />
                         Force Create
