@@ -1347,6 +1347,47 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     return appointments_created
 
 
+@api_router.get("/users/{user_id}/schedule-diagnostic")
+async def get_schedule_diagnostic(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get diagnostic info about a client's schedule setup (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    client = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    # Get all recurring schedules (any status)
+    all_schedules = await db.recurring_schedules.find({"client_id": user_id}, {"_id": 0}).to_list(100)
+    
+    # Get appointments
+    appointments = await db.appointments.find({"client_id": user_id}, {"_id": 0}).to_list(500)
+    
+    # Get pets
+    pets = await db.pets.find({"owner_id": user_id}, {"_id": 0}).to_list(100)
+    
+    od = client.get("onboarding_data") or {}
+    
+    return {
+        "client_id": user_id,
+        "full_name": client.get("full_name"),
+        "onboarding_completed": client.get("onboarding_completed"),
+        "pricing_setup_completed": client.get("pricing_setup_completed"),
+        "onboarding_data": od,
+        "pets_count": len(pets),
+        "pet_ids": [p.get("id") for p in pets],
+        "recurring_schedules_count": len(all_schedules),
+        "recurring_schedules_by_status": {
+            "active": len([s for s in all_schedules if s.get("status") == "active"]),
+            "pending_assignment": len([s for s in all_schedules if s.get("status") == "pending_assignment"]),
+            "stopped": len([s for s in all_schedules if s.get("status") == "stopped"]),
+            "other": len([s for s in all_schedules if s.get("status") not in ["active", "pending_assignment", "stopped"]])
+        },
+        "appointments_count": len(appointments),
+        "future_appointments": len([a for a in appointments if a.get("scheduled_date", "") >= datetime.now(timezone.utc).strftime("%Y-%m-%d")])
+    }
+
+
 @api_router.post("/users/{user_id}/generate-appointments")
 async def trigger_appointment_generation(user_id: str, weeks_ahead: int = 4, current_user: dict = Depends(get_current_user)):
     """Manually trigger appointment generation from recurring schedules for a client (admin only)"""
