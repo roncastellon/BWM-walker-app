@@ -122,6 +122,42 @@ const AdminClientsPage = () => {
   });
   const [savingPet, setSavingPet] = useState(false);
 
+  // Recurring schedules for the selected client
+  const [clientRecurringSchedules, setClientRecurringSchedules] = useState([]);
+  const [deletingScheduleId, setDeletingScheduleId] = useState(null);
+
+  // Fetch client's recurring schedules
+  const fetchClientSchedules = async (clientId) => {
+    try {
+      const res = await api.get(`/recurring-schedules?client_id=${clientId}`);
+      setClientRecurringSchedules(res.data || []);
+    } catch (error) {
+      console.error('Failed to fetch schedules:', error);
+      setClientRecurringSchedules([]);
+    }
+  };
+
+  // Delete a recurring schedule
+  const handleDeleteSchedule = async (scheduleId) => {
+    if (!window.confirm('Are you sure you want to delete this recurring schedule? This will NOT delete existing appointments.')) {
+      return;
+    }
+    
+    setDeletingScheduleId(scheduleId);
+    try {
+      await api.delete(`/recurring-schedules/${scheduleId}`);
+      toast.success('Schedule deleted');
+      // Refresh schedules
+      if (selectedClient?.id) {
+        fetchClientSchedules(selectedClient.id);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete schedule');
+    } finally {
+      setDeletingScheduleId(null);
+    }
+  };
+
   // Add pet to existing client (from view mode)
   const handleAddPetToClient = async (e) => {
     e.preventDefault();
