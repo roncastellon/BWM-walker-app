@@ -1544,6 +1544,12 @@ Would you like to try "Force Create Schedule"?`;
                         {saving ? 'Generating...' : 'Generate Appointments'}
                       </Button>
                     )}
+                    {selectedClient.pricing_setup_completed && (
+                      <Button variant="destructive" size="sm" onClick={forceCreateSchedule} disabled={saving}>
+                        <Repeat className="w-4 h-4 mr-1" />
+                        Force Create
+                      </Button>
+                    )}
                     <Button variant="ghost" size="sm" onClick={viewScheduleDiagnostic} title="View schedule diagnostic info">
                       <AlertCircle className="w-4 h-4" />
                     </Button>
