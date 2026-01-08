@@ -552,16 +552,32 @@ Would you like to try "Force Create Schedule"?`;
   const viewScheduleDiagnostic = async () => {
     if (!selectedClient) return;
     try {
-      const response = await api.get(`/users/${selectedClient.id}/schedule-diagnostic`);
-      const d = response.data;
-      const msg = `Diagnostic for ${d.full_name}:
+      // Check both recurring schedules and appointments
+      const [diagResponse, apptsResponse] = await Promise.all([
+        api.get(`/users/${selectedClient.id}/schedule-diagnostic`),
+        api.get(`/users/${selectedClient.id}/appointments-check`)
+      ]);
+      const d = diagResponse.data;
+      const a = apptsResponse.data;
+      
+      let msg = `Diagnostic for ${d.full_name}:
 • Onboarding: ${d.onboarding_completed ? 'Yes' : 'No'}
 • Pricing: ${d.pricing_setup_completed ? 'Yes' : 'No'}
 • Pets: ${d.pets_count}
 • Recurring Schedules: ${d.recurring_schedules_count} (Active: ${d.recurring_schedules_by_status.active}, Pending: ${d.recurring_schedules_by_status.pending_assignment})
-• Appointments: ${d.appointments_count} (Future: ${d.future_appointments})
-• Days: ${d.onboarding_data?.preferred_days?.join(', ') || 'None'}
-• Times: ${d.onboarding_data?.preferred_walk_times?.join(', ') || 'None'}`;
+
+APPOINTMENTS:
+• Total: ${a.total_appointments}
+• Sample dates:`;
+      
+      if (a.sample_appointments && a.sample_appointments.length > 0) {
+        a.sample_appointments.forEach(appt => {
+          msg += `\n  - ${appt.scheduled_date} ${appt.scheduled_time} (${appt.status})`;
+        });
+      } else {
+        msg += '\n  (No appointments found)';
+      }
+      
       alert(msg);
     } catch (error) {
       toast.error('Failed to get diagnostic info');
