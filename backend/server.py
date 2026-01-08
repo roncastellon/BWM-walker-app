@@ -1289,6 +1289,7 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
                         recurring_schedules.append(recurring_schedule)
     
     if not recurring_schedules:
+        # Log why we couldn't create schedules
         return 0
     
     appointments_created = 0
@@ -1298,6 +1299,10 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     for schedule in recurring_schedules:
         day_of_week = schedule.get("day_of_week", 0)
         scheduled_time = schedule.get("scheduled_time", "09:00")
+        
+        # Skip if no scheduled_time
+        if not scheduled_time:
+            continue
         
         # Calculate days until the next occurrence of this day_of_week
         days_until_next = (day_of_week - today_weekday) % 7
