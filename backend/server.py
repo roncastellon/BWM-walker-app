@@ -1462,14 +1462,20 @@ async def force_create_schedule_from_onboarding(user_id: str, current_user: dict
         raise HTTPException(status_code=400, detail="No onboarding data found for this client")
     
     preferred_days = od.get("preferred_days", [])
-    preferred_times = od.get("preferred_walk_times", [])
+    # Try multiple possible field names for times
+    preferred_times = od.get("preferred_walk_times") or od.get("preferred_times") or od.get("walk_times") or []
     walk_duration = od.get("walk_duration", 30)
+    walks_per_day = od.get("walks_per_day", 1)
     
     if not preferred_days:
-        raise HTTPException(status_code=400, detail=f"No preferred_days in onboarding data. Available keys: {list(od.keys())}")
+        raise HTTPException(status_code=400, detail=f"No preferred_days in onboarding data. Data: {od}")
     
+    # If no times found, generate default times based on walks_per_day
     if not preferred_times:
-        raise HTTPException(status_code=400, detail=f"No preferred_walk_times in onboarding data. Available keys: {list(od.keys())}")
+        default_times = ["09:00", "12:00", "15:00", "18:00"]
+        preferred_times = default_times[:walks_per_day]
+        if not preferred_times:
+            preferred_times = ["09:00"]  # Fallback
     
     # Get pet IDs
     pets = await db.pets.find({"owner_id": user_id}, {"_id": 0, "id": 1}).to_list(100)
