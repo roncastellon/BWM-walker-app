@@ -529,6 +529,93 @@ const ClientDashboard = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Completed Walks */}
+            <Card className="rounded-xl border-green-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    Completed Walks
+                  </CardTitle>
+                  {/* Date Navigation */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => navigateCompletedDate('prev')}
+                      disabled={!canNavigatePrev()}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <span className="text-sm font-medium min-w-[80px] text-center">
+                      {formatCompletedDate(completedWalksDate)}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => navigateCompletedDate('next')}
+                      disabled={!canNavigateNext()}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <CardDescription>
+                  Review walk details, routes, and notes (last 5 days)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {completedWalks.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <CheckCircle className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">No completed walks on {formatCompletedDate(completedWalksDate)}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {completedWalks.map((walk) => (
+                      <div
+                        key={walk.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-green-50/50 border border-green-100 cursor-pointer hover:bg-green-50 transition-colors"
+                        onClick={() => openWalkDetail(walk)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm capitalize">{walk.service_type?.replace(/_/g, ' ')}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {walk.scheduled_time}
+                              {walk.walker_name && ` • ${walk.walker_name}`}
+                              {walk.actual_duration && ` • ${walk.actual_duration} min`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {/* Quick indicators */}
+                          {walk.pee_count > 0 && (
+                            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                              💧 {walk.pee_count}
+                            </Badge>
+                          )}
+                          {walk.poop_count > 0 && (
+                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                              💩 {walk.poop_count}
+                            </Badge>
+                          )}
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <Eye className="w-4 h-4 text-green-600" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* BILLING TAB */}
