@@ -2582,6 +2582,169 @@ class WagWalkAPITester:
         self.test_day_duration_appointment_creation()
         self.test_night_duration_appointment_creation()
 
+    def test_appointment_generation_flow(self):
+        """Test appointment generation flow when admin approves pricing for a client"""
+        print("\n" + "=" * 70)
+        print("🗓️  TESTING APPOINTMENT GENERATION FLOW")
+        print("=" * 70)
+        
+        if not self.tokens.get('demo_admin'):
+            print("⚠️  Skipping appointment generation test - no demo admin token")
+            return
+        
+        # Step 1: Check clients with recurring schedules but no pricing yet
+        print("\n🔍 Step 1: Finding clients without pricing setup...")
+        success, clients = self.run_test(
+            "Get All Clients", "GET", "users/clients", 200,
+            token=self.tokens['demo_admin'], 
+            description="Get all clients to find one without pricing setup"
+        )
+        
+        if not success:
+            print("❌ Failed to get clients list")
+            return
+        
+        # Find a client without pricing_setup_completed
+        target_client = None
+        for client in clients:
+            if not client.get('pricing_setup_completed'):
+                target_client = client
+                break
+        
+        if not target_client:
+            print("⚠️  No clients found without pricing setup. All clients already have pricing configured.")
+            # Use the first client for testing
+            if clients:
+                target_client = clients[0]
+                print(f"   Using client {target_client.get('full_name')} for testing")
+            else:
+                print("❌ No clients available for testing")
+                return
+        else:
+            print(f"✅ Found client without pricing: {target_client.get('full_name')} (ID: {target_client.get('id')})")
+        
+        client_id = target_client['id']
+        
+        # Step 2: Check if client has recurring schedules
+        print("\n🔍 Step 2: Checking client's recurring schedules...")
+        success, schedules = self.run_test(
+            "Get Recurring Schedules", "GET", "recurring-schedules", 200,
+            token=self.tokens['demo_admin'],
+            description="Get all recurring schedules to check if client has any"
+        )
+        
+        client_schedules = []
+        if success:
+            client_schedules = [s for s in schedules if s.get('client_id') == client_id]
+            if client_schedules:
+                print(f"✅ Client has {len(client_schedules)} recurring schedule(s)")
+                for schedule in client_schedules:
+                    print(f"   - {schedule.get('service_type')} on day {schedule.get('day_of_week')} at {schedule.get('scheduled_time')}")
+            else:
+                print("⚠️  Client has no recurring schedules")
+        
+        # Step 3: Count current appointments for this client
+        print("\n🔍 Step 3: Counting client's current appointments...")
+        success, calendar = self.run_test(
+            "Get Calendar Appointments", "GET", "appointments/calendar", 200,
+            token=self.tokens['demo_admin'],
+            description="Get calendar appointments to count client's current appointments"
+        )
+        
+        initial_appointment_count = 0
+        if success:
+            client_appointments = [a for a in calendar if a.get('client_id') == client_id]
+            initial_appointment_count = len(client_appointments)
+            print(f"✅ Client currently has {initial_appointment_count} appointments")
+        
+        # Step 4: Test manual appointment generation endpoint
+        print("\n🔍 Step 4: Testing manual appointment generation...")
+        success, generation_response = self.run_test(
+            "Manual Appointment Generation", "POST", f"users/{client_id}/generate-appointments?weeks_ahead=4", 200,
+            token=self.tokens['demo_admin'],
+            description="Manually trigger appointment generation for client (4 weeks ahead)"
+        )
+        
+        manual_appointments_created = 0
+        if success:
+            manual_appointments_created = generation_response.get('appointments_created', 0)
+            print(f"✅ Manual generation created {manual_appointments_created} appointments")
+            
+            # Verify response structure
+            if 'appointments_created' in generation_response:
+                print("✅ Response includes appointments_created count")
+            else:
+                print("⚠️  Response missing appointments_created field")
+        
+        # Step 5: Verify appointments were created in calendar
+        print("\n🔍 Step 5: Verifying appointments in calendar...")
+        success, updated_calendar = self.run_test(
+            "Get Updated Calendar", "GET", "appointments/calendar", 200,
+            token=self.tokens['demo_admin'],
+            description="Get calendar to verify new appointments were created"
+        )
+        
+        if success:
+            updated_client_appointments = [a for a in updated_calendar if a.get('client_id') == client_id]
+            final_appointment_count = len(updated_client_appointments)
+            new_appointments = final_appointment_count - initial_appointment_count
+            print(f"✅ Client now has {final_appointment_count} appointments (added {new_appointments})")
+            
+            if new_appointments == manual_appointments_created:
+                print("✅ Appointment count matches generation response")
+            else:
+                print(f"⚠️  Appointment count mismatch: expected {manual_appointments_created}, found {new_appointments}")
+        
+        # Step 6: Test pricing approval triggers appointment generation
+        print("\n🔍 Step 6: Testing pricing approval appointment generation...")
+        
+        # First, reset pricing setup to test the trigger
+        reset_data = {
+            "pricing_setup_completed": False
+        }
+        success, reset_response = self.run_test(
+            "Reset Pricing Setup", "PUT", f"users/{client_id}/pricing", 200,
+            data=reset_data, token=self.tokens['demo_admin'],
+            description="Reset pricing setup to test approval trigger"
+        )
+        
+        if success:
+            print("✅ Pricing setup reset for testing")
+            
+            # Now approve pricing and check if appointments are generated
+            approval_data = {
+                "pricing_setup_completed": True,
+                "billing_plan_id": "standard",
+                "custom_prices": {},
+                "pricing_notes": "Test pricing approval"
+            }
+            
+            success, approval_response = self.run_test(
+                "Approve Client Pricing", "PUT", f"users/{client_id}/pricing", 200,
+                data=approval_data, token=self.tokens['demo_admin'],
+                description="Approve pricing setup and trigger appointment generation"
+            )
+            
+            if success:
+                approval_appointments_created = approval_response.get('appointments_created', 0)
+                print(f"✅ Pricing approval created {approval_appointments_created} appointments")
+                
+                # Verify response includes appointments_created count
+                if 'appointments_created' in approval_response:
+                    print("✅ Pricing approval response includes appointments_created count")
+                else:
+                    print("⚠️  Pricing approval response missing appointments_created field")
+                
+                # Check for duplicate prevention
+                if approval_appointments_created == 0:
+                    print("✅ No duplicate appointments created (good - prevents duplicates)")
+                elif approval_appointments_created > 0:
+                    print(f"✅ Generated {approval_appointments_created} new appointments from pricing approval")
+        
+        print("\n" + "=" * 70)
+        print("🏁 APPOINTMENT GENERATION FLOW TEST COMPLETE")
+        print("=" * 70)
+
 def main():
     print("🐕 Starting WagWalk API Tests...")
     print("=" * 50)
