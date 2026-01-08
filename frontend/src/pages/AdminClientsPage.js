@@ -514,7 +514,7 @@ const AdminClientsPage = () => {
               name: pet.name,
               species: pet.species,
               breed: pet.breed || null,
-              age: pet.age ? parseInt(pet.age) : null,
+              age: pet.age || null,
               weight: pet.weight ? parseFloat(pet.weight) : null,
               notes: pet.notes || null,
             });
