@@ -192,6 +192,21 @@ const ClientDashboard = () => {
   
   const filteredAppts = getFilteredAppointments();
   
+  // Categorize appointments by service type
+  const categorizeService = (serviceType) => {
+    if (!serviceType) return 'other';
+    const svc = serviceType.toLowerCase();
+    if (svc.includes('walk')) return 'walks';
+    if (svc.includes('day_care') || svc.includes('day_camp') || svc.includes('overnight') || svc.includes('boarding') || svc.includes('petsit')) return 'stays';
+    if (svc.includes('transport') || svc.includes('concierge')) return 'transport';
+    return 'other';
+  };
+  
+  const walkAppts = filteredAppts.filter(a => categorizeService(a.service_type) === 'walks');
+  const stayAppts = filteredAppts.filter(a => categorizeService(a.service_type) === 'stays');
+  const transportAppts = filteredAppts.filter(a => categorizeService(a.service_type) === 'transport');
+  const otherAppts = filteredAppts.filter(a => categorizeService(a.service_type) === 'other');
+  
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
   const walkerContacts = contacts.filter(c => c.role === 'walker');
   const adminContacts = contacts.filter(c => c.role === 'admin');
