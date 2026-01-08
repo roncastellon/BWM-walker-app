@@ -1294,10 +1294,17 @@ async def trigger_appointment_generation(user_id: str, weeks_ahead: int = 4, cur
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     
+    # Activate any pending recurring schedules for this client
+    activated = await db.recurring_schedules.update_many(
+        {"client_id": user_id, "status": "pending_assignment"},
+        {"$set": {"status": "active"}}
+    )
+    
     appointments_created = await generate_appointments_for_client(user_id, weeks_ahead)
     return {
         "message": f"Generated {appointments_created} appointments for {client.get('full_name', 'client')}",
-        "appointments_created": appointments_created
+        "appointments_created": appointments_created,
+        "schedules_activated": activated.modified_count
     }
 
 @api_router.get("/users/{user_id}/custom-pricing")
