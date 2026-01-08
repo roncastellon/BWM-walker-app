@@ -63,6 +63,9 @@ const WalkerDashboard = () => {
   
   // Incoming Trade Requests Review Modal
   const [incomingTradesModalOpen, setIncomingTradesModalOpen] = useState(false);
+  
+  // Completed walks stats
+  const [completedStats, setCompletedStats] = useState({ today: 0, week: 0, month: 0 });
 
   useEffect(() => {
     checkOnboardingStatus();
