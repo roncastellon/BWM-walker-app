@@ -2212,7 +2212,7 @@ SAMPLE APPOINTMENTS:`;
                 Add Pet for {selectedClient?.full_name}
               </DialogTitle>
               <DialogDescription>
-                Add a new pet to this client's profile
+                Add a new pet to this client&apos;s profile
               </DialogDescription>
             </DialogHeader>
             
