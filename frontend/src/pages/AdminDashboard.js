@@ -408,7 +408,7 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recurring Schedules Section */}
+            {/* Recurring Schedules Section - Grouped by Client */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -418,59 +418,122 @@ const AdminDashboard = () => {
                     {recurringSchedules.filter(s => s.status === 'active').length}
                   </Badge>
                 </CardTitle>
-                <CardDescription>Manage weekly recurring walks</CardDescription>
+                <CardDescription>Grouped by client - click to expand</CardDescription>
               </CardHeader>
               <CardContent>
                 {recurringSchedules.filter(s => s.status === 'active').length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">No active recurring schedules</p>
                 ) : (
-                  <div className="space-y-3">
-                    {recurringSchedules.filter(s => s.status === 'active').slice(0, 5).map((schedule) => {
-                      const client = clients.find(c => c.id === schedule.client_id);
-                      const walker = walkers.find(w => w.id === schedule.walker_id);
-                      return (
-                        <div
-                          key={schedule.id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-orange-100">
-                              <Repeat className="w-4 h-4 text-orange-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm">
-                                {client?.full_name || 'Unknown Client'}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {getDayName(schedule.day_of_week)} at {schedule.scheduled_time}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge 
-                              variant="outline" 
-                              className={`rounded-full ${walker ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}
+                  <div className="space-y-2">
+                    {/* Group schedules by client */}
+                    {(() => {
+                      const activeSchedules = recurringSchedules.filter(s => s.status === 'active');
+                      const groupedByClient = activeSchedules.reduce((acc, schedule) => {
+                        const clientId = schedule.client_id || 'unknown';
+                        if (!acc[clientId]) {
+                          acc[clientId] = [];
+                        }
+                        acc[clientId].push(schedule);
+                        return acc;
+                      }, {});
+                      
+                      return Object.entries(groupedByClient).map(([clientId, clientSchedules]) => {
+                        const client = clients.find(c => c.id === clientId);
+                        const isExpanded = expandedClients?.[clientId];
+                        
+                        return (
+                          <div key={clientId} className="border rounded-xl overflow-hidden">
+                            {/* Client Header - Clickable */}
+                            <div
+                              className="flex items-center justify-between p-3 bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors"
+                              onClick={() => setExpandedClients(prev => ({
+                                ...prev,
+                                [clientId]: !prev?.[clientId]
+                              }))}
                             >
-                              {walker?.full_name || 'Needs Walker'}
-                            </Badge>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="rounded-full h-8 w-8 p-0"
-                              onClick={() => openWalkerChangeDialog(schedule)}
-                              title="Change Walker"
-                            >
-                              <UserCog className="w-4 h-4" />
-                            </Button>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage src={client?.profile_image} />
+                                  <AvatarFallback className="bg-orange-100 text-orange-600 text-sm">
+                                    {client?.full_name?.charAt(0) || '?'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {client?.full_name || 'Unknown Client'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {clientSchedules.length} schedule{clientSchedules.length !== 1 ? 's' : ''}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="rounded-full bg-orange-50 text-orange-700">
+                                  {clientSchedules.length}
+                                </Badge>
+                                <svg
+                                  className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                            
+                            {/* Expanded Schedules */}
+                            {isExpanded && (
+                              <div className="border-t bg-background">
+                                {clientSchedules.map((schedule) => {
+                                  const walker = walkers.find(w => w.id === schedule.walker_id);
+                                  return (
+                                    <div
+                                      key={schedule.id}
+                                      className="flex items-center justify-between p-3 border-b last:border-b-0 hover:bg-muted/30 transition-colors"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="p-1.5 rounded-lg bg-orange-100">
+                                          <Repeat className="w-3 h-3 text-orange-600" />
+                                        </div>
+                                        <div>
+                                          <p className="text-sm">
+                                            {getDayName(schedule.day_of_week)} at {schedule.scheduled_time}
+                                          </p>
+                                          <p className="text-xs text-muted-foreground capitalize">
+                                            {schedule.service_type?.replace('_', ' ') || 'Walk'}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Badge 
+                                          variant="outline" 
+                                          className={`rounded-full text-xs ${walker ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}
+                                        >
+                                          {walker?.full_name || 'Needs Walker'}
+                                        </Badge>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="rounded-full h-7 w-7 p-0"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openWalkerChangeDialog(schedule);
+                                          }}
+                                          title="Change Walker"
+                                        >
+                                          <UserCog className="w-3 h-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      );
-                    })}
-                    {recurringSchedules.filter(s => s.status === 'active').length > 5 && (
-                      <p className="text-sm text-muted-foreground text-center">
-                        +{recurringSchedules.filter(s => s.status === 'active').length - 5} more schedules
-                      </p>
-                    )}
+                        );
+                      });
+                    })()}
                   </div>
                 )}
               </CardContent>
