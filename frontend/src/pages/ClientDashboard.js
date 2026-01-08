@@ -588,50 +588,186 @@ const ClientDashboard = () => {
                     </Link>
                   </div>
                 ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {filteredAppts.map((appt) => {
-                      const isToday = appt.scheduled_date === today;
-                      return (
-                        <div
-                          key={appt.id}
-                          className={`flex items-center justify-between p-3 rounded-lg border ${
-                            isToday 
-                              ? 'bg-orange-50/50 border-orange-200' 
-                              : 'bg-sky-50/30 border-sky-100'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              isToday ? 'bg-orange-100' : 'bg-sky-100'
-                            }`}>
-                              <PawPrint className={`w-5 h-5 ${isToday ? 'text-orange-600' : 'text-sky-600'}`} />
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {isToday ? 'Today' : new Date(appt.scheduled_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                {appt.scheduled_time && ` • ${appt.scheduled_time}`}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
-                              {appt.status}
-                            </Badge>
-                            {appt.status === 'scheduled' && (
-                              <>
-                                <Button size="sm" variant="ghost" onClick={() => openEditModal(appt)} className="h-8 w-8 p-0">
-                                  <Edit2 className="w-4 h-4" />
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                    {/* Walks Section */}
+                    {walkAppts.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <PawPrint className="w-4 h-4 text-orange-500" />
+                          <p className="text-sm font-semibold text-orange-700">Walks ({walkAppts.length})</p>
                         </div>
-                      );
-                    })}
+                        <div className="space-y-2">
+                          {walkAppts.map((appt) => {
+                            const isToday = appt.scheduled_date === today;
+                            return (
+                              <div
+                                key={appt.id}
+                                className={`flex items-center justify-between p-2.5 rounded-lg border ${
+                                  isToday ? 'bg-orange-50/50 border-orange-200' : 'bg-orange-50/20 border-orange-100'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                                    <PawPrint className="w-4 h-4 text-orange-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {isToday ? 'Today' : new Date(appt.scheduled_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                      {appt.scheduled_time && ` • ${appt.scheduled_time}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>{appt.status}</Badge>
+                                  {appt.status === 'scheduled' && (
+                                    <>
+                                      <Button size="sm" variant="ghost" onClick={() => openEditModal(appt)} className="h-7 w-7 p-0"><Edit2 className="w-3 h-3" /></Button>
+                                      <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-7 w-7 p-0 text-destructive hover:text-destructive"><X className="w-3 h-3" /></Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Stays Section (Day Care, Overnights, Boarding) */}
+                    {stayAppts.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Dog className="w-4 h-4 text-purple-500" />
+                          <p className="text-sm font-semibold text-purple-700">Stays & Day Care ({stayAppts.length})</p>
+                        </div>
+                        <div className="space-y-2">
+                          {stayAppts.map((appt) => {
+                            const isToday = appt.scheduled_date === today;
+                            return (
+                              <div
+                                key={appt.id}
+                                className={`flex items-center justify-between p-2.5 rounded-lg border ${
+                                  isToday ? 'bg-purple-50/50 border-purple-200' : 'bg-purple-50/20 border-purple-100'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                                    <Dog className="w-4 h-4 text-purple-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {isToday ? 'Today' : new Date(appt.scheduled_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                      {appt.scheduled_time && ` • ${appt.scheduled_time}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>{appt.status}</Badge>
+                                  {appt.status === 'scheduled' && (
+                                    <>
+                                      <Button size="sm" variant="ghost" onClick={() => openEditModal(appt)} className="h-7 w-7 p-0"><Edit2 className="w-3 h-3" /></Button>
+                                      <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-7 w-7 p-0 text-destructive hover:text-destructive"><X className="w-3 h-3" /></Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Transport Section */}
+                    {transportAppts.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <ArrowRight className="w-4 h-4 text-sky-500" />
+                          <p className="text-sm font-semibold text-sky-700">Transport & Concierge ({transportAppts.length})</p>
+                        </div>
+                        <div className="space-y-2">
+                          {transportAppts.map((appt) => {
+                            const isToday = appt.scheduled_date === today;
+                            return (
+                              <div
+                                key={appt.id}
+                                className={`flex items-center justify-between p-2.5 rounded-lg border ${
+                                  isToday ? 'bg-sky-50/50 border-sky-200' : 'bg-sky-50/20 border-sky-100'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
+                                    <ArrowRight className="w-4 h-4 text-sky-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {isToday ? 'Today' : new Date(appt.scheduled_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                      {appt.scheduled_time && ` • ${appt.scheduled_time}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>{appt.status}</Badge>
+                                  {appt.status === 'scheduled' && (
+                                    <>
+                                      <Button size="sm" variant="ghost" onClick={() => openEditModal(appt)} className="h-7 w-7 p-0"><Edit2 className="w-3 h-3" /></Button>
+                                      <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-7 w-7 p-0 text-destructive hover:text-destructive"><X className="w-3 h-3" /></Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Other Services Section */}
+                    {otherAppts.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="w-4 h-4 text-gray-500" />
+                          <p className="text-sm font-semibold text-gray-700">Other Services ({otherAppts.length})</p>
+                        </div>
+                        <div className="space-y-2">
+                          {otherAppts.map((appt) => {
+                            const isToday = appt.scheduled_date === today;
+                            return (
+                              <div
+                                key={appt.id}
+                                className={`flex items-center justify-between p-2.5 rounded-lg border ${
+                                  isToday ? 'bg-gray-50 border-gray-200' : 'bg-gray-50/50 border-gray-100'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                                    <Calendar className="w-4 h-4 text-gray-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm capitalize">{appt.service_type?.replace(/_/g, ' ')}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {isToday ? 'Today' : new Date(appt.scheduled_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                      {appt.scheduled_time && ` • ${appt.scheduled_time}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>{appt.status}</Badge>
+                                  {appt.status === 'scheduled' && (
+                                    <>
+                                      <Button size="sm" variant="ghost" onClick={() => openEditModal(appt)} className="h-7 w-7 p-0"><Edit2 className="w-3 h-3" /></Button>
+                                      <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-7 w-7 p-0 text-destructive hover:text-destructive"><X className="w-3 h-3" /></Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
