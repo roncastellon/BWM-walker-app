@@ -1898,6 +1898,58 @@ SAMPLE APPOINTMENTS:`;
                   </TabsContent>
                   
                   <TabsContent value="schedule" className="space-y-4 mt-4">
+                    {/* Existing Recurring Schedules */}
+                    {clientRecurringSchedules.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-base font-semibold">
+                          <Calendar className="w-4 h-4" />
+                          Current Recurring Schedules ({clientRecurringSchedules.length})
+                        </Label>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {clientRecurringSchedules.map((schedule) => (
+                            <div 
+                              key={schedule.id} 
+                              className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border"
+                            >
+                              <div className="flex-1">
+                                <p className="text-sm font-medium capitalize">
+                                  {schedule.service_type?.replace(/_/g, ' ') || 'Walk'}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][schedule.day_of_week]} at {schedule.scheduled_time}
+                                  <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
+                                    schedule.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                                  }`}>
+                                    {schedule.status}
+                                  </span>
+                                </p>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => handleDeleteSchedule(schedule.id)}
+                                disabled={deletingScheduleId === schedule.id}
+                              >
+                                {deletingScheduleId === schedule.id ? (
+                                  <span className="animate-spin">⏳</span>
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Delete schedules above to remove recurring appointments, then create new ones below.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="border-t pt-4">
+                      <p className="text-sm font-semibold mb-3">Create/Update Schedule</p>
+                    </div>
+                    
                     {/* Service Type Selection */}
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-base font-semibold">
