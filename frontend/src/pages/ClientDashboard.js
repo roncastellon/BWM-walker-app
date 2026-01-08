@@ -486,16 +486,21 @@ const ClientDashboard = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           {/* Quick indicators */}
                           {walk.pee_count > 0 && (
-                            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                              💧 {walk.pee_count}
+                            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 px-1.5">
+                              🟡 {walk.pee_count}
                             </Badge>
                           )}
                           {walk.poop_count > 0 && (
-                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 px-1.5">
                               💩 {walk.poop_count}
+                            </Badge>
+                          )}
+                          {walk.water_given && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 px-1.5">
+                              💧
                             </Badge>
                           )}
                           <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
