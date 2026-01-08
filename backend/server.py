@@ -1359,11 +1359,27 @@ async def trigger_appointment_generation(user_id: str, weeks_ahead: int = 4, cur
         {"$set": {"status": "active"}}
     )
     
+    # Get diagnostic info
+    existing_schedules = await db.recurring_schedules.find({
+        "client_id": user_id
+    }, {"_id": 0}).to_list(100)
+    
+    od = client.get("onboarding_data", {})
+    diagnostic = {
+        "existing_recurring_schedules": len(existing_schedules),
+        "onboarding_data_exists": bool(od),
+        "preferred_days": od.get("preferred_days", []),
+        "preferred_times": od.get("preferred_walk_times", []),
+        "schedule_type": od.get("schedule_type"),
+        "service_category": od.get("service_category")
+    }
+    
     appointments_created = await generate_appointments_for_client(user_id, weeks_ahead)
     return {
         "message": f"Generated {appointments_created} appointments for {client.get('full_name', 'client')}",
         "appointments_created": appointments_created,
-        "schedules_activated": activated.modified_count
+        "schedules_activated": activated.modified_count,
+        "diagnostic": diagnostic
     }
 
 @api_router.get("/users/{user_id}/custom-pricing")
