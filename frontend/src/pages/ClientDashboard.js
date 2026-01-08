@@ -142,6 +142,16 @@ const ClientDashboard = () => {
   };
 
   const today = new Date().toISOString().split('T')[0];
+  
+  // Today's appointments only
+  const todayAppts = appointments
+    .filter(a => 
+      (a.status === 'scheduled' || a.status === 'in_progress') &&
+      a.scheduled_date === today
+    )
+    .sort((a, b) => (a.scheduled_time || '').localeCompare(b.scheduled_time || ''));
+  
+  // All upcoming appointments (for the "All Schedules" section)
   const upcomingAppts = appointments
     .filter(a => 
       (a.status === 'scheduled' || a.status === 'in_progress') &&
@@ -153,6 +163,30 @@ const ClientDashboard = () => {
       if (dateCompare !== 0) return dateCompare;
       return (a.scheduled_time || '').localeCompare(b.scheduled_time || '');
     });
+  
+  // Filter appointments based on selected view
+  const getFilteredAppointments = () => {
+    const now = new Date();
+    const todayDate = now.toISOString().split('T')[0];
+    
+    let endDate;
+    if (scheduleView === 'day') {
+      endDate = todayDate;
+    } else if (scheduleView === 'week') {
+      const weekEnd = new Date(now);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      endDate = weekEnd.toISOString().split('T')[0];
+    } else { // month
+      const monthEnd = new Date(now);
+      monthEnd.setMonth(monthEnd.getMonth() + 1);
+      endDate = monthEnd.toISOString().split('T')[0];
+    }
+    
+    return upcomingAppts.filter(a => a.scheduled_date <= endDate);
+  };
+  
+  const filteredAppts = getFilteredAppointments();
+  
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
   const walkerContacts = contacts.filter(c => c.role === 'walker');
   const adminContacts = contacts.filter(c => c.role === 'admin');
