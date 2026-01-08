@@ -1485,6 +1485,12 @@ const AdminClientsPage = () => {
                         Pricing
                       </Button>
                     )}
+                    {selectedClient.pricing_setup_completed && (
+                      <Button variant="outline" size="sm" onClick={generateAppointmentsForClient} disabled={saving}>
+                        <CalendarPlus className="w-4 h-4 mr-1" />
+                        {saving ? 'Generating...' : 'Generate Appointments'}
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" onClick={startEditClient} data-testid="edit-client-btn">
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
