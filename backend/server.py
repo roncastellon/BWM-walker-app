@@ -2554,7 +2554,33 @@ async def get_appointments(current_user: dict = Depends(get_current_user)):
         query['walker_id'] = current_user['id']
     
     appointments = await db.appointments.find(query, {"_id": 0}).to_list(500)
-    return appointments
+    
+    # Enrich appointments with walker name and formatted completion data
+    enriched_appointments = []
+    for appt in appointments:
+        enriched = dict(appt)
+        
+        # Add walker name
+        if appt.get('walker_id'):
+            walker = await db.users.find_one({"id": appt['walker_id']}, {"_id": 0, "full_name": 1})
+            enriched['walker_name'] = walker.get('full_name') if walker else None
+        
+        # Format completion data for completed walks
+        if appt.get('status') == 'completed' and appt.get('completion_data'):
+            cd = appt['completion_data']
+            enriched['pee_count'] = 1 if cd.get('did_pee') else 0
+            enriched['poop_count'] = 1 if cd.get('did_poop') else 0
+            enriched['water_given'] = cd.get('checked_water', False)
+            enriched['walker_notes'] = cd.get('notes', '')
+            enriched['completed_at'] = cd.get('completed_at')
+        
+        # Use actual_duration_minutes if available
+        if appt.get('actual_duration_minutes'):
+            enriched['actual_duration'] = appt['actual_duration_minutes']
+        
+        enriched_appointments.append(enriched)
+    
+    return enriched_appointments
 
 @api_router.get("/appointments/calendar")
 async def get_calendar_appointments(current_user: dict = Depends(get_current_user)):
