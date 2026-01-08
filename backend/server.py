@@ -1373,16 +1373,64 @@ async def check_client_appointments(user_id: str, current_user: dict = Depends(g
     
     appointments = await db.appointments.find({"client_id": user_id}, {"_id": 0}).to_list(500)
     
+    # Get client name
+    client = await db.users.find_one({"id": user_id}, {"_id": 0, "full_name": 1})
+    client_name = client.get("full_name", "Unknown") if client else "Unknown"
+    
     return {
         "client_id": user_id,
+        "client_name": client_name,
         "total_appointments": len(appointments),
         "sample_appointments": [{
             "id": a.get("id"),
             "scheduled_date": a.get("scheduled_date"),
             "scheduled_time": a.get("scheduled_time"),
             "service_type": a.get("service_type"),
-            "status": a.get("status")
-        } for a in sorted(appointments, key=lambda x: x.get("scheduled_date", ""))[:10]]
+            "status": a.get("status"),
+            "walker_id": a.get("walker_id")
+        } for a in sorted(appointments, key=lambda x: x.get("scheduled_date", ""))[:15]]
+    }
+
+
+@api_router.get("/debug/calendar-check")
+async def debug_calendar_check(current_user: dict = Depends(get_current_user)):
+    """Debug endpoint to check calendar data"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Get all appointments
+    all_appointments = await db.appointments.find({}, {"_id": 0}).to_list(1000)
+    
+    # Group by client
+    by_client = {}
+    for a in all_appointments:
+        cid = a.get("client_id", "unknown")
+        if cid not in by_client:
+            by_client[cid] = []
+        by_client[cid].append(a)
+    
+    # Get client names
+    clients_info = []
+    for cid, appts in by_client.items():
+        client = await db.users.find_one({"id": cid}, {"_id": 0, "full_name": 1})
+        client_name = client.get("full_name", "Unknown") if client else "Unknown"
+        
+        # Get date range
+        dates = [a.get("scheduled_date", "") for a in appts]
+        dates = [d for d in dates if d]
+        
+        clients_info.append({
+            "client_id": cid[:8] + "...",
+            "client_name": client_name,
+            "appointment_count": len(appts),
+            "date_range": f"{min(dates)} to {max(dates)}" if dates else "No dates",
+            "service_types": list(set(a.get("service_type", "unknown") for a in appts))
+        })
+    
+    return {
+        "total_appointments": len(all_appointments),
+        "clients_with_appointments": len(by_client),
+        "clients": sorted(clients_info, key=lambda x: x["client_name"])
     }
 
 
