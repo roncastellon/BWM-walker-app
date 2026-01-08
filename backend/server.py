@@ -1222,12 +1222,54 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     """
     Generate appointments from recurring schedules for a specific client.
     Creates appointments for the next N weeks.
+    If no recurring schedules exist, attempts to create them from onboarding_data.
     """
     # Get all active recurring schedules for this client
     recurring_schedules = await db.recurring_schedules.find({
         "client_id": client_id,
         "status": {"$in": ["active", "pending_assignment"]}
     }, {"_id": 0}).to_list(100)
+    
+    # If no recurring schedules exist, try to create them from onboarding_data
+    if not recurring_schedules:
+        client = await db.users.find_one({"id": client_id}, {"_id": 0})
+        if client and client.get("onboarding_data"):
+            od = client["onboarding_data"]
+            preferred_days = od.get("preferred_days", [])
+            preferred_times = od.get("preferred_walk_times", [])
+            walk_duration = od.get("walk_duration", 30)
+            schedule_type = od.get("schedule_type", "recurring")
+            
+            # Only create recurring schedules if we have days and times
+            if preferred_days and preferred_times and schedule_type == "recurring":
+                # Get pet IDs for this client
+                pets = await db.pets.find({"owner_id": client_id}, {"_id": 0, "id": 1}).to_list(100)
+                pet_ids = [p["id"] for p in pets]
+                
+                # Map day names to numbers
+                day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+                service_type_map = {30: "walk_30", 45: "walk_45", 60: "walk_60"}
+                service_type = service_type_map.get(walk_duration, "walk_30")
+                
+                for day in preferred_days:
+                    day_num = day_to_num.get(day, 0)
+                    for walk_time in preferred_times:
+                        recurring_schedule = {
+                            "id": str(uuid.uuid4()),
+                            "client_id": client_id,
+                            "walker_id": od.get("preferred_walker_id"),
+                            "pet_ids": pet_ids,
+                            "service_type": service_type,
+                            "scheduled_time": walk_time,
+                            "day_of_week": day_num,
+                            "notes": "Created from onboarding data during pricing approval",
+                            "status": "active",
+                            "created_at": datetime.now(timezone.utc).isoformat(),
+                            "created_by": client_id
+                        }
+                        await db.recurring_schedules.insert_one(recurring_schedule)
+                        recurring_schedule.pop("_id", None)
+                        recurring_schedules.append(recurring_schedule)
     
     if not recurring_schedules:
         return 0
