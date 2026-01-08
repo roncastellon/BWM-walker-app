@@ -124,6 +124,24 @@ const WalkerDashboard = () => {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       
+      // Calculate completed walks stats
+      const completedAppts = apptsRes.data.filter(a => a.status === 'completed');
+      
+      // Today
+      const todayCompleted = completedAppts.filter(a => a.scheduled_date === today).length;
+      
+      // This week (last 7 days including today)
+      const weekAgo = new Date(now);
+      weekAgo.setDate(weekAgo.getDate() - 6);
+      const weekAgoStr = weekAgo.toISOString().split('T')[0];
+      const weekCompleted = completedAppts.filter(a => a.scheduled_date >= weekAgoStr && a.scheduled_date <= today).length;
+      
+      // This month (from 1st of current month)
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const monthCompleted = completedAppts.filter(a => a.scheduled_date >= monthStart && a.scheduled_date <= today).length;
+      
+      setCompletedStats({ today: todayCompleted, week: weekCompleted, month: monthCompleted });
+      
       const todayAppts = apptsRes.data
         .filter(a => a.scheduled_date === today)
         .sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
