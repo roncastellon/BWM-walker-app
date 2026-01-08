@@ -1247,6 +1247,24 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     }, {"_id": 0}).to_list(100)
     
     # If no recurring schedules exist, try to create them from onboarding_data
+    # If no active/pending schedules, also check for stopped ones and reactivate them
+    if not recurring_schedules:
+        stopped_schedules = await db.recurring_schedules.find({
+            "client_id": client_id,
+            "status": "stopped"
+        }, {"_id": 0}).to_list(100)
+        
+        if stopped_schedules:
+            # Reactivate stopped schedules
+            await db.recurring_schedules.update_many(
+                {"client_id": client_id, "status": "stopped"},
+                {"$set": {"status": "active"}}
+            )
+            recurring_schedules = stopped_schedules
+            for s in recurring_schedules:
+                s["status"] = "active"
+    
+    # If still no recurring schedules, try to create from onboarding_data
     if not recurring_schedules:
         client = await db.users.find_one({"id": client_id}, {"_id": 0})
         if client and client.get("onboarding_data"):
