@@ -564,26 +564,31 @@ Would you like to try "Force Create Schedule"?`;
       const d = diagResponse.data;
       const a = apptsResponse.data;
       
-      let msg = `Diagnostic for ${d.full_name}:
-• Onboarding: ${d.onboarding_completed ? 'Yes' : 'No'}
-• Pricing: ${d.pricing_setup_completed ? 'Yes' : 'No'}
-• Pets: ${d.pets_count}
-• Recurring Schedules: ${d.recurring_schedules_count} (Active: ${d.recurring_schedules_by_status.active}, Pending: ${d.recurring_schedules_by_status.pending_assignment})
+      let msg = `=== DIAGNOSTIC FOR ${d.full_name} ===
+
+RECURRING SCHEDULES:
+• Total: ${d.recurring_schedules_count}
+• Active: ${d.recurring_schedules_by_status.active}
+• Pending: ${d.recurring_schedules_by_status.pending_assignment}
 
 APPOINTMENTS:
 • Total: ${a.total_appointments}
-• Sample dates:`;
+• Client ID: ${a.client_id}
+
+SAMPLE APPOINTMENTS:`;
       
       if (a.sample_appointments && a.sample_appointments.length > 0) {
-        a.sample_appointments.forEach(appt => {
-          msg += `\n  - ${appt.scheduled_date} ${appt.scheduled_time} (${appt.status})`;
+        a.sample_appointments.slice(0, 10).forEach(appt => {
+          msg += `\n  ${appt.scheduled_date} ${appt.scheduled_time} | ${appt.service_type} | ${appt.status}`;
         });
       } else {
         msg += '\n  (No appointments found)';
       }
       
       alert(msg);
+      console.log('Diagnostic data:', { schedules: d, appointments: a });
     } catch (error) {
+      console.error('Diagnostic error:', error);
       toast.error('Failed to get diagnostic info');
     }
   };
