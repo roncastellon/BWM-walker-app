@@ -1365,6 +1365,27 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
     return appointments_created
 
 
+@api_router.get("/users/{user_id}/appointments-check")
+async def check_client_appointments(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Check appointments for a specific client (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    appointments = await db.appointments.find({"client_id": user_id}, {"_id": 0}).to_list(500)
+    
+    return {
+        "client_id": user_id,
+        "total_appointments": len(appointments),
+        "sample_appointments": [{
+            "id": a.get("id"),
+            "scheduled_date": a.get("scheduled_date"),
+            "scheduled_time": a.get("scheduled_time"),
+            "service_type": a.get("service_type"),
+            "status": a.get("status")
+        } for a in sorted(appointments, key=lambda x: x.get("scheduled_date", ""))[:10]]
+    }
+
+
 @api_router.get("/users/{user_id}/schedule-diagnostic")
 async def get_schedule_diagnostic(user_id: str, current_user: dict = Depends(get_current_user)):
     """Get diagnostic info about a client's schedule setup (admin only)"""
