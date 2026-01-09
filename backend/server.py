@@ -1128,15 +1128,97 @@ async def get_pet(pet_id: str):
         pet['age'] = str(pet['age'])
     return pet
 
+@api_router.get("/pets/{pet_id}/appointments")
+async def get_pet_appointments(pet_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all scheduled appointments for a pet"""
+    pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
+    if not pet:
+        raise HTTPException(status_code=404, detail="Pet not found")
+    
+    # Find all future appointments that include this pet
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    appointments = await db.appointments.find({
+        "pet_ids": pet_id,
+        "scheduled_date": {"$gte": today},
+        "status": {"$in": ["scheduled", "in_progress"]}
+    }, {"_id": 0}).to_list(500)
+    
+    # Categorize: sole pet vs shared with other pets
+    sole_appointments = []
+    shared_appointments = []
+    
+    for appt in appointments:
+        if len(appt.get("pet_ids", [])) == 1:
+            sole_appointments.append(appt)
+        else:
+            shared_appointments.append(appt)
+    
+    return {
+        "pet_id": pet_id,
+        "pet_name": pet.get("name", "Unknown"),
+        "total_appointments": len(appointments),
+        "sole_appointments": len(sole_appointments),
+        "shared_appointments": len(shared_appointments),
+        "appointments": appointments
+    }
+
 @api_router.delete("/pets/{pet_id}")
-async def delete_pet(pet_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_pet(pet_id: str, delete_appointments: bool = False, current_user: dict = Depends(get_current_user)):
+    """Delete a pet and optionally handle its appointments
+    
+    - If delete_appointments=False (default): Only removes pet from shared appointments, deletes sole appointments
+    - If delete_appointments=True: Deletes all appointments where this pet is the only pet
+    """
     pet = await db.pets.find_one({"id": pet_id}, {"_id": 0})
     if not pet:
         raise HTTPException(status_code=404, detail="Pet not found")
     if current_user['role'] == 'client' and pet['owner_id'] != current_user['id']:
         raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Find all future appointments that include this pet
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    appointments = await db.appointments.find({
+        "pet_ids": pet_id,
+        "scheduled_date": {"$gte": today},
+        "status": {"$in": ["scheduled", "in_progress"]}
+    }, {"_id": 0}).to_list(500)
+    
+    deleted_appointments = 0
+    updated_appointments = 0
+    
+    for appt in appointments:
+        pet_ids = appt.get("pet_ids", [])
+        if len(pet_ids) == 1:
+            # This pet is the only one - delete the appointment
+            if delete_appointments:
+                await db.appointments.delete_one({"id": appt["id"]})
+                deleted_appointments += 1
+        else:
+            # Multiple pets - just remove this pet from the appointment
+            new_pet_ids = [p for p in pet_ids if p != pet_id]
+            await db.appointments.update_one(
+                {"id": appt["id"]},
+                {"$set": {"pet_ids": new_pet_ids}}
+            )
+            updated_appointments += 1
+    
+    # Also remove pet from recurring schedules
+    await db.recurring_schedules.update_many(
+        {"pet_ids": pet_id},
+        {"$pull": {"pet_ids": pet_id}}
+    )
+    
+    # Delete recurring schedules where this was the only pet
+    await db.recurring_schedules.delete_many({"pet_ids": {"$size": 0}})
+    
+    # Finally delete the pet
     await db.pets.delete_one({"id": pet_id})
-    return {"message": "Pet deleted successfully"}
+    
+    return {
+        "message": f"Pet '{pet.get('name', 'Unknown')}' deleted successfully",
+        "deleted_appointments": deleted_appointments,
+        "updated_appointments": updated_appointments
+    }
 
 @api_router.put("/pets/{pet_id}")
 async def update_pet(pet_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
