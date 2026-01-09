@@ -509,17 +509,20 @@ const SchedulePage = () => {
                             variant="outline"
                             className="w-full justify-start text-left font-normal"
                             data-testid="select-end-date"
+                            type="button"
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {endDate ? format(endDate, 'PPP') : 'Pick end date'}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
+                        <PopoverContent 
+                          className="w-auto p-0"
+                          onOpenAutoFocus={(e) => e.preventDefault()}
+                        >
                           <Calendar
                             mode="single"
                             selected={endDate}
                             onSelect={setEndDate}
-                            initialFocus
                             disabled={(date) => date < selectedDate}
                           />
                         </PopoverContent>
