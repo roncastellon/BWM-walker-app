@@ -1924,11 +1924,9 @@ SAMPLE APPOINTMENTS:`;
                           {pets.length > 1 && (
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="destructive"
                               size="sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
+                              onClick={() => {
                                 // If pet has an ID, it exists in DB and needs API call
                                 if (pet.id) {
                                   deletePetFromDB(pet.id, pet.name);
@@ -1937,7 +1935,7 @@ SAMPLE APPOINTMENTS:`;
                                   removePet(index);
                                 }
                               }}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              className="h-10 w-10 p-0 rounded-full"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
