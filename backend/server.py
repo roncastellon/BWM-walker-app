@@ -5758,16 +5758,25 @@ async def create_dog_park_post(
     # Send notifications to tagged pet owners and users
     notified_users = set()
     
+    # Determine if post has an image
+    has_image = bool(post_data.image_data)
+    
     # Notify pet owners
     for pet_info in tagged_pets:
         owner_id = pet_info["owner_id"]
         if owner_id != current_user["id"] and owner_id not in notified_users:
+            if has_image:
+                message = f"📸 {current_user.get('full_name', 'Someone')} just posted a photo of {pet_info['pet_name']} in the Dog Park!"
+            else:
+                message = f"{current_user.get('full_name', 'Someone')} tagged {pet_info['pet_name']} in a Dog Park post!"
+            
             notification = {
                 "id": str(uuid.uuid4()),
                 "user_id": owner_id,
-                "type": "dog_park_tag",
-                "message": f"{current_user.get('full_name', 'Someone')} tagged {pet_info['pet_name']} in a Dog Park post!",
+                "type": "dog_park_photo" if has_image else "dog_park_tag",
+                "message": message,
                 "post_id": post.id,
+                "pet_name": pet_info['pet_name'],
                 "read": False,
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
@@ -5778,11 +5787,16 @@ async def create_dog_park_post(
     for user_info in tagged_users:
         user_id = user_info["user_id"]
         if user_id != current_user["id"] and user_id not in notified_users:
+            if has_image:
+                message = f"📸 {current_user.get('full_name', 'Someone')} tagged you in a Dog Park photo!"
+            else:
+                message = f"{current_user.get('full_name', 'Someone')} tagged you in a Dog Park post!"
+            
             notification = {
                 "id": str(uuid.uuid4()),
                 "user_id": user_id,
-                "type": "dog_park_tag",
-                "message": f"{current_user.get('full_name', 'Someone')} tagged you in a Dog Park post!",
+                "type": "dog_park_photo" if has_image else "dog_park_tag",
+                "message": message,
                 "post_id": post.id,
                 "read": False,
                 "created_at": datetime.now(timezone.utc).isoformat()
