@@ -102,6 +102,9 @@ const AdminClientsPage = () => {
     preferred_walker_id: '',
     duration_value: 1,
     notes: '',
+    is_recurring: true,
+    start_date: '',
+    end_date: '',
   });
 
   // Walker conflict state

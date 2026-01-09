@@ -1675,6 +1675,9 @@ async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict 
     duration_value = schedule.get('duration_value', 1)
     preferred_walker_id = schedule.get('preferred_walker_id', '')
     notes = schedule.get('notes', '')
+    is_recurring = schedule.get('is_recurring', True)  # Default to recurring
+    start_date = schedule.get('start_date', '')
+    end_date = schedule.get('end_date', '')
     
     # Save to walking_schedules collection (for UI state)
     schedule_data = {
@@ -1686,6 +1689,7 @@ async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict 
         "preferred_walker_id": preferred_walker_id,
         "duration_value": duration_value,
         "notes": notes,
+        "is_recurring": is_recurring,
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -1701,12 +1705,71 @@ async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict 
         {"$set": {"walkingSchedule": schedule_data}}
     )
     
-    # If days are specified, regenerate recurring schedules and appointments
-    if days and len(days) > 0:
-        # Get pet IDs for this client
-        pets = await db.pets.find({"owner_id": user_id}, {"_id": 0, "id": 1}).to_list(100)
-        pet_ids = [p["id"] for p in pets]
+    # Get pet IDs for this client
+    pets = await db.pets.find({"owner_id": user_id}, {"_id": 0, "id": 1}).to_list(100)
+    pet_ids = [p["id"] for p in pets]
+    
+    # Map day names to numbers (handle both capitalized and lowercase)
+    day_to_num = {
+        "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6,
+        "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6
+    }
+    
+    # Determine times based on service type
+    if service_type.startswith('walk'):
+        times_to_use = preferred_times if preferred_times else (["11:00", "14:00"][:walks_per_day] if walks_per_day > 1 else ["11:00"])
+    else:
+        times_to_use = ["09:00"]
+    
+    from datetime import date
+    
+    # ONE-TIME SCHEDULE: Create appointments for date range only
+    if not is_recurring:
+        if not start_date or not end_date:
+            raise HTTPException(status_code=400, detail="Start date and end date are required for one-time schedules")
         
+        try:
+            start = date.fromisoformat(start_date)
+            end = date.fromisoformat(end_date)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+        
+        if end < start:
+            raise HTTPException(status_code=400, detail="End date must be on or after start date")
+        
+        # Don't delete existing schedules for one-time - just add new appointments
+        appointments_created = 0
+        current_date = start
+        
+        while current_date <= end:
+            for time in times_to_use:
+                appointment = {
+                    "id": str(uuid.uuid4()),
+                    "client_id": user_id,
+                    "walker_id": preferred_walker_id if preferred_walker_id else None,
+                    "pet_ids": pet_ids,
+                    "service_type": service_type,
+                    "scheduled_date": current_date.isoformat(),
+                    "scheduled_time": time,
+                    "duration_value": duration_value,
+                    "status": "scheduled",
+                    "notes": notes,
+                    "is_recurring": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.appointments.insert_one(appointment)
+                appointments_created += 1
+            current_date += timedelta(days=1)
+        
+        return {
+            "message": f"One-time schedule created: {appointments_created} appointments from {start_date} to {end_date}",
+            "schedules_created": 0,
+            "appointments_created": appointments_created,
+            "is_recurring": False
+        }
+    
+    # RECURRING SCHEDULE: Create recurring_schedules and generate appointments
+    if days and len(days) > 0:
         # Delete existing recurring schedules for this client
         await db.recurring_schedules.delete_many({"client_id": user_id})
         
@@ -1716,20 +1779,6 @@ async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict 
             "client_id": user_id,
             "scheduled_date": {"$gte": today}
         })
-        
-        # Map day names to numbers (handle both capitalized and lowercase)
-        day_to_num = {
-            "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6,
-            "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6
-        }
-        
-        # Determine times based on service type
-        if service_type.startswith('walk'):
-            # For walks, use preferred_times or generate based on walks_per_day
-            times_to_use = preferred_times if preferred_times else (["11:00", "14:00"][:walks_per_day] if walks_per_day > 1 else ["11:00"])
-        else:
-            # For day care, overnights - just one "appointment" per day
-            times_to_use = ["09:00"]
         
         # Create recurring schedules
         schedules_created = 0
@@ -1755,7 +1804,6 @@ async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict 
         
         # Generate appointments for the next 4 weeks
         day_nums = [day_to_num.get(d, 0) for d in days]
-        from datetime import date
         today_date = date.today()
         appointments_created = 0
         
@@ -1781,9 +1829,10 @@ async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict 
                     appointments_created += 1
         
         return {
-            "message": f"Schedule saved. Created {schedules_created} recurring schedules and {appointments_created} appointments",
+            "message": f"Recurring schedule saved. Created {schedules_created} recurring schedules and {appointments_created} appointments",
             "schedules_created": schedules_created,
-            "appointments_created": appointments_created
+            "appointments_created": appointments_created,
+            "is_recurring": True
         }
     
     return {"message": "Schedule saved (no days selected, no appointments generated)"}
