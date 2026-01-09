@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { X, Download, Smartphone, Share, PlusSquare, CheckCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const InstallAppBanner = () => {
+  const { user } = useAuth();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showBanner, setShowBanner] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
@@ -10,6 +12,12 @@ const InstallAppBanner = () => {
   const [isSafari, setIsSafari] = useState(false);
 
   useEffect(() => {
+    // Don't show banner until user is logged in (registration complete)
+    if (!user) {
+      setShowBanner(false);
+      return;
+    }
+
     // Check if already installed or dismissed
     const dismissed = localStorage.getItem('installBannerDismissed');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
@@ -50,7 +58,7 @@ const InstallAppBanner = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [user]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
