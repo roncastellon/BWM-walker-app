@@ -1922,13 +1922,21 @@ SAMPLE APPOINTMENTS:`;
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium">Pet {index + 1}: {pet.name || 'New Pet'}</h4>
                           {pets.length > 1 && (
-                            <Button
+                            <button
                               type="button"
-                              variant="destructive"
-                              size="default"
-                              className="relative z-50"
+                              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium touch-manipulation"
+                              style={{ WebkitTapHighlightColor: 'transparent' }}
+                              onTouchEnd={(e) => {
+                                e.preventDefault();
+                                console.log('Touch end on delete for:', pet.id, pet.name);
+                                if (pet.id) {
+                                  deletePetFromDB(pet.id, pet.name);
+                                } else {
+                                  removePet(index);
+                                }
+                              }}
                               onClick={() => {
-                                console.log('Delete clicked for pet:', pet.id, pet.name);
+                                console.log('Click on delete for:', pet.id, pet.name);
                                 if (pet.id) {
                                   deletePetFromDB(pet.id, pet.name);
                                 } else {
@@ -1936,9 +1944,9 @@ SAMPLE APPOINTMENTS:`;
                                 }
                               }}
                             >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </Button>
+                              <Trash2 className="w-4 h-4" />
+                              Delete Pet
+                            </button>
                           )}
                         </div>
                         <div className="grid grid-cols-2 gap-3">
