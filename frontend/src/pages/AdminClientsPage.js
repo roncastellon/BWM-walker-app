@@ -363,71 +363,58 @@ const AdminClientsPage = () => {
     }
   };
 
-  // Delete existing pet from database
-  const deletePetFromDB = async (petId, petName) => {
-    if (!petId) {
-      toast.error('Cannot delete: Pet ID not found');
-      return;
-    }
+  // Confirm and execute pet deletion
+  const confirmDeletePet = async () => {
+    if (!petToDelete) return;
     
+    setDeletingPet(true);
     try {
-      // First check if pet has any scheduled appointments
-      const appointmentsRes = await api.get(`/pets/${petId}/appointments`);
-      const appointmentData = appointmentsRes.data;
+      const deleteRes = await api.delete(`/pets/${petToDelete.id}?delete_appointments=true`);
+      const result = deleteRes.data;
       
-      if (appointmentData.total_appointments > 0) {
-        // Pet has scheduled appointments - show detailed confirmation
-        let message = `${petName || 'This pet'} has ${appointmentData.total_appointments} scheduled appointment(s):\n\n`;
-        
-        if (appointmentData.sole_appointments > 0) {
-          message += `• ${appointmentData.sole_appointments} appointment(s) with ONLY this pet - will be DELETED\n`;
-        }
-        if (appointmentData.shared_appointments > 0) {
-          message += `• ${appointmentData.shared_appointments} appointment(s) shared with other pets - pet will be REMOVED from these\n`;
-        }
-        
-        message += `\nDo you want to proceed with deleting ${petName || 'this pet'}?`;
-        
-        if (!window.confirm(message)) {
-          return;
-        }
-        
-        // Delete with appointment handling
-        const deleteRes = await api.delete(`/pets/${petId}?delete_appointments=true`);
-        const result = deleteRes.data;
-        
-        let successMsg = `${petName || 'Pet'} deleted successfully`;
-        if (result.deleted_appointments > 0) {
-          successMsg += `. ${result.deleted_appointments} appointment(s) deleted`;
-        }
-        if (result.updated_appointments > 0) {
-          successMsg += `. ${result.updated_appointments} appointment(s) updated`;
-        }
-        toast.success(successMsg);
-      } else {
-        // No appointments - simple confirmation
-        if (!window.confirm(`Are you sure you want to delete ${petName || 'this pet'}? This cannot be undone.`)) {
-          return;
-        }
-        await api.delete(`/pets/${petId}`);
-        toast.success(`${petName || 'Pet'} deleted successfully`);
+      let successMsg = `${petToDelete.name || 'Pet'} deleted successfully`;
+      if (result.deleted_appointments > 0) {
+        successMsg += `. ${result.deleted_appointments} appointment(s) deleted`;
       }
+      if (result.updated_appointments > 0) {
+        successMsg += `. ${result.updated_appointments} appointment(s) updated`;
+      }
+      toast.success(successMsg);
       
-      // Remove from local state immediately
-      setPets(prevPets => prevPets.filter(p => p.id !== petId));
+      // Remove from local state
+      setPets(prevPets => prevPets.filter(p => p.id !== petToDelete.id));
       
-      // Also update selectedClient's pets to keep in sync
+      // Update selectedClient's pets
       if (selectedClient) {
-        const updatedPets = (selectedClient.pets || []).filter(p => p.id !== petId);
+        const updatedPets = (selectedClient.pets || []).filter(p => p.id !== petToDelete.id);
         setSelectedClient({
           ...selectedClient,
           pets: updatedPets
         });
       }
       
-      // Refresh the full client list
+      // Refresh data
       fetchData();
     } catch (error) {
+      console.error('Failed to delete pet:', error);
+      toast.error(error.response?.data?.detail || 'Failed to delete pet');
+    } finally {
+      setDeletingPet(false);
+      setDeleteDialogOpen(false);
+      setPetToDelete(null);
+    }
+  };
+
+  // Delete existing pet from database - now opens confirmation dialog
+  const deletePetFromDB = async (petId, petName) => {
+    if (!petId) {
+      toast.error('Cannot delete: Pet ID not found');
+      return;
+    }
+    
+    // Set the pet to delete and open the confirmation dialog
+    setPetToDelete({ id: petId, name: petName });
+    setDeleteDialogOpen(true); {
       console.error('Failed to delete pet:', error);
       toast.error(error.response?.data?.detail || 'Failed to delete pet');
     }
