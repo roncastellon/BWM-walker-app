@@ -85,7 +85,8 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 ### P2 (Medium Priority)
 - Client pet profiles with medical records
 - Walker reviews/ratings system
-- Recurring appointment scheduling
+- ✅ Recurring appointment scheduling (COMPLETED Jan 2026)
+- ✅ One-time date range scheduling for overnights/stays (COMPLETED Jan 2026)
 - Multi-pet discounts
 - Walker availability calendar
 - Admin analytics dashboard
