@@ -416,7 +416,6 @@ const AdminClientsPage = () => {
     setPetToDelete({ id: petId, name: petName });
     setDeleteDialogOpen(true);
   };
-  };
 
   const updatePet = (index, field, value) => {
     const newPets = [...pets];
