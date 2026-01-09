@@ -1291,7 +1291,7 @@ async def generate_appointments_for_client(client_id: str, weeks_ahead: int = 4)
                 pet_ids = [p["id"] for p in pets]
                 
                 # Map day names to numbers
-                day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+                day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
                 service_type_map = {30: "walk_30", 45: "walk_45", 60: "walk_60"}
                 service_type = service_type_map.get(walk_duration, "walk_30")
                 
@@ -1575,7 +1575,7 @@ async def force_create_schedule_from_onboarding(user_id: str, current_user: dict
     deleted_appointments = await db.appointments.delete_many({"client_id": user_id})
     
     # Map day names to numbers
-    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
     service_type_map = {30: "walk_30", 45: "walk_45", 60: "walk_60"}
     service_type = service_type_map.get(walk_duration, "walk_30")
     
@@ -1617,7 +1617,7 @@ async def generate_appointments_from_today(client_id: str, pet_ids: list, days: 
     """Generate appointments starting from today for the specified days and times"""
     from datetime import date
     
-    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
     day_nums = [day_to_num.get(d, 0) for d in days]
     
     today = date.today()  # Use local date, not UTC
@@ -2149,7 +2149,7 @@ async def check_schedule_conflicts(
     if not walker_id:
         return {"has_conflicts": False, "conflicts": []}
     
-    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
     
     conflicts = []
     today = datetime.now(timezone.utc).date()
@@ -2412,7 +2412,7 @@ async def change_recurring_schedule_walker(
         # One-time change - create an exception appointment for that specific date
         if not specific_date:
             # Calculate next occurrence if no date provided
-            day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+            day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
             today = datetime.now(timezone.utc).date()
             today_weekday = today.weekday()
             day_num = schedule.get('day_of_week', 0)
@@ -5802,7 +5802,7 @@ async def complete_client_onboarding(
         pet_ids.append(pet["id"])
     
     # Day name to number mapping (Monday=0 through Sunday=6)
-    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+    day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
     
     # Create schedules based on service_category
     schedules_created = []
