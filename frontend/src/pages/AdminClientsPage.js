@@ -2132,27 +2132,29 @@ SAMPLE APPOINTMENTS:`;
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <Label className="text-xs text-sky-600">Start Date</Label>
-                              <Input
+                              <input
                                 type="date"
                                 value={walkingSchedule.start_date || ''}
                                 onChange={(e) => setWalkingSchedule({ ...walkingSchedule, start_date: e.target.value })}
                                 min={new Date().toISOString().split('T')[0]}
-                                className="mt-1"
+                                className="mt-1 w-full h-10 px-3 py-2 text-base border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                                style={{ WebkitAppearance: 'none', appearance: 'none' }}
                               />
                             </div>
                             <div>
                               <Label className="text-xs text-sky-600">End Date</Label>
-                              <Input
+                              <input
                                 type="date"
                                 value={walkingSchedule.end_date || ''}
                                 onChange={(e) => setWalkingSchedule({ ...walkingSchedule, end_date: e.target.value })}
                                 min={walkingSchedule.start_date || new Date().toISOString().split('T')[0]}
-                                className="mt-1"
+                                className="mt-1 w-full h-10 px-3 py-2 text-base border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                                style={{ WebkitAppearance: 'none', appearance: 'none' }}
                               />
                             </div>
                           </div>
-                          <p className="text-xs text-sky-600">
-                            Appointments will be created for each day from start to end date.
+                          <p className="text-xs text-sky-600 mt-2">
+                            Tap on the date field to open the calendar. Appointments will be created for each day from start to end date.
                           </p>
                         </div>
                       )}
