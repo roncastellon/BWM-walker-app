@@ -364,13 +364,49 @@ const AdminClientsPage = () => {
       return;
     }
     
-    if (!window.confirm(`Are you sure you want to delete ${petName || 'this pet'}? This cannot be undone.`)) {
-      return;
-    }
-    
     try {
-      await api.delete(`/pets/${petId}`);
-      toast.success(`${petName || 'Pet'} deleted successfully`);
+      // First check if pet has any scheduled appointments
+      const appointmentsRes = await api.get(`/pets/${petId}/appointments`);
+      const appointmentData = appointmentsRes.data;
+      
+      if (appointmentData.total_appointments > 0) {
+        // Pet has scheduled appointments - show detailed confirmation
+        let message = `${petName || 'This pet'} has ${appointmentData.total_appointments} scheduled appointment(s):\n\n`;
+        
+        if (appointmentData.sole_appointments > 0) {
+          message += `• ${appointmentData.sole_appointments} appointment(s) with ONLY this pet - will be DELETED\n`;
+        }
+        if (appointmentData.shared_appointments > 0) {
+          message += `• ${appointmentData.shared_appointments} appointment(s) shared with other pets - pet will be REMOVED from these\n`;
+        }
+        
+        message += `\nDo you want to proceed with deleting ${petName || 'this pet'}?`;
+        
+        if (!window.confirm(message)) {
+          return;
+        }
+        
+        // Delete with appointment handling
+        const deleteRes = await api.delete(`/pets/${petId}?delete_appointments=true`);
+        const result = deleteRes.data;
+        
+        let successMsg = `${petName || 'Pet'} deleted successfully`;
+        if (result.deleted_appointments > 0) {
+          successMsg += `. ${result.deleted_appointments} appointment(s) deleted`;
+        }
+        if (result.updated_appointments > 0) {
+          successMsg += `. ${result.updated_appointments} appointment(s) updated`;
+        }
+        toast.success(successMsg);
+      } else {
+        // No appointments - simple confirmation
+        if (!window.confirm(`Are you sure you want to delete ${petName || 'this pet'}? This cannot be undone.`)) {
+          return;
+        }
+        await api.delete(`/pets/${petId}`);
+        toast.success(`${petName || 'Pet'} deleted successfully`);
+      }
+      
       // Remove from local state
       setPets(pets.filter(p => p.id !== petId));
       // Refresh the client data to ensure sync
