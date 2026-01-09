@@ -635,14 +635,23 @@ const AdminClientsPage = () => {
         }
       }
       
-      // Save walking schedule and regenerate appointments
-      const scheduleResponse = await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
+      // Only save walking schedule if it has valid data to save
+      // For recurring: needs days selected
+      // For one-time: needs start_date and end_date
+      const hasRecurringData = walkingSchedule.is_recurring && walkingSchedule.days && walkingSchedule.days.length > 0;
+      const hasOneTimeData = !walkingSchedule.is_recurring && walkingSchedule.start_date && walkingSchedule.end_date;
       
-      if (scheduleResponse.data.appointments_created > 0) {
-        toast.success(`Customer updated! Created ${scheduleResponse.data.appointments_created} appointments`);
+      if (hasRecurringData || hasOneTimeData) {
+        const scheduleResponse = await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
+        if (scheduleResponse.data.appointments_created > 0) {
+          toast.success(`Customer updated! Created ${scheduleResponse.data.appointments_created} appointments`);
+        } else {
+          toast.success('Customer updated successfully!');
+        }
       } else {
         toast.success('Customer updated successfully!');
       }
+      
       setEditMode(false);
       setSelectedClient(null);
       fetchData();
