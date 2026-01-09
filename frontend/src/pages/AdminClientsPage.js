@@ -2008,7 +2008,30 @@ SAMPLE APPOINTMENTS:`;
                         {walkingSchedule.days.length} day(s) selected
                       </p>
                       
-                      {/* Save Schedule Button - prominently placed */}
+                      {/* Recurring Toggle */}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+                        <div className="flex items-center gap-2">
+                          <Repeat className="w-4 h-4 text-green-600" />
+                          <div>
+                            <p className="font-medium text-sm text-green-700">Recurring Weekly</p>
+                            <p className="text-xs text-green-600">Repeats every week automatically</p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={walkingSchedule.is_recurring !== false ? 'default' : 'outline'}
+                          className={`rounded-full ${walkingSchedule.is_recurring !== false ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                          onClick={() => setWalkingSchedule({ 
+                            ...walkingSchedule, 
+                            is_recurring: walkingSchedule.is_recurring === false ? true : false 
+                          })}
+                        >
+                          {walkingSchedule.is_recurring !== false ? 'ON' : 'OFF'}
+                        </Button>
+                      </div>
+                      
+                      {/* Create Schedule Button */}
                       <Button
                         type="button"
                         className="w-full rounded-full bg-green-500 hover:bg-green-600"
@@ -2019,8 +2042,13 @@ SAMPLE APPOINTMENTS:`;
                           }
                           setSaving(true);
                           try {
-                            await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
-                            toast.success('Schedule created successfully!');
+                            await api.post(`/users/${selectedClient.id}/walking-schedule`, {
+                              ...walkingSchedule,
+                              is_recurring: walkingSchedule.is_recurring !== false
+                            });
+                            toast.success(walkingSchedule.is_recurring !== false 
+                              ? 'Recurring schedule created! Appointments will repeat weekly.' 
+                              : 'One-time schedule created!');
                             // Refresh the schedules
                             fetchClientSchedules(selectedClient.id);
                             // Reset the form for next schedule
@@ -2037,7 +2065,11 @@ SAMPLE APPOINTMENTS:`;
                         }}
                         disabled={saving || !walkingSchedule.days?.length}
                       >
-                        {saving ? 'Creating...' : `Create ${walkingSchedule.service_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Schedule'}`}
+                        {saving ? 'Creating...' : (
+                          walkingSchedule.is_recurring !== false 
+                            ? `Create Recurring ${walkingSchedule.service_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Schedule'}`
+                            : `Create One-Time ${walkingSchedule.service_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Schedule'}`
+                        )}
                       </Button>
                     </div>
 
