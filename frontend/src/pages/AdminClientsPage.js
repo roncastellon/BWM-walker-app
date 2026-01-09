@@ -2007,6 +2007,38 @@ SAMPLE APPOINTMENTS:`;
                       <p className="text-xs text-muted-foreground">
                         {walkingSchedule.days.length} day(s) selected
                       </p>
+                      
+                      {/* Save Schedule Button - prominently placed */}
+                      <Button
+                        type="button"
+                        className="w-full rounded-full bg-green-500 hover:bg-green-600"
+                        onClick={async () => {
+                          if (!walkingSchedule.days || walkingSchedule.days.length === 0) {
+                            toast.error('Please select at least one day');
+                            return;
+                          }
+                          setSaving(true);
+                          try {
+                            await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
+                            toast.success('Schedule created successfully!');
+                            // Refresh the schedules
+                            fetchClientSchedules(selectedClient.id);
+                            // Reset the form for next schedule
+                            setWalkingSchedule({
+                              ...walkingSchedule,
+                              days: [],
+                              preferred_times: ['09:00'],
+                            });
+                          } catch (error) {
+                            toast.error(error.response?.data?.detail || 'Failed to save schedule');
+                          } finally {
+                            setSaving(false);
+                          }
+                        }}
+                        disabled={saving || !walkingSchedule.days?.length}
+                      >
+                        {saving ? 'Creating...' : `Create ${walkingSchedule.service_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Schedule'}`}
+                      </Button>
                     </div>
 
                     {/* Duration - Show different options based on service type */}
