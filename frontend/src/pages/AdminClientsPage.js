@@ -1918,7 +1918,7 @@ SAMPLE APPOINTMENTS:`;
                   
                   <TabsContent value="pets" className="space-y-4 mt-4">
                     {pets.map((pet, index) => (
-                      <Card key={pet.id || index} className="p-4">
+                      <Card key={pet.id || index} className="p-4 relative">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium">Pet {index + 1}: {pet.name || 'New Pet'}</h4>
                           {pets.length > 1 && (
@@ -1926,6 +1926,7 @@ SAMPLE APPOINTMENTS:`;
                               type="button"
                               variant="destructive"
                               size="default"
+                              className="relative z-50"
                               onClick={() => {
                                 console.log('Delete clicked for pet:', pet.id, pet.name);
                                 if (pet.id) {
