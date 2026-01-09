@@ -2008,50 +2008,111 @@ SAMPLE APPOINTMENTS:`;
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {walkingSchedule.days.length} day(s) selected
+                        {walkingSchedule.is_recurring 
+                          ? `${walkingSchedule.days.length} day(s) selected - appointments will repeat on these days weekly`
+                          : 'Days are ignored for one-time schedules - uses date range below'
+                        }
                       </p>
                       
-                      {/* Recurring Toggle */}
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-                        <div className="flex items-center gap-2">
-                          <Repeat className="w-4 h-4 text-green-600" />
-                          <div>
-                            <p className="font-medium text-sm text-green-700">Recurring Weekly</p>
-                            <p className="text-xs text-green-600">Repeats every week automatically</p>
-                          </div>
-                        </div>
+                      {/* Schedule Type Toggle: One-Time vs Recurring */}
+                      <div className="grid grid-cols-2 gap-2">
                         <Button
                           type="button"
-                          size="sm"
-                          variant={walkingSchedule.is_recurring !== false ? 'default' : 'outline'}
-                          className={`rounded-full ${walkingSchedule.is_recurring !== false ? 'bg-green-500 hover:bg-green-600' : ''}`}
-                          onClick={() => setWalkingSchedule({ 
-                            ...walkingSchedule, 
-                            is_recurring: walkingSchedule.is_recurring === false ? true : false 
-                          })}
+                          variant={walkingSchedule.is_recurring ? 'outline' : 'default'}
+                          className={`h-auto py-3 flex flex-col ${!walkingSchedule.is_recurring ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                          onClick={() => setWalkingSchedule({ ...walkingSchedule, is_recurring: false })}
                         >
-                          {walkingSchedule.is_recurring !== false ? 'ON' : 'OFF'}
+                          <CalendarDays className="w-4 h-4 mb-1" />
+                          <span className="font-bold">One-Time</span>
+                          <span className="text-xs opacity-80">Date range</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={walkingSchedule.is_recurring ? 'default' : 'outline'}
+                          className={`h-auto py-3 flex flex-col ${walkingSchedule.is_recurring ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                          onClick={() => setWalkingSchedule({ ...walkingSchedule, is_recurring: true })}
+                        >
+                          <Repeat className="w-4 h-4 mb-1" />
+                          <span className="font-bold">Recurring</span>
+                          <span className="text-xs opacity-80">Weekly repeat</span>
                         </Button>
                       </div>
+
+                      {/* One-Time: Date Range Picker */}
+                      {!walkingSchedule.is_recurring && (
+                        <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 space-y-3">
+                          <p className="font-medium text-sm text-sky-700 flex items-center gap-2">
+                            <CalendarDays className="w-4 h-4" />
+                            Select Date Range
+                          </p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-sky-600">Start Date</Label>
+                              <Input
+                                type="date"
+                                value={walkingSchedule.start_date || ''}
+                                onChange={(e) => setWalkingSchedule({ ...walkingSchedule, start_date: e.target.value })}
+                                min={new Date().toISOString().split('T')[0]}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-sky-600">End Date</Label>
+                              <Input
+                                type="date"
+                                value={walkingSchedule.end_date || ''}
+                                onChange={(e) => setWalkingSchedule({ ...walkingSchedule, end_date: e.target.value })}
+                                min={walkingSchedule.start_date || new Date().toISOString().split('T')[0]}
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-sky-600">
+                            Appointments will be created for each day from start to end date.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Recurring: Info Box */}
+                      {walkingSchedule.is_recurring && (
+                        <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                          <p className="font-medium text-sm text-green-700 flex items-center gap-2">
+                            <Repeat className="w-4 h-4" />
+                            Weekly Recurring Schedule
+                          </p>
+                          <p className="text-xs text-green-600 mt-1">
+                            Select the days above. Appointments will repeat every week on those days.
+                          </p>
+                        </div>
+                      )}
                       
                       {/* Create Schedule Button */}
                       <Button
                         type="button"
-                        className="w-full rounded-full bg-green-500 hover:bg-green-600"
+                        className={`w-full rounded-full ${walkingSchedule.is_recurring ? 'bg-green-500 hover:bg-green-600' : 'bg-sky-500 hover:bg-sky-600'}`}
                         onClick={async () => {
-                          if (!walkingSchedule.days || walkingSchedule.days.length === 0) {
-                            toast.error('Please select at least one day');
+                          // Validation for recurring
+                          if (walkingSchedule.is_recurring && (!walkingSchedule.days || walkingSchedule.days.length === 0)) {
+                            toast.error('Please select at least one day for recurring schedule');
                             return;
+                          }
+                          // Validation for one-time
+                          if (!walkingSchedule.is_recurring) {
+                            if (!walkingSchedule.start_date || !walkingSchedule.end_date) {
+                              toast.error('Please select both start and end dates');
+                              return;
+                            }
+                            if (walkingSchedule.end_date < walkingSchedule.start_date) {
+                              toast.error('End date must be on or after start date');
+                              return;
+                            }
                           }
                           setSaving(true);
                           try {
-                            await api.post(`/users/${selectedClient.id}/walking-schedule`, {
-                              ...walkingSchedule,
-                              is_recurring: walkingSchedule.is_recurring !== false
-                            });
-                            toast.success(walkingSchedule.is_recurring !== false 
-                              ? 'Recurring schedule created! Appointments will repeat weekly.' 
-                              : 'One-time schedule created!');
+                            const response = await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
+                            toast.success(response.data?.message || (walkingSchedule.is_recurring 
+                              ? 'Recurring schedule created!' 
+                              : 'One-time appointments created!'));
                             // Refresh the schedules
                             fetchClientSchedules(selectedClient.id);
                             // Reset the form for next schedule
@@ -2059,6 +2120,8 @@ SAMPLE APPOINTMENTS:`;
                               ...walkingSchedule,
                               days: [],
                               preferred_times: ['09:00'],
+                              start_date: '',
+                              end_date: '',
                             });
                           } catch (error) {
                             toast.error(error.response?.data?.detail || 'Failed to save schedule');
@@ -2066,12 +2129,12 @@ SAMPLE APPOINTMENTS:`;
                             setSaving(false);
                           }
                         }}
-                        disabled={saving || !walkingSchedule.days?.length}
+                        disabled={saving || (walkingSchedule.is_recurring ? !walkingSchedule.days?.length : (!walkingSchedule.start_date || !walkingSchedule.end_date))}
                       >
                         {saving ? 'Creating...' : (
-                          walkingSchedule.is_recurring !== false 
+                          walkingSchedule.is_recurring 
                             ? `Create Recurring ${walkingSchedule.service_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Schedule'}`
-                            : `Create One-Time ${walkingSchedule.service_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Schedule'}`
+                            : `Create One-Time ${walkingSchedule.service_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Appointments'}`
                         )}
                       </Button>
                     </div>
