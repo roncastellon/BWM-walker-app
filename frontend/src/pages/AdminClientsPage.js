@@ -114,6 +114,11 @@ const AdminClientsPage = () => {
   const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
   const [conflictAlternatives, setConflictAlternatives] = useState([]);
 
+  // Pet deletion state
+  const [petToDelete, setPetToDelete] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingPet, setDeletingPet] = useState(false);
+
   // Add Pet dialog state (for adding pets to existing clients in view mode)
   const [addPetDialogOpen, setAddPetDialogOpen] = useState(false);
   const [newPetForm, setNewPetForm] = useState({
