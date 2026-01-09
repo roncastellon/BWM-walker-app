@@ -407,9 +407,19 @@ const AdminClientsPage = () => {
         toast.success(`${petName || 'Pet'} deleted successfully`);
       }
       
-      // Remove from local state
-      setPets(pets.filter(p => p.id !== petId));
-      // Refresh the client data to ensure sync
+      // Remove from local state immediately
+      setPets(prevPets => prevPets.filter(p => p.id !== petId));
+      
+      // Also update selectedClient's pets to keep in sync
+      if (selectedClient) {
+        const updatedPets = (selectedClient.pets || []).filter(p => p.id !== petId);
+        setSelectedClient({
+          ...selectedClient,
+          pets: updatedPets
+        });
+      }
+      
+      // Refresh the full client list
       fetchData();
     } catch (error) {
       console.error('Failed to delete pet:', error);
