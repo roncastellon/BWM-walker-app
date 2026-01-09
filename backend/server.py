@@ -1717,8 +1717,11 @@ async def set_walking_schedule(user_id: str, schedule: dict, current_user: dict 
             "scheduled_date": {"$gte": today}
         })
         
-        # Map day names to numbers
-        day_to_num = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+        # Map day names to numbers (handle both capitalized and lowercase)
+        day_to_num = {
+            "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6,
+            "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6
+        }
         
         # Determine times based on service type
         if service_type.startswith('walk'):
