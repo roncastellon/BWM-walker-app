@@ -1920,24 +1920,23 @@ SAMPLE APPOINTMENTS:`;
                     {pets.map((pet, index) => (
                       <Card key={pet.id || index} className="p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-medium">Pet {index + 1}</h4>
+                          <h4 className="font-medium">Pet {index + 1}: {pet.name || 'New Pet'}</h4>
                           {pets.length > 1 && (
                             <Button
                               type="button"
                               variant="destructive"
-                              size="sm"
+                              size="default"
                               onClick={() => {
-                                // If pet has an ID, it exists in DB and needs API call
+                                console.log('Delete clicked for pet:', pet.id, pet.name);
                                 if (pet.id) {
                                   deletePetFromDB(pet.id, pet.name);
                                 } else {
-                                  // New pet not yet saved, just remove from local state
                                   removePet(index);
                                 }
                               }}
-                              className="h-10 w-10 p-0 rounded-full"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
                             </Button>
                           )}
                         </div>
