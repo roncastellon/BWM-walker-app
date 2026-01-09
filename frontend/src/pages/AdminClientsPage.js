@@ -1871,7 +1871,9 @@ SAMPLE APPOINTMENTS:`;
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 // If pet has an ID, it exists in DB and needs API call
                                 if (pet.id) {
                                   deletePetFromDB(pet.id, pet.name);
