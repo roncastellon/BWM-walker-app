@@ -351,8 +351,33 @@ const AdminClientsPage = () => {
   };
 
   const removePet = (index) => {
+    // For new pets (without id), just remove from local state
     if (pets.length > 1) {
       setPets(pets.filter((_, i) => i !== index));
+    }
+  };
+
+  // Delete existing pet from database
+  const deletePetFromDB = async (petId, petName) => {
+    if (!petId) {
+      toast.error('Cannot delete: Pet ID not found');
+      return;
+    }
+    
+    if (!window.confirm(`Are you sure you want to delete ${petName || 'this pet'}? This cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      await api.delete(`/pets/${petId}`);
+      toast.success(`${petName || 'Pet'} deleted successfully`);
+      // Remove from local state
+      setPets(pets.filter(p => p.id !== petId));
+      // Refresh the client data to ensure sync
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete pet:', error);
+      toast.error(error.response?.data?.detail || 'Failed to delete pet');
     }
   };
 
