@@ -1908,31 +1908,9 @@ SAMPLE APPOINTMENTS:`;
                   
                   <TabsContent value="pets" className="space-y-4 mt-4">
                     {pets.map((pet, index) => (
-                      <Card key={pet.id || index} className="p-4">
+                      <div key={pet.id || index} className="border rounded-lg p-4 bg-card">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium">Pet {index + 1}: {pet.name || 'New Pet'}</h4>
-                          {pets.length > 1 && pet.id && (
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => deletePetFromDB(pet.id, pet.name)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </Button>
-                          )}
-                          {pets.length > 1 && !pet.id && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removePet(index)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Remove
-                            </Button>
-                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <Input
@@ -1973,7 +1951,32 @@ SAMPLE APPOINTMENTS:`;
                             placeholder="Weight"
                           />
                         </div>
-                      </Card>
+                        {pets.length > 1 && (
+                          <div className="mt-3 pt-3 border-t">
+                            {pet.id ? (
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                className="w-full"
+                                onClick={() => deletePetFromDB(pet.id, pet.name)}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete {pet.name || 'Pet'}
+                              </Button>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => removePet(index)}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Remove New Pet
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     ))}
                     <Button type="button" variant="outline" onClick={addPet} className="w-full rounded-full" size="sm">
                       <Plus className="w-4 h-4 mr-1" />
