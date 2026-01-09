@@ -1909,35 +1909,30 @@ SAMPLE APPOINTMENTS:`;
                   
                   <TabsContent value="pets" className="space-y-4 mt-4">
                     {pets.map((pet, index) => (
-                      <Card key={pet.id || index} className="p-4 relative">
+                      <Card key={pet.id || index} className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium">Pet {index + 1}: {pet.name || 'New Pet'}</h4>
-                          {pets.length > 1 && (
-                            <button
+                          {pets.length > 1 && pet.id && (
+                            <Button
                               type="button"
-                              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium touch-manipulation"
-                              style={{ WebkitTapHighlightColor: 'transparent' }}
-                              onTouchEnd={(e) => {
-                                e.preventDefault();
-                                console.log('Touch end on delete for:', pet.id, pet.name);
-                                if (pet.id) {
-                                  deletePetFromDB(pet.id, pet.name);
-                                } else {
-                                  removePet(index);
-                                }
-                              }}
-                              onClick={() => {
-                                console.log('Click on delete for:', pet.id, pet.name);
-                                if (pet.id) {
-                                  deletePetFromDB(pet.id, pet.name);
-                                } else {
-                                  removePet(index);
-                                }
-                              }}
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deletePetFromDB(pet.id, pet.name)}
                             >
-                              <Trash2 className="w-4 h-4" />
-                              Delete Pet
-                            </button>
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          )}
+                          {pets.length > 1 && !pet.id && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removePet(index)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Remove
+                            </Button>
                           )}
                         </div>
                         <div className="grid grid-cols-2 gap-3">
