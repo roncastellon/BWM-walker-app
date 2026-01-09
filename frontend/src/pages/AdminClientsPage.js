@@ -2211,32 +2211,6 @@ SAMPLE APPOINTMENTS:`;
                         rows={2}
                       />
                     </div>
-
-                    {/* Save Schedule Button */}
-                    <Button
-                      type="button"
-                      className="w-full rounded-full bg-green-500 hover:bg-green-600 mt-4"
-                      onClick={async () => {
-                        if (!walkingSchedule.days || walkingSchedule.days.length === 0) {
-                          toast.error('Please select at least one day');
-                          return;
-                        }
-                        setSaving(true);
-                        try {
-                          await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
-                          toast.success('Schedule saved successfully!');
-                          // Refresh the schedules
-                          fetchClientSchedules(selectedClient.id);
-                        } catch (error) {
-                          toast.error(error.response?.data?.detail || 'Failed to save schedule');
-                        } finally {
-                          setSaving(false);
-                        }
-                      }}
-                      disabled={saving || !walkingSchedule.days?.length}
-                    >
-                      {saving ? 'Saving...' : 'Save Schedule'}
-                    </Button>
                   </TabsContent>
                 </Tabs>
                 
