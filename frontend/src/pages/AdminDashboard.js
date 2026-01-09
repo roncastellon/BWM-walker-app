@@ -509,9 +509,9 @@ const AdminDashboard = () => {
                                       <div className="flex items-center gap-2">
                                         <Badge 
                                           variant="outline" 
-                                          className={`rounded-full text-xs ${walker ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}
+                                          className={`rounded-full text-xs ${walker ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}
                                         >
-                                          {walker?.full_name || 'Needs Walker'}
+                                          {walker?.full_name || 'Unassigned'}
                                         </Badge>
                                         <Button
                                           size="sm"
