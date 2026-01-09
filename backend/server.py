@@ -4643,10 +4643,66 @@ async def get_revenue_summary(current_user: dict = Depends(get_current_user)):
         "as_of": now.isoformat()
     }
 
+@api_router.post("/billing/auto-complete-services")
+async def auto_complete_past_services(current_user: dict = Depends(get_current_user)):
+    """
+    Auto-complete overnight stays and daycare appointments when their scheduled date has passed.
+    This makes them billable. Only affects appointments that are 'scheduled' status and not canceled.
+    """
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # Find all past overnight and daycare appointments that are still "scheduled"
+    past_services = await db.appointments.find({
+        "service_type": {"$in": ["stay_overnight", "doggy_day_care", "day_care"]},
+        "scheduled_date": {"$lt": yesterday},
+        "status": "scheduled"
+    }, {"_id": 0}).to_list(1000)
+    
+    completed_count = 0
+    for appt in past_services:
+        await db.appointments.update_one(
+            {"id": appt['id']},
+            {"$set": {
+                "status": "completed",
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+                "auto_completed": True,
+                "completion_data": {
+                    "auto_completed": True,
+                    "reason": "Service day passed without cancellation"
+                }
+            }}
+        )
+        completed_count += 1
+    
+    return {
+        "message": f"Auto-completed {completed_count} past overnight/daycare appointments",
+        "count": completed_count
+    }
+
 @api_router.get("/billing/clients-due")
 async def get_clients_due_for_billing(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
+    
+    # First, auto-complete any past overnight/daycare services
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # Auto-complete past overnight and daycare appointments
+    auto_complete_result = await db.appointments.update_many(
+        {
+            "service_type": {"$in": ["stay_overnight", "doggy_day_care", "day_care"]},
+            "scheduled_date": {"$lt": yesterday},
+            "status": "scheduled"
+        },
+        {"$set": {
+            "status": "completed",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "auto_completed": True
+        }}
+    )
     
     # Get all clients with their billing cycles
     clients = await db.users.find({"role": "client"}, {"_id": 0, "password_hash": 0}).to_list(1000)
