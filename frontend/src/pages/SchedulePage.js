@@ -449,17 +449,20 @@ const SchedulePage = () => {
                           variant="outline"
                           className="w-full justify-start text-left font-normal"
                           data-testid="select-date"
+                          type="button"
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {selectedDate ? format(selectedDate, 'PPP') : 'Pick a date'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent 
+                        className="w-auto p-0" 
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                      >
                         <Calendar
                           mode="single"
                           selected={selectedDate}
                           onSelect={setSelectedDate}
-                          initialFocus
                           disabled={(date) => date < new Date()}
                         />
                       </PopoverContent>
