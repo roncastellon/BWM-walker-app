@@ -1863,7 +1863,7 @@ SAMPLE APPOINTMENTS:`;
                   
                   <TabsContent value="pets" className="space-y-4 mt-4">
                     {pets.map((pet, index) => (
-                      <Card key={index} className="p-4">
+                      <Card key={pet.id || index} className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium">Pet {index + 1}</h4>
                           {pets.length > 1 && (
@@ -1871,8 +1871,16 @@ SAMPLE APPOINTMENTS:`;
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={() => removePet(index)}
-                              className="text-destructive"
+                              onClick={() => {
+                                // If pet has an ID, it exists in DB and needs API call
+                                if (pet.id) {
+                                  deletePetFromDB(pet.id, pet.name);
+                                } else {
+                                  // New pet not yet saved, just remove from local state
+                                  removePet(index);
+                                }
+                              }}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
