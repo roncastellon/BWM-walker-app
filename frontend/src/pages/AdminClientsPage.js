@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Checkbox } from '../components/ui/checkbox';
 import { Users, Search, Mail, Phone, Plus, PawPrint, DollarSign, Trash2, Edit, Calendar, Clock, Save, MapPin, AlertCircle, CreditCard, CheckCircle, Lock, Unlock, UserX, Settings, Repeat, CalendarDays, AlertTriangle, CalendarPlus } from 'lucide-react';
