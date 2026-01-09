@@ -2623,6 +2623,28 @@ SAMPLE APPOINTMENTS:`;
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Pet Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete {petToDelete?.name || 'Pet'}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete this pet. If this pet has scheduled appointments, they will also be affected.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deletingPet}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeletePet}
+                disabled={deletingPet}
+                className="bg-red-500 hover:bg-red-600"
+              >
+                {deletingPet ? 'Deleting...' : 'Delete Pet'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );
