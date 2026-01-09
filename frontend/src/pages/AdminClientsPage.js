@@ -406,7 +406,7 @@ const AdminClientsPage = () => {
   };
 
   // Delete existing pet from database - now opens confirmation dialog
-  const deletePetFromDB = async (petId, petName) => {
+  const deletePetFromDB = (petId, petName) => {
     if (!petId) {
       toast.error('Cannot delete: Pet ID not found');
       return;
@@ -414,10 +414,8 @@ const AdminClientsPage = () => {
     
     // Set the pet to delete and open the confirmation dialog
     setPetToDelete({ id: petId, name: petName });
-    setDeleteDialogOpen(true); {
-      console.error('Failed to delete pet:', error);
-      toast.error(error.response?.data?.detail || 'Failed to delete pet');
-    }
+    setDeleteDialogOpen(true);
+  };
   };
 
   const updatePet = (index, field, value) => {
