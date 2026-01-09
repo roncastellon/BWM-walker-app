@@ -127,6 +127,14 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - POST `/api/appointments/{id}/end` - End walk timer
 - PUT `/api/appointments/{id}/assign` - Assign walker
 
+### Scheduling (Admin)
+- POST `/api/users/{user_id}/walking-schedule` - Create schedule (supports both recurring and one-time)
+  - `is_recurring: true` - Creates recurring_schedules and generates appointments weekly
+  - `is_recurring: false` - Creates one-time appointments for date range (start_date to end_date)
+- GET `/api/users/{user_id}/walking-schedule` - Get client's schedule
+- GET `/api/recurring-schedules` - List recurring schedules
+- DELETE `/api/recurring-schedules/{id}` - Delete recurring schedule
+
 ### Invoices & Payments
 - POST `/api/invoices` - Create invoice
 - GET `/api/invoices` - List invoices
