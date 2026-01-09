@@ -2135,37 +2135,40 @@ SAMPLE APPOINTMENTS:`;
                       </div>
                     ) : null}
                     
-                    <div className="space-y-2">
-                      <Label>Preferred Walker/Sitter (Optional)</Label>
-                      <Select
-                        value={walkingSchedule.preferred_walker_id || 'any'}
-                        onValueChange={(value) => {
-                          const walkerId = value === 'any' ? '' : value;
-                          setWalkingSchedule({ 
-                            ...walkingSchedule, 
-                            preferred_walker_id: walkerId 
-                          });
-                          if (walkerId && selectedClient) {
-                            checkAdminWalkerConflicts(walkerId, selectedClient);
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Any available" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="any">Any available walker</SelectItem>
-                          {walkers.map((walker) => (
-                            <SelectItem key={walker.id} value={walker.id}>
-                              {walker.full_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {checkingWalkerConflicts && (
-                        <p className="text-xs text-muted-foreground">Checking availability...</p>
-                      )}
-                    </div>
+                    {/* Only show walker selection for walk services */}
+                    {walkingSchedule.service_type?.includes('walk') && (
+                      <div className="space-y-2">
+                        <Label>Preferred Walker (Optional)</Label>
+                        <Select
+                          value={walkingSchedule.preferred_walker_id || 'any'}
+                          onValueChange={(value) => {
+                            const walkerId = value === 'any' ? '' : value;
+                            setWalkingSchedule({ 
+                              ...walkingSchedule, 
+                              preferred_walker_id: walkerId 
+                            });
+                            if (walkerId && selectedClient) {
+                              checkAdminWalkerConflicts(walkerId, selectedClient);
+                            }
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any available" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="any">Any available walker</SelectItem>
+                            {walkers.map((walker) => (
+                              <SelectItem key={walker.id} value={walker.id}>
+                                {walker.full_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {checkingWalkerConflicts && (
+                          <p className="text-xs text-muted-foreground">Checking availability...</p>
+                        )}
+                      </div>
+                    )}
                     
                     <div className="space-y-2">
                       <Label>Schedule Notes</Label>
@@ -2176,6 +2179,32 @@ SAMPLE APPOINTMENTS:`;
                         rows={2}
                       />
                     </div>
+
+                    {/* Save Schedule Button */}
+                    <Button
+                      type="button"
+                      className="w-full rounded-full bg-green-500 hover:bg-green-600 mt-4"
+                      onClick={async () => {
+                        if (!walkingSchedule.days || walkingSchedule.days.length === 0) {
+                          toast.error('Please select at least one day');
+                          return;
+                        }
+                        setSaving(true);
+                        try {
+                          await api.post(`/users/${selectedClient.id}/walking-schedule`, walkingSchedule);
+                          toast.success('Schedule saved successfully!');
+                          // Refresh the schedules
+                          fetchClientSchedules(selectedClient.id);
+                        } catch (error) {
+                          toast.error(error.response?.data?.detail || 'Failed to save schedule');
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                      disabled={saving || !walkingSchedule.days?.length}
+                    >
+                      {saving ? 'Saving...' : 'Save Schedule'}
+                    </Button>
                   </TabsContent>
                 </Tabs>
                 
