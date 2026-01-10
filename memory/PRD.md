@@ -31,7 +31,7 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - `messages` - Chat messages
 - `timesheets` - Walker payroll submissions
 
-## What's Been Implemented (December 2025)
+## What's Been Implemented (December 2025 - January 2026)
 
 ### Backend API (/api)
 - ✅ User registration/login with JWT
@@ -46,6 +46,7 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Timesheet/payroll submission
 - ✅ Dashboard statistics per role
 - ✅ Calendar endpoints
+- ✅ GET `/api/users/sitters` - List sitters for overnight bookings
 
 ### Frontend Pages
 - ✅ Auth Page (Login/Register with role selection)
@@ -62,6 +63,15 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Admin Clients Page
 - ✅ Admin Walkers Page
 - ✅ Admin Invoices Page
+
+### Recent Updates (January 2026)
+- ✅ Admin Client Details: Added "Schedule" button to header
+- ✅ Mobile-responsive tabs (stack vertically on mobile)
+- ✅ Conditional Walker/Sitter selection:
+  - Walk services: Show "Assign Walker" dropdown
+  - Overnight services: Show "Assign Sitter (Optional)" dropdown
+  - Day Care/Transport/Concierge: No walker/sitter dropdown
+- ✅ Day Care appointments working from Calendar page
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
