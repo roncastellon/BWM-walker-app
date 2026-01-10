@@ -466,32 +466,168 @@ const CalendarPage = () => {
   
   const timeSlots = generateTimeSlots();
 
-  const renderAppointmentCard = (appt, compact = false) => (
-    <div
-      key={appt.id}
-      className={`p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity ${compact ? 'text-xs' : ''}`}
-      style={getAppointmentStyles(appt)}
-      data-testid={`calendar-appt-${appt.id}`}
-      onClick={() => openAppointmentDetail(appt)}
-    >
-      <div className="flex items-center justify-between gap-1">
-        <span className="font-medium">{appt.scheduled_time}</span>
+  const renderAppointmentCard = (appt, compact = false) => {
+    const appointmentContent = (
+      <div
+        className={`p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity ${compact ? 'text-xs' : ''}`}
+        style={getAppointmentStyles(appt)}
+        data-testid={`calendar-appt-${appt.id}`}
+        onClick={() => openAppointmentDetail(appt)}
+      >
+        <div className="flex items-center justify-between gap-1">
+          <span className="font-medium">{appt.scheduled_time || 'All Day'}</span>
+          {!compact && (
+            <Badge className={`${getStatusBadgeColor(appt.status)} text-xs rounded-full`}>
+              {appt.status}
+            </Badge>
+          )}
+        </div>
+        <p className={`${compact ? 'truncate' : ''}`}>
+          {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name}
+        </p>
         {!compact && (
-          <Badge className={`${getStatusBadgeColor(appt.status)} text-xs rounded-full`}>
-            {appt.status}
-          </Badge>
+          <p className="text-xs text-muted-foreground capitalize">
+            {appt.service_type?.replace(/_/g, ' ')} • {getWalkerName(appt.walker_id)}
+          </p>
         )}
       </div>
-      <p className={`${compact ? 'truncate' : ''}`}>
-        {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name}
-      </p>
-      {!compact && (
-        <p className="text-xs text-muted-foreground capitalize">
-          {appt.service_type?.replace(/_/g, ' ')} • {getWalkerName(appt.walker_id)}
-        </p>
-      )}
-    </div>
-  );
+    );
+
+    // Only show context menu for admins
+    if (!isAdmin) {
+      return <div key={appt.id}>{appointmentContent}</div>;
+    }
+
+    return (
+      <ContextMenu key={appt.id}>
+        <ContextMenuTrigger asChild>
+          {appointmentContent}
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-56">
+          <ContextMenuLabel className="flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4" />
+            Quick Actions
+          </ContextMenuLabel>
+          <ContextMenuSeparator />
+          
+          {/* Status Changes */}
+          <ContextMenuSub>
+            <ContextMenuSubTrigger className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Change Status
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuItem 
+                onClick={() => quickChangeStatus(appt.id, 'scheduled')}
+                disabled={appt.status === 'scheduled'}
+                className="flex items-center gap-2"
+              >
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                Scheduled
+              </ContextMenuItem>
+              <ContextMenuItem 
+                onClick={() => quickChangeStatus(appt.id, 'in_progress')}
+                disabled={appt.status === 'in_progress'}
+                className="flex items-center gap-2"
+              >
+                <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                In Progress
+              </ContextMenuItem>
+              <ContextMenuItem 
+                onClick={() => quickChangeStatus(appt.id, 'completed')}
+                disabled={appt.status === 'completed'}
+                className="flex items-center gap-2"
+              >
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                Completed
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem 
+                onClick={() => quickChangeStatus(appt.id, 'cancelled')}
+                disabled={appt.status === 'cancelled'}
+                className="flex items-center gap-2 text-red-600"
+              >
+                <div className="w-2 h-2 rounded-full bg-red-500" />
+                Cancelled
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+
+          {/* Reassign Walker */}
+          {isWalkService(appt.service_type) && (
+            <ContextMenuSub>
+              <ContextMenuSubTrigger className="flex items-center gap-2">
+                <UserCheck className="w-4 h-4" />
+                Reassign Walker
+              </ContextMenuSubTrigger>
+              <ContextMenuSubContent>
+                <ContextMenuItem 
+                  onClick={() => quickAssignWalker(appt.id, null)}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-3 h-3 rounded-full bg-gray-300" />
+                  Unassigned
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                {walkers.map((walker) => (
+                  <ContextMenuItem 
+                    key={walker.id}
+                    onClick={() => quickAssignWalker(appt.id, walker.id)}
+                    disabled={appt.walker_id === walker.id}
+                    className="flex items-center gap-2"
+                  >
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: walker.walker_color || '#9CA3AF' }}
+                    />
+                    {walker.full_name}
+                    {appt.walker_id === walker.id && <span className="ml-auto text-xs">✓</span>}
+                  </ContextMenuItem>
+                ))}
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+          )}
+
+          <ContextMenuSeparator />
+          
+          {/* Reschedule */}
+          <ContextMenuItem 
+            onClick={() => quickReschedule(appt)}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reschedule
+          </ContextMenuItem>
+          
+          {/* View Details */}
+          <ContextMenuItem 
+            onClick={() => openAppointmentDetail(appt)}
+            className="flex items-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            View Details
+          </ContextMenuItem>
+          
+          <ContextMenuSeparator />
+          
+          {/* Cancel */}
+          {appt.status !== 'cancelled' && (
+            <ContextMenuItem 
+              onClick={() => {
+                if (window.confirm('Are you sure you want to cancel this appointment?')) {
+                  quickChangeStatus(appt.id, 'cancelled');
+                }
+              }}
+              className="flex items-center gap-2 text-red-600"
+            >
+              <XCircle className="w-4 h-4" />
+              Cancel Appointment
+            </ContextMenuItem>
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
+    );
+  };
 
   if (loading) {
     return (
