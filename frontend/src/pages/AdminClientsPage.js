@@ -896,16 +896,16 @@ SAMPLE APPOINTMENTS:`;
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <Tabs defaultValue="info" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="info">Info</TabsTrigger>
-                      <TabsTrigger value="pets">Pets</TabsTrigger>
-                      <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                      <TabsTrigger value="pricing">Pricing</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+                      <TabsTrigger value="info" className="py-2">Info</TabsTrigger>
+                      <TabsTrigger value="pets" className="py-2">Pets</TabsTrigger>
+                      <TabsTrigger value="schedule" className="py-2">Schedule</TabsTrigger>
+                      <TabsTrigger value="pricing" className="py-2">Pricing</TabsTrigger>
                     </TabsList>
                     
                     {/* Customer Info Tab */}
                     <TabsContent value="info" className="space-y-4 mt-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="full_name">Full Name *</Label>
                           <Input
