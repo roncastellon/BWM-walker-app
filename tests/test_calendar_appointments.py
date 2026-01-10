@@ -141,13 +141,16 @@ class TestAdminAppointmentCreation:
         walkers = response.json() if response.status_code == 200 else []
         walker_id = walkers[0].get("id") if walkers else None
         
-        # Create walk appointment
+        # Create walk appointment - use a future date and time to avoid conflicts
+        import uuid
+        unique_time = "16:00"  # Use afternoon time to avoid conflicts
+        
         appointment_data = {
             "client_id": self.test_client_id,
             "pet_ids": [self.test_pet_id] if self.test_pet_id else [],
             "service_type": "walk_30",
-            "scheduled_date": "2025-12-20",
-            "scheduled_time": "10:00",
+            "scheduled_date": "2025-12-28",  # Use a future date
+            "scheduled_time": unique_time,
             "walker_id": walker_id,
             "notes": "Test walk appointment with walker"
         }
