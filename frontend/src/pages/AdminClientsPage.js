@@ -2626,7 +2626,7 @@ SAMPLE APPOINTMENTS:`;
                     ) : null}
                     
                     {/* Only show walker selection for walk services */}
-                    {walkingSchedule.service_type?.includes('walk') && (
+                    {isWalkService(walkingSchedule.service_type) && (
                       <div className="space-y-2">
                         <Label>Preferred Walker (Optional)</Label>
                         <Select
@@ -2657,6 +2657,38 @@ SAMPLE APPOINTMENTS:`;
                         {checkingWalkerConflicts && (
                           <p className="text-xs text-muted-foreground">Checking availability...</p>
                         )}
+                      </div>
+                    )}
+                    
+                    {/* Sitter selection for overnight services */}
+                    {isOvernightService(walkingSchedule.service_type) && (
+                      <div className="space-y-2">
+                        <Label>Preferred Sitter (Optional)</Label>
+                        <Select
+                          value={walkingSchedule.preferred_sitter_id || 'any'}
+                          onValueChange={(value) => {
+                            const sitterId = value === 'any' ? '' : value;
+                            setWalkingSchedule({ 
+                              ...walkingSchedule, 
+                              preferred_sitter_id: sitterId 
+                            });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any available" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="any">Any available sitter</SelectItem>
+                            {sitters.map((sitter) => (
+                              <SelectItem key={sitter.id} value={sitter.id}>
+                                {sitter.full_name}
+                              </SelectItem>
+                            ))}
+                            {sitters.length === 0 && (
+                              <SelectItem value="any" disabled>No sitters available</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
                     
