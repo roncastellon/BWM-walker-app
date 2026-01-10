@@ -2657,6 +2657,18 @@ SAMPLE APPOINTMENTS:`;
                         rows={2}
                       />
                     </div>
+
+                    {/* Back to List Button */}
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => { setScheduleView('list'); }}
+                      >
+                        ← Back to Schedules
+                      </Button>
+                    </div>
+                    )}
                   </TabsContent>
                 </Tabs>
                 
