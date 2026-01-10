@@ -72,6 +72,12 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - Overnight services: Show "Assign Sitter (Optional)" dropdown
   - Day Care/Transport/Concierge: No walker/sitter dropdown
 - ✅ Day Care appointments working from Calendar page
+- ✅ **Quick Actions Context Menu (NEW)**: Right-click on calendar appointments for:
+  - Change Status (Scheduled/In Progress/Completed/Cancelled)
+  - Reassign Walker (for walk services only)
+  - Reschedule
+  - View Details
+  - Cancel Appointment
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
