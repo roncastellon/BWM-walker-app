@@ -1811,7 +1811,8 @@ SAMPLE APPOINTMENTS:`;
                           <span>{selectedClient.walkingSchedule.preferred_times.join(', ')}</span>
                         </div>
                       )}
-                      {selectedClient.walkingSchedule.preferred_walker_id && (
+                      {/* Only show preferred walker for walk services */}
+                      {selectedClient.walkingSchedule.preferred_walker_id && isWalkService(selectedClient.walkingSchedule.service_type) && (
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-muted-foreground">Preferred walker:</span>
                           <span>{walkers.find(w => w.id === selectedClient.walkingSchedule.preferred_walker_id)?.full_name || 'Unknown'}</span>
