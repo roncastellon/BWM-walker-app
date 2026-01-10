@@ -42,6 +42,12 @@ const DAYS_OF_WEEK = [
   { value: 'sunday', label: 'Sunday', short: 'Sun' },
 ];
 
+// Check if a service type requires walker assignment (walks only)
+const isWalkService = (serviceType) => {
+  if (!serviceType) return false;
+  return serviceType.toLowerCase().includes('walk');
+};
+
 const AdminClientsPage = () => {
   const { api } = useAuth();
   const [searchParams] = useSearchParams();
