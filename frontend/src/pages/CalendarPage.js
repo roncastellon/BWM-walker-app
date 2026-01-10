@@ -65,6 +65,12 @@ const CalendarPage = () => {
     return durationType === 'days' || durationType === 'nights';
   };
   
+  // Check if a service type requires walker assignment (walks only)
+  const isWalkService = (serviceType) => {
+    if (!serviceType) return false;
+    return serviceType.toLowerCase().includes('walk');
+  };
+  
   // Admin add/edit appointment state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
