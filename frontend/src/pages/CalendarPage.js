@@ -194,6 +194,7 @@ const CalendarPage = () => {
     setFormData({
       client_id: '',
       walker_id: '',
+      sitter_id: '',
       pet_ids: [],
       service_type: '',
       scheduled_date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
@@ -212,6 +213,7 @@ const CalendarPage = () => {
     setFormData({
       client_id: appointmentDetail.client_id || '',
       walker_id: appointmentDetail.walker_id || '',
+      sitter_id: appointmentDetail.sitter_id || '',
       pet_ids: appointmentDetail.pet_ids || [],
       service_type: appointmentDetail.service_type || '',
       scheduled_date: appointmentDetail.scheduled_date || '',
