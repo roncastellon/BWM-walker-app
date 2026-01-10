@@ -1870,7 +1870,7 @@ SAMPLE APPOINTMENTS:`;
             {selectedClient && editMode && (
               <div className="space-y-6">
                 <Tabs defaultValue="info" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-3 gap-1">
                     <TabsTrigger value="info">Info</TabsTrigger>
                     <TabsTrigger value="pets">Pets</TabsTrigger>
                     <TabsTrigger value="schedule">Schedule</TabsTrigger>
