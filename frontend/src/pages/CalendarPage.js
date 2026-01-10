@@ -869,25 +869,51 @@ const CalendarPage = () => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label>Assign Walker</Label>
-                <Select value={formData.walker_id || 'none'} onValueChange={(value) => setFormData({ ...formData, walker_id: value === 'none' ? '' : value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a walker (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Unassigned</SelectItem>
-                    {walkers.map((walker) => (
-                      <SelectItem key={walker.id} value={walker.id}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: walker.walker_color }} />
-                          {walker.full_name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Walker selection - only for walk services */}
+              {isWalkService(formData.service_type) && (
+                <div className="space-y-2">
+                  <Label>Assign Walker</Label>
+                  <Select value={formData.walker_id || 'none'} onValueChange={(value) => setFormData({ ...formData, walker_id: value === 'none' ? '' : value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a walker (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Unassigned</SelectItem>
+                      {walkers.map((walker) => (
+                        <SelectItem key={walker.id} value={walker.id}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: walker.walker_color }} />
+                            {walker.full_name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Sitter selection - only for overnight services */}
+              {isOvernightService(formData.service_type) && (
+                <div className="space-y-2">
+                  <Label>Assign Sitter (Optional)</Label>
+                  <Select value={formData.sitter_id || 'none'} onValueChange={(value) => setFormData({ ...formData, sitter_id: value === 'none' ? '' : value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a sitter (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Unassigned</SelectItem>
+                      {sitters.map((sitter) => (
+                        <SelectItem key={sitter.id} value={sitter.id}>
+                          {sitter.full_name}
+                        </SelectItem>
+                      ))}
+                      {sitters.length === 0 && (
+                        <SelectItem value="none" disabled>No sitters available</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>Notes</Label>
