@@ -86,6 +86,7 @@ const CalendarPage = () => {
   const [formData, setFormData] = useState({
     client_id: '',
     walker_id: '',
+    sitter_id: '',
     pet_ids: [],
     service_type: '',
     scheduled_date: '',
