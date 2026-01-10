@@ -131,6 +131,15 @@ const AdminClientsPage = () => {
   });
   const [savingPet, setSavingPet] = useState(false);
 
+  // Schedule management state
+  const [scheduleView, setScheduleView] = useState('list'); // 'list', 'edit', 'add', 'pause'
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [pauseForm, setPauseForm] = useState({
+    start_date: '',
+    end_date: '',
+    reason: ''
+  });
+
   // Recurring schedules for the selected client
   const [clientRecurringSchedules, setClientRecurringSchedules] = useState([]);
   const [deletingScheduleId, setDeletingScheduleId] = useState(null);
