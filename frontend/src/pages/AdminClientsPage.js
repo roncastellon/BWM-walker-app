@@ -887,7 +887,7 @@ SAMPLE APPOINTMENTS:`;
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <Tabs defaultValue="info" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
                       <TabsTrigger value="info">Info</TabsTrigger>
                       <TabsTrigger value="pets">Pets</TabsTrigger>
                       <TabsTrigger value="schedule">Schedule</TabsTrigger>
