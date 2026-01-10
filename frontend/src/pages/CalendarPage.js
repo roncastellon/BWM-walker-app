@@ -20,6 +20,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuLabel,
+  ContextMenuTrigger,
 } from '../components/ui/context-menu';
 import { 
   Clock, User, PawPrint, ChevronLeft, ChevronRight, 
