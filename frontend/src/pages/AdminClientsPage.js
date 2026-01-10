@@ -2236,7 +2236,7 @@ SAMPLE APPOINTMENTS:`;
                         >
                           <div className="text-left">
                             <p className="font-medium">Add One-Time Appointment</p>
-                            <p className="text-xs text-muted-foreground">Schedule a single service that doesn't repeat</p>
+                            <p className="text-xs text-muted-foreground">Schedule a single service that does not repeat</p>
                           </div>
                         </Button>
 
