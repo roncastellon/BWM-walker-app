@@ -1994,59 +1994,314 @@ SAMPLE APPOINTMENTS:`;
                   </TabsContent>
                   
                   <TabsContent value="schedule" className="space-y-4 mt-4">
-                    {/* Existing Recurring Schedules */}
-                    {clientRecurringSchedules.length > 0 && (
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-base font-semibold">
-                          <Calendar className="w-4 h-4" />
-                          Current Recurring Schedules ({clientRecurringSchedules.length})
-                        </Label>
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
-                          {clientRecurringSchedules.map((schedule) => (
-                            <div 
-                              key={schedule.id} 
-                              className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border"
+                    {/* Schedule View Mode Buttons */}
+                    <div className="flex gap-2 flex-wrap">
+                      <Button
+                        type="button"
+                        variant={scheduleView === 'list' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => { setScheduleView('list'); setSelectedSchedule(null); }}
+                        className={scheduleView === 'list' ? 'bg-sky-500 hover:bg-sky-600' : ''}
+                      >
+                        <Calendar className="w-4 h-4 mr-1" />
+                        View Schedules
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={scheduleView === 'add' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => { setScheduleView('add'); setSelectedSchedule(null); }}
+                        className={scheduleView === 'add' ? 'bg-green-500 hover:bg-green-600' : ''}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add New Schedule
+                      </Button>
+                    </div>
+
+                    {/* VIEW SCHEDULES MODE */}
+                    {scheduleView === 'list' && (
+                      <div className="space-y-4">
+                        {clientRecurringSchedules.length === 0 ? (
+                          <div className="text-center py-8 bg-muted/30 rounded-lg">
+                            <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                            <p className="text-muted-foreground">No recurring schedules set up</p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="mt-3"
+                              onClick={() => setScheduleView('add')}
                             >
-                              <div className="flex-1">
-                                <p className="text-sm font-medium capitalize">
-                                  {schedule.service_type?.replace(/_/g, ' ') || 'Walk'}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][schedule.day_of_week]} at {schedule.scheduled_time}
-                                  <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
-                                    schedule.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                                  }`}>
-                                    {schedule.status}
-                                  </span>
-                                </p>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={() => handleDeleteSchedule(schedule.id)}
-                                disabled={deletingScheduleId === schedule.id}
+                              <Plus className="w-4 h-4 mr-1" />
+                              Create First Schedule
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <Label className="flex items-center gap-2 text-base font-semibold">
+                              Current Recurring Schedules ({clientRecurringSchedules.length})
+                            </Label>
+                            {clientRecurringSchedules.map((schedule) => (
+                              <div 
+                                key={schedule.id} 
+                                className="p-3 rounded-lg bg-card border shadow-sm"
                               >
-                                {deletingScheduleId === schedule.id ? (
-                                  <span className="animate-spin">⏳</span>
-                                ) : (
-                                  <Trash2 className="w-4 h-4" />
-                                )}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Delete schedules above to remove recurring appointments, then create new ones below.
-                        </p>
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-medium capitalize">
+                                        {schedule.service_type?.replace(/_/g, ' ') || 'Walk'}
+                                      </p>
+                                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                        schedule.status === 'active' 
+                                          ? 'bg-green-100 text-green-700' 
+                                          : schedule.status === 'paused'
+                                          ? 'bg-amber-100 text-amber-700'
+                                          : 'bg-gray-100 text-gray-700'
+                                      }`}>
+                                        {schedule.status}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][schedule.day_of_week]} at {schedule.scheduled_time}
+                                    </p>
+                                    {schedule.paused_until && (
+                                      <p className="text-xs text-amber-600 mt-1">
+                                        Paused until: {schedule.paused_until}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 mt-3 pt-3 border-t">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => {
+                                      setSelectedSchedule(schedule);
+                                      setScheduleView('edit');
+                                    }}
+                                  >
+                                    <Edit className="w-4 h-4 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => {
+                                      setSelectedSchedule(schedule);
+                                      setPauseForm({ start_date: '', end_date: '', reason: '' });
+                                      setScheduleView('pause');
+                                    }}
+                                  >
+                                    <Clock className="w-4 h-4 mr-1" />
+                                    Pause
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteSchedule(schedule.id)}
+                                    disabled={deletingScheduleId === schedule.id}
+                                  >
+                                    {deletingScheduleId === schedule.id ? '...' : <Trash2 className="w-4 h-4" />}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    <div className="border-t pt-4">
-                      <p className="text-sm font-semibold mb-3">Create/Update Schedule</p>
-                    </div>
-                    
-                    {/* Service Type Selection */}
+                    {/* PAUSE SCHEDULE MODE */}
+                    {scheduleView === 'pause' && selectedSchedule && (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setScheduleView('list'); setSelectedSchedule(null); }}
+                          >
+                            ← Back
+                          </Button>
+                          <span className="font-semibold">Pause Schedule</span>
+                        </div>
+                        
+                        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                          <p className="font-medium text-amber-800 capitalize">
+                            {selectedSchedule.service_type?.replace(/_/g, ' ')} - {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedSchedule.day_of_week]}s at {selectedSchedule.scheduled_time}
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-sm">Pause Start Date</Label>
+                            <Input
+                              type="date"
+                              value={pauseForm.start_date}
+                              onChange={(e) => setPauseForm({ ...pauseForm, start_date: e.target.value })}
+                              min={new Date().toISOString().split('T')[0]}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm">Pause End Date</Label>
+                            <Input
+                              type="date"
+                              value={pauseForm.end_date}
+                              onChange={(e) => setPauseForm({ ...pauseForm, end_date: e.target.value })}
+                              min={pauseForm.start_date || new Date().toISOString().split('T')[0]}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm">Reason (optional)</Label>
+                          <Input
+                            value={pauseForm.reason}
+                            onChange={(e) => setPauseForm({ ...pauseForm, reason: e.target.value })}
+                            placeholder="e.g., Vacation, Pet at groomer"
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => { setScheduleView('list'); setSelectedSchedule(null); }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            className="flex-1 bg-amber-500 hover:bg-amber-600"
+                            disabled={!pauseForm.start_date || !pauseForm.end_date}
+                            onClick={async () => {
+                              try {
+                                await api.put(`/recurring-schedules/${selectedSchedule.id}/pause`, {
+                                  start_date: pauseForm.start_date,
+                                  end_date: pauseForm.end_date,
+                                  reason: pauseForm.reason
+                                });
+                                toast.success('Schedule paused successfully');
+                                fetchClientSchedules(selectedClient.id);
+                                setScheduleView('list');
+                                setSelectedSchedule(null);
+                              } catch (error) {
+                                toast.error(error.response?.data?.detail || 'Failed to pause schedule');
+                              }
+                            }}
+                          >
+                            <Clock className="w-4 h-4 mr-1" />
+                            Pause Schedule
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* EDIT SCHEDULE MODE */}
+                    {scheduleView === 'edit' && selectedSchedule && (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setScheduleView('list'); setSelectedSchedule(null); }}
+                          >
+                            ← Back
+                          </Button>
+                          <span className="font-semibold">Edit Schedule</span>
+                        </div>
+
+                        <div className="p-4 rounded-lg bg-sky-50 border border-sky-200">
+                          <p className="font-medium text-sky-800 capitalize">
+                            Current: {selectedSchedule.service_type?.replace(/_/g, ' ')} - {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedSchedule.day_of_week]}s at {selectedSchedule.scheduled_time}
+                          </p>
+                        </div>
+
+                        {/* Edit Options */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-medium">What would you like to do?</Label>
+                          
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start h-auto py-3"
+                            onClick={() => {
+                              setWalkingSchedule({
+                                ...walkingSchedule,
+                                service_type: selectedSchedule.service_type,
+                                is_recurring: false,
+                                days: [],
+                                preferred_times: [selectedSchedule.scheduled_time],
+                                start_date: '',
+                                end_date: ''
+                              });
+                              setScheduleView('add');
+                            }}
+                          >
+                            <div className="text-left">
+                              <p className="font-medium">One-Time Change</p>
+                              <p className="text-xs text-muted-foreground">Add a single appointment that doesn't repeat</p>
+                            </div>
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start h-auto py-3"
+                            onClick={async () => {
+                              if (window.confirm('This will delete the current schedule and let you create a new recurring schedule. Continue?')) {
+                                await handleDeleteSchedule(selectedSchedule.id);
+                                setWalkingSchedule({
+                                  ...walkingSchedule,
+                                  service_type: selectedSchedule.service_type,
+                                  is_recurring: true,
+                                  days: [],
+                                  preferred_times: [selectedSchedule.scheduled_time]
+                                });
+                                setScheduleView('add');
+                              }
+                            }}
+                          >
+                            <div className="text-left">
+                              <p className="font-medium">Change Recurring Schedule</p>
+                              <p className="text-xs text-muted-foreground">Update days/times for future appointments</p>
+                            </div>
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start h-auto py-3 border-red-200 hover:bg-red-50"
+                            onClick={() => {
+                              if (window.confirm(`Delete this recurring ${selectedSchedule.service_type?.replace(/_/g, ' ')} schedule?`)) {
+                                handleDeleteSchedule(selectedSchedule.id);
+                                setScheduleView('list');
+                                setSelectedSchedule(null);
+                              }
+                            }}
+                          >
+                            <div className="text-left text-red-600">
+                              <p className="font-medium">Delete Schedule</p>
+                              <p className="text-xs text-red-500">Remove this recurring schedule entirely</p>
+                            </div>
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ADD NEW SCHEDULE MODE */}
+                    {scheduleView === 'add' && (
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-base font-semibold">
                         <PawPrint className="w-4 h-4" />
