@@ -28,6 +28,7 @@ const CalendarPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [appointments, setAppointments] = useState([]);
   const [walkers, setWalkers] = useState([]);
+  const [sitters, setSitters] = useState([]);
   const [clients, setClients] = useState([]);
   const [services, setServices] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -63,6 +64,19 @@ const CalendarPage = () => {
     if (!serviceType) return false;
     const durationType = getDurationTypeForService(serviceType);
     return durationType === 'days' || durationType === 'nights';
+  };
+  
+  // Check if service is a walk type (requires walker)
+  const isWalkService = (serviceType) => {
+    if (!serviceType) return false;
+    return serviceType.toLowerCase().includes('walk');
+  };
+  
+  // Check if service is an overnight type (can have optional sitter)
+  const isOvernightService = (serviceType) => {
+    if (!serviceType) return false;
+    const overnightTypes = ['overnight', 'stay_overnight', 'petsit_our_location', 'petsit_your_location'];
+    return overnightTypes.some(t => serviceType.toLowerCase().includes(t));
   };
   
   // Admin add/edit appointment state
