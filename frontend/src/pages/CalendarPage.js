@@ -126,6 +126,16 @@ const CalendarPage = () => {
     }
   }, [searchParams, appointments]);
 
+  // Handle action=add parameter from URL (from "Add Appointment" dashboard card)
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'add' && isAdmin && !loading) {
+      openAddDialog();
+      // Clear the action param from URL
+      setSearchParams({});
+    }
+  }, [searchParams, isAdmin, loading]);
+
   const fetchData = async () => {
     try {
       const requests = [
