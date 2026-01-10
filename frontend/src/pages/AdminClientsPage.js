@@ -2302,6 +2302,7 @@ SAMPLE APPOINTMENTS:`;
 
                     {/* ADD NEW SCHEDULE MODE */}
                     {scheduleView === 'add' && (
+                      <div className="space-y-4">
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-base font-semibold">
                         <PawPrint className="w-4 h-4" />
