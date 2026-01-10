@@ -1875,14 +1875,14 @@ SAMPLE APPOINTMENTS:`;
             {selectedClient && editMode && (
               <div className="space-y-6">
                 <Tabs defaultValue="info" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="info">Info</TabsTrigger>
-                    <TabsTrigger value="pets">Pets</TabsTrigger>
-                    <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
+                    <TabsTrigger value="info" className="py-2">Info</TabsTrigger>
+                    <TabsTrigger value="pets" className="py-2">Pets</TabsTrigger>
+                    <TabsTrigger value="schedule" className="py-2">Schedule</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="info" className="space-y-4 mt-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Full Name</Label>
                         <Input
