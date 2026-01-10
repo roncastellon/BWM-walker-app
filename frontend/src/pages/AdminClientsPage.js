@@ -2669,6 +2669,7 @@ SAMPLE APPOINTMENTS:`;
                         ← Back to Schedules
                       </Button>
                     </div>
+                    </div>
                     )}
                   </TabsContent>
                 </Tabs>
