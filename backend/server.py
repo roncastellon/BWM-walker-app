@@ -2392,8 +2392,8 @@ async def get_recurring_schedules(current_user: dict = Depends(get_current_user)
     return schedules
 
 @api_router.put("/recurring-schedules/{schedule_id}/pause")
-async def pause_recurring_schedule(schedule_id: str, current_user: dict = Depends(get_current_user)):
-    """Pause a recurring schedule"""
+async def pause_recurring_schedule(schedule_id: str, pause_data: dict = None, current_user: dict = Depends(get_current_user)):
+    """Pause a recurring schedule with optional date range"""
     schedule = await db.recurring_schedules.find_one({"id": schedule_id}, {"_id": 0})
     if not schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
@@ -2402,11 +2402,41 @@ async def pause_recurring_schedule(schedule_id: str, current_user: dict = Depend
     if current_user['role'] not in ['admin'] and schedule['client_id'] != current_user['id']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    update_data = {
+        "status": "paused", 
+        "paused_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add date range if provided
+    if pause_data:
+        if pause_data.get('start_date'):
+            update_data['paused_from'] = pause_data['start_date']
+        if pause_data.get('end_date'):
+            update_data['paused_until'] = pause_data['end_date']
+        if pause_data.get('reason'):
+            update_data['pause_reason'] = pause_data['reason']
+    
     await db.recurring_schedules.update_one(
         {"id": schedule_id},
-        {"$set": {"status": "paused", "paused_at": datetime.now(timezone.utc).isoformat()}}
+        {"$set": update_data}
     )
-    return {"message": "Schedule paused"}
+    
+    # Also cancel any appointments within the pause period
+    if pause_data and pause_data.get('start_date') and pause_data.get('end_date'):
+        await db.appointments.update_many(
+            {
+                "client_id": schedule['client_id'],
+                "service_type": schedule.get('service_type'),
+                "scheduled_date": {
+                    "$gte": pause_data['start_date'],
+                    "$lte": pause_data['end_date']
+                },
+                "status": "scheduled"
+            },
+            {"$set": {"status": "cancelled", "cancellation_reason": f"Schedule paused: {pause_data.get('reason', 'No reason provided')}"}}
+        )
+    
+    return {"message": "Schedule paused successfully"}
 
 @api_router.put("/recurring-schedules/{schedule_id}/resume")
 async def resume_recurring_schedule(schedule_id: str, current_user: dict = Depends(get_current_user)):
