@@ -2293,61 +2293,9 @@ SAMPLE APPOINTMENTS:`;
                           </Button>
                           <span className="font-semibold">{walkingSchedule.is_recurring ? 'New Recurring Schedule' : 'One-Time Appointment'}</span>
                         </div>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleDeleteSchedule(schedule.id)}
-                                    disabled={deletingScheduleId === schedule.id}
-                                  >
-                                    {deletingScheduleId === schedule.id ? '...' : <Trash2 className="w-4 h-4" />}
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* PAUSE SCHEDULE MODE */}
-                    {scheduleView === 'pause' && selectedSchedule && (
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => { setScheduleView('list'); setSelectedSchedule(null); }}
-                          >
-                            ← Back
-                          </Button>
-                          <span className="font-semibold">Pause Schedule</span>
-                        </div>
-                        
-                        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                          <p className="font-medium text-amber-800 capitalize">
-                            {selectedSchedule.service_type?.replace(/_/g, ' ')} - {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedSchedule.day_of_week]}s at {selectedSchedule.scheduled_time}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <Label className="text-sm">Pause Start Date</Label>
-                            <Input
-                              type="date"
-                              value={pauseForm.start_date}
-                              onChange={(e) => setPauseForm({ ...pauseForm, start_date: e.target.value })}
-                              min={new Date().toISOString().split('T')[0]}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-sm">Pause End Date</Label>
-                            <Input
-                              type="date"
-                              value={pauseForm.end_date}
-                              onChange={(e) => setPauseForm({ ...pauseForm, end_date: e.target.value })}
+                    
+                    {/* Service Type Selection */}
+                    <div className="space-y-2">}
                               min={pauseForm.start_date || new Date().toISOString().split('T')[0]}
                               className="mt-1"
                             />
