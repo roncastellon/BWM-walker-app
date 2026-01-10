@@ -1728,7 +1728,7 @@ SAMPLE APPOINTMENTS:`;
                   </div>
                 )}
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <Avatar className="w-16 h-16">
                       <AvatarImage src={selectedClient.profile_image} />
@@ -1747,7 +1747,11 @@ SAMPLE APPOINTMENTS:`;
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" size="sm" onClick={() => setScheduleView('list')} data-testid="schedule-btn">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      Schedule
+                    </Button>
                     {selectedClient.pricing_setup_completed && (
                       <Button variant="outline" size="sm" onClick={initPricingMode}>
                         <DollarSign className="w-4 h-4 mr-1" />
