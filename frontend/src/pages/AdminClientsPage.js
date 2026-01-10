@@ -309,16 +309,18 @@ const AdminClientsPage = () => {
 
   const fetchData = async () => {
     try {
-      const [clientsRes, servicesRes, walkersRes, plansRes] = await Promise.all([
+      const [clientsRes, servicesRes, walkersRes, plansRes, sittersRes] = await Promise.all([
         api.get('/users/clients?include_frozen=true'),
         api.get('/services'),
         api.get('/users/walkers'),
         api.get('/billing-plans').catch(() => ({ data: [] })),
+        api.get('/users/sitters').catch(() => ({ data: [] })),
       ]);
       setClients(clientsRes.data);
       setServices(servicesRes.data);
       setWalkers(walkersRes.data);
       setBillingPlans(plansRes.data || []);
+      setSitters(sittersRes.data || []);
       
       // Initialize custom pricing with default prices
       const defaultPricing = {};
