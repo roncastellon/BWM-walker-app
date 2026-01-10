@@ -311,6 +311,53 @@ const CalendarPage = () => {
     }
   };
 
+  // Quick Action handlers for context menu
+  const quickAssignWalker = async (apptId, walkerId) => {
+    try {
+      await api.put(`/appointments/${apptId}`, { walker_id: walkerId });
+      toast.success('Walker assigned');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to assign walker');
+    }
+  };
+
+  const quickChangeStatus = async (apptId, newStatus) => {
+    try {
+      await api.put(`/appointments/${apptId}`, { status: newStatus });
+      const statusLabels = {
+        scheduled: 'Scheduled',
+        in_progress: 'In Progress',
+        completed: 'Completed',
+        cancelled: 'Cancelled'
+      };
+      toast.success(`Status changed to ${statusLabels[newStatus]}`);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const quickReschedule = (appt) => {
+    // Open the edit dialog with pre-filled data
+    setFormData({
+      client_id: appt.client_id || '',
+      walker_id: appt.walker_id || '',
+      sitter_id: appt.sitter_id || '',
+      pet_ids: appt.pet_ids || [],
+      service_type: appt.service_type || '',
+      scheduled_date: appt.scheduled_date || '',
+      scheduled_time: appt.scheduled_time || '',
+      notes: appt.notes || '',
+      status: appt.status || 'scheduled',
+      duration_value: appt.duration_value || 1,
+      duration_type: appt.duration_type || 'minutes'
+    });
+    fetchClientPets(appt.client_id);
+    openAppointmentDetail(appt);
+    setTimeout(() => setEditMode(true), 100);
+  };
+
   const getWalkerColor = (walkerId) => {
     const walker = walkers.find(w => w.id === walkerId);
     return walker?.walker_color || '#9CA3AF';
