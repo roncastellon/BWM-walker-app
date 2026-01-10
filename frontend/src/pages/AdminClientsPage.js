@@ -1258,37 +1258,40 @@ SAMPLE APPOINTMENTS:`;
                           </div>
                         ) : null}
                         
-                        <div className="space-y-2">
-                          <Label>Preferred Walker/Sitter (Optional)</Label>
-                          <Select
-                            value={walkingSchedule.preferred_walker_id || 'any'}
-                            onValueChange={(value) => {
-                              const walkerId = value === 'any' ? '' : value;
-                              setWalkingSchedule({ 
-                                ...walkingSchedule, 
-                                preferred_walker_id: walkerId 
-                              });
-                              if (walkerId && selectedClient) {
-                                checkAdminWalkerConflicts(walkerId, selectedClient);
-                              }
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Any available" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="any">Any available walker</SelectItem>
-                              {walkers.map((walker) => (
-                                <SelectItem key={walker.id} value={walker.id}>
-                                  {walker.full_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {checkingWalkerConflicts && (
-                            <p className="text-xs text-muted-foreground">Checking availability...</p>
-                          )}
-                        </div>
+                        {/* Only show walker selection for walk services */}
+                        {isWalkService(walkingSchedule.service_type) && (
+                          <div className="space-y-2">
+                            <Label>Preferred Walker (Optional)</Label>
+                            <Select
+                              value={walkingSchedule.preferred_walker_id || 'any'}
+                              onValueChange={(value) => {
+                                const walkerId = value === 'any' ? '' : value;
+                                setWalkingSchedule({ 
+                                  ...walkingSchedule, 
+                                  preferred_walker_id: walkerId 
+                                });
+                                if (walkerId && selectedClient) {
+                                  checkAdminWalkerConflicts(walkerId, selectedClient);
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Any available" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="any">Any available walker</SelectItem>
+                                {walkers.map((walker) => (
+                                  <SelectItem key={walker.id} value={walker.id}>
+                                    {walker.full_name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {checkingWalkerConflicts && (
+                              <p className="text-xs text-muted-foreground">Checking availability...</p>
+                            )}
+                          </div>
+                        )}
                         
                         <div className="space-y-2">
                           <Label>Schedule Notes</Label>
