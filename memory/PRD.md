@@ -87,9 +87,11 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - Walker reviews/ratings system
 - ✅ Recurring appointment scheduling (COMPLETED Jan 2026)
 - ✅ One-time date range scheduling for overnights/stays (COMPLETED Jan 2026)
+- ✅ Walker dropdown hidden for non-walk services (COMPLETED Jan 10, 2026)
 - Multi-pet discounts
 - Walker availability calendar
 - Admin analytics dashboard
+- Mobile UI improvements for admin client details page
 
 ### P3 (Future)
 - Mobile app (React Native)
