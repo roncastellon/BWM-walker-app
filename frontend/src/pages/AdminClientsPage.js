@@ -1753,7 +1753,11 @@ SAMPLE APPOINTMENTS:`;
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="default" size="sm" onClick={() => { startEditClient(); }} className="bg-primary" data-testid="schedule-btn">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      Schedule
+                    </Button>
                     {selectedClient.pricing_setup_completed && (
                       <Button variant="outline" size="sm" onClick={initPricingMode}>
                         <DollarSign className="w-4 h-4 mr-1" />
