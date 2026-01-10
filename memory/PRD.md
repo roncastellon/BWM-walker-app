@@ -83,8 +83,10 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 
 ### P0 (Critical)
 - ✅ All core features implemented
+- ✅ UI improvements for admin client management (Jan 2026)
 
 ### P1 (High Priority - Next Phase)
+- Overhaul "Add Appointment" dialog on Calendar Page (add one-time vs. recurring toggle, consistent with admin client editor)
 - Push notifications for appointments
 - SMS reminders via Twilio
 - Real-time WebSocket chat (upgrade from polling)
@@ -100,6 +102,9 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - Multi-pet discounts
 - Walker availability calendar
 - Admin analytics dashboard
+- Verify appointments visibility for clients with 0 pets
+- Refactor `AdminClientsPage.js` (critically oversized - needs component breakdown)
+- Refactor `server.py` into smaller routers
 
 ### P3 (Future)
 - Mobile app (React Native)
