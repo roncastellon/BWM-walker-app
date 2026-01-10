@@ -11,10 +11,21 @@ import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuLabel,
+} from '../components/ui/context-menu';
 import { 
   Clock, User, PawPrint, ChevronLeft, ChevronRight, 
   CalendarDays, CalendarRange, Calendar as CalendarIcon,
-  MapPin, Phone, Mail, X, Plus, Edit, Trash2, Save
+  MapPin, Phone, Mail, X, Plus, Edit, Trash2, Save,
+  UserCheck, CheckCircle, PlayCircle, XCircle, RotateCcw
 } from 'lucide-react';
 import { 
   format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths,
