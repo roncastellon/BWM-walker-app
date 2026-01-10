@@ -956,22 +956,25 @@ const CalendarPage = () => {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Walker</Label>
-                    <Select value={formData.walker_id || 'none'} onValueChange={(value) => setFormData({ ...formData, walker_id: value === 'none' ? '' : value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Unassigned</SelectItem>
-                        {walkers.map((walker) => (
-                          <SelectItem key={walker.id} value={walker.id}>
-                            {walker.full_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Only show walker assignment for walk services in edit mode */}
+                  {isWalkService(formData.service_type) && (
+                    <div className="space-y-2">
+                      <Label>Walker</Label>
+                      <Select value={formData.walker_id || 'none'} onValueChange={(value) => setFormData({ ...formData, walker_id: value === 'none' ? '' : value })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Unassigned</SelectItem>
+                          {walkers.map((walker) => (
+                            <SelectItem key={walker.id} value={walker.id}>
+                              {walker.full_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label>Status</Label>
