@@ -340,7 +340,7 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               </Link>
-              <Link to="/admin/calendar">
+              <Link to="/admin/calendar?action=add">
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
