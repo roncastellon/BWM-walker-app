@@ -48,6 +48,7 @@ const AdminClientsPage = () => {
   const [clients, setClients] = useState([]);
   const [services, setServices] = useState([]);
   const [walkers, setWalkers] = useState([]);
+  const [sitters, setSitters] = useState([]);
   const [billingPlans, setBillingPlans] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,18 @@ const AdminClientsPage = () => {
   const [editMode, setEditMode] = useState(false);
   const [pricingMode, setPricingMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Helper functions for service types
+  const isWalkService = (serviceType) => {
+    if (!serviceType) return false;
+    return serviceType.toLowerCase().includes('walk');
+  };
+  
+  const isOvernightService = (serviceType) => {
+    if (!serviceType) return false;
+    const overnightTypes = ['overnight', 'stay_overnight', 'petsit_our_location', 'petsit_your_location'];
+    return overnightTypes.some(t => serviceType.toLowerCase().includes(t));
+  };
   
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
