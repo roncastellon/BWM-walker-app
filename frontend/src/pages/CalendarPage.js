@@ -124,6 +124,7 @@ const CalendarPage = () => {
       
       if (isAdmin) {
         requests.push(api.get('/users/clients'));
+        requests.push(api.get('/users/sitters').catch(() => ({ data: [] }))); // Sitters may not exist
       }
       
       const responses = await Promise.all(requests);
@@ -131,8 +132,9 @@ const CalendarPage = () => {
       setWalkers(responses[1].data);
       setServices(responses[2].data);
       
-      if (isAdmin && responses[3]) {
-        setClients(responses[3].data);
+      if (isAdmin) {
+        if (responses[3]) setClients(responses[3].data);
+        if (responses[4]) setSitters(responses[4].data);
       }
     } catch (error) {
       toast.error('Failed to load calendar data');
