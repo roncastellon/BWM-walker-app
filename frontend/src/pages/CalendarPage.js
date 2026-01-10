@@ -856,25 +856,28 @@ const CalendarPage = () => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label>Assign Walker</Label>
-                <Select value={formData.walker_id || 'none'} onValueChange={(value) => setFormData({ ...formData, walker_id: value === 'none' ? '' : value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a walker (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Unassigned</SelectItem>
-                    {walkers.map((walker) => (
-                      <SelectItem key={walker.id} value={walker.id}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: walker.walker_color }} />
-                          {walker.full_name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Only show walker assignment for walk services */}
+              {isWalkService(formData.service_type) && (
+                <div className="space-y-2">
+                  <Label>Assign Walker</Label>
+                  <Select value={formData.walker_id || 'none'} onValueChange={(value) => setFormData({ ...formData, walker_id: value === 'none' ? '' : value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a walker (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Unassigned</SelectItem>
+                      {walkers.map((walker) => (
+                        <SelectItem key={walker.id} value={walker.id}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: walker.walker_color }} />
+                            {walker.full_name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>Notes</Label>
