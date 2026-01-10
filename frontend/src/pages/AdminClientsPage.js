@@ -2616,7 +2616,7 @@ SAMPLE APPOINTMENTS:`;
                     ) : null}
                     
                     {/* Only show walker selection for walk services */}
-                    {walkingSchedule.service_type?.includes('walk') && (
+                    {isWalkService(walkingSchedule.service_type) && (
                       <div className="space-y-2">
                         <Label>Preferred Walker (Optional)</Label>
                         <Select
