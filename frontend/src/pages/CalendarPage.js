@@ -33,7 +33,7 @@ const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedWalker, setSelectedWalker] = useState('all');
   const [selectedServiceCategory, setSelectedServiceCategory] = useState('all');
-  const [viewMode, setViewMode] = useState('week');
+  const [viewMode, setViewMode] = useState('day');
   const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [appointmentDetail, setAppointmentDetail] = useState(null);
