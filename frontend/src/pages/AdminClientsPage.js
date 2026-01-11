@@ -2277,12 +2277,20 @@ SAMPLE APPOINTMENTS:`;
                           variant="outline"
                           className="w-full justify-start h-auto py-3"
                           onClick={() => {
+                            // Pre-fill with client's existing service type for one-time adds
+                            const existingServiceType = clientRecurringSchedules.length > 0 
+                              ? clientRecurringSchedules[0].service_type 
+                              : 'walk_30';
+                            const existingWalkerId = clientRecurringSchedules.length > 0 
+                              ? clientRecurringSchedules[0].walker_id || ''
+                              : '';
+                            
                             setWalkingSchedule({
-                              service_type: 'walk_30',
+                              service_type: existingServiceType,
                               walks_per_day: 1,
                               days: [],
                               preferred_times: [],
-                              preferred_walker_id: '',
+                              preferred_walker_id: existingWalkerId,
                               duration_value: 1,
                               notes: '',
                               is_recurring: false,
