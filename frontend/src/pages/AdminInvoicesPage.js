@@ -706,20 +706,35 @@ const AdminBillingPage = () => {
                       )}
                       Send All Approved
                     </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        // Approve all pending invoices
+                        pendingReviewInvoices.filter(i => i.review_status === 'pending').forEach(inv => approveInvoice(inv.id));
+                      }}
+                      disabled={pendingReviewInvoices.filter(i => i.review_status === 'pending').length === 0}
+                      className="rounded-full bg-green-500 hover:bg-green-600"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Approve All
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {pendingReviewInvoices.map((invoice) => (
                       <div key={invoice.id} className="flex items-center justify-between p-3 rounded-lg bg-white border border-orange-200">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-sm">{invoice.client?.full_name || 'Client'}</p>
                           <p className="text-xs text-muted-foreground">
-                            {invoice.billing_period_start} - {invoice.billing_period_end}
+                            {invoice.billing_period_start} - {invoice.billing_period_end} • {invoice.appointment_ids?.length || 0} service(s)
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <p className="font-bold">${invoice.amount?.toFixed(2)}</p>
+                          <Button size="sm" variant="outline" onClick={() => openInvoiceDetail(invoice)} className="rounded-full">
+                            <Eye className="w-3 h-3 mr-1" /> View
+                          </Button>
                           {invoice.review_status === 'pending' ? (
                             <Button size="sm" onClick={() => approveInvoice(invoice.id)} className="rounded-full bg-sky-500 hover:bg-sky-600">
                               Approve
