@@ -205,6 +205,114 @@ const AdminDashboard = () => {
     }
   };
 
+  // Helper functions for Add Appointment
+  const isWalkService = (serviceType) => {
+    if (!serviceType) return false;
+    return serviceType.toLowerCase().includes('walk');
+  };
+
+  const isDayNightService = (serviceType) => {
+    if (!serviceType) return false;
+    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day', 'day_visit'];
+    const nightServices = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location'];
+    if (dayServices.some(s => serviceType.toLowerCase().includes(s))) return true;
+    if (nightServices.some(s => serviceType.toLowerCase().includes(s))) return true;
+    return false;
+  };
+
+  const getDurationTypeForService = (serviceType) => {
+    if (!serviceType) return 'minutes';
+    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day', 'day_visit'];
+    const nightServices = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location'];
+    if (dayServices.some(s => serviceType.toLowerCase().includes(s))) return 'days';
+    if (nightServices.some(s => serviceType.toLowerCase().includes(s))) return 'nights';
+    return 'minutes';
+  };
+
+  const fetchClientPets = async (clientId) => {
+    if (!clientId) {
+      setSelectedClientPets([]);
+      return;
+    }
+    try {
+      const response = await api.get(`/pets?owner_id=${clientId}`);
+      setSelectedClientPets(response.data);
+    } catch (error) {
+      setSelectedClientPets([]);
+    }
+  };
+
+  const openAddApptDialog = () => {
+    setApptFormData({
+      client_id: '',
+      walker_id: '',
+      pet_ids: [],
+      service_type: '',
+      scheduled_date: new Date().toISOString().split('T')[0],
+      scheduled_time: '',
+      notes: '',
+      duration_value: 1
+    });
+    setSelectedClientPets([]);
+    setAddApptDialog(true);
+  };
+
+  const handleCreateAppointment = async (e) => {
+    e.preventDefault();
+    const isDayNight = isDayNightService(apptFormData.service_type);
+    
+    if (!apptFormData.client_id || !apptFormData.service_type || !apptFormData.scheduled_date) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    if (!isDayNight && !apptFormData.scheduled_time) {
+      toast.error('Please select a time');
+      return;
+    }
+    
+    try {
+      const daysToCreate = isDayNight && apptFormData.duration_value > 1 ? apptFormData.duration_value : 1;
+      
+      for (let i = 0; i < daysToCreate; i++) {
+        const appointmentDate = new Date(apptFormData.scheduled_date);
+        appointmentDate.setDate(appointmentDate.getDate() + i);
+        const dateStr = appointmentDate.toISOString().split('T')[0];
+        
+        await api.post('/appointments/admin', {
+          ...apptFormData,
+          scheduled_date: dateStr,
+          scheduled_time: isDayNight ? '' : apptFormData.scheduled_time,
+          duration_value: 1,
+          duration_type: getDurationTypeForService(apptFormData.service_type)
+        });
+      }
+      
+      const successMsg = daysToCreate > 1 
+        ? `${daysToCreate} appointments created successfully`
+        : 'Appointment created successfully';
+      toast.success(successMsg);
+      setAddApptDialog(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create appointment');
+    }
+  };
+
+  // Generate time slots
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 6; hour <= 20; hour++) {
+      for (let min = 0; min < 60; min += 15) {
+        const h = hour.toString().padStart(2, '0');
+        const m = min.toString().padStart(2, '0');
+        slots.push(`${h}:${m}`);
+      }
+    }
+    return slots;
+  };
+  const timeSlots = generateTimeSlots();
+
   const todayAppts = appointments.filter(a => {
     const today = new Date().toISOString().split('T')[0];
     return a.scheduled_date === today;
