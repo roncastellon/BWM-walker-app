@@ -4724,12 +4724,12 @@ async def get_clients_due_for_billing(current_user: dict = Depends(get_current_u
     # First, auto-complete any past daycare/overnight services (not walks)
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # Only auto-complete day care and overnight services (walks must be completed by walker)
-    auto_complete_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location", "transport"]
+    # Only auto-complete day care, overnight, transport services (walks must be completed by walker)
+    auto_complete_pattern = {"$regex": "day_care|day_camp|daycare|overnight|petsit|transport|boarding", "$options": "i"}
     
     auto_complete_result = await db.appointments.update_many(
         {
-            "service_type": {"$in": auto_complete_services},
+            "service_type": auto_complete_pattern,
             "scheduled_date": {"$lt": yesterday},
             "status": "scheduled"
         },
