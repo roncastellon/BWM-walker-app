@@ -1795,6 +1795,15 @@ const AdminBillingPage = () => {
                         <MessageSquare className="w-4 h-4 mr-2" />
                         {sendingSms ? 'Sending...' : 'Send SMS'}
                       </Button>
+                      <Button
+                        onClick={() => deleteInvoice(invoiceDetail.id)}
+                        variant="destructive"
+                        className="rounded-full"
+                        data-testid="delete-invoice"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
                     </div>
                   )}
                 </div>
