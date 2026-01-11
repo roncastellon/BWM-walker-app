@@ -1749,7 +1749,11 @@ SAMPLE APPOINTMENTS:`;
                     </div>
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <Button variant="outline" size="sm" onClick={() => setScheduleView('list')} data-testid="schedule-btn">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      setActiveEditTab('schedule');
+                      setScheduleView('list');
+                      startEditClient();
+                    }} data-testid="schedule-btn">
                       <Calendar className="w-4 h-4 mr-1" />
                       Schedule
                     </Button>
