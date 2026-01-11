@@ -5489,17 +5489,18 @@ async def auto_generate_invoices(
     invoices_created = []
     
     # Service types that are billable even if just scheduled (not canceled)
-    auto_billable_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location", "transport"]
+    # Use regex patterns to catch variations
+    auto_billable_pattern = {"$regex": "day_care|day_camp|daycare|overnight|petsit|transport|boarding", "$options": "i"}
     
     for client in clients:
         # Get unbilled appointments for this client in the date range
-        # For day care/overnights: include scheduled (not canceled) - they're billable automatically
+        # For day care/overnights/transport: include scheduled (not canceled) - they're billable automatically
         # For walks: only include completed ones
         
-        # First get day care/overnight appointments (billable if not canceled)
+        # First get day care/overnight/transport appointments (billable if not canceled)
         daycare_overnight_appts = await db.appointments.find({
             "client_id": client["id"],
-            "service_type": {"$in": auto_billable_services},
+            "service_type": auto_billable_pattern,
             "status": {"$in": ["completed", "scheduled"]},  # Not canceled
             "scheduled_date": {"$gte": start_str, "$lte": end_str},
             "invoiced": {"$ne": True}
@@ -5508,7 +5509,7 @@ async def auto_generate_invoices(
         # Then get walk appointments (only if completed)
         walk_appts = await db.appointments.find({
             "client_id": client["id"],
-            "service_type": {"$nin": auto_billable_services},  # Walks and other services
+            "service_type": {"$not": auto_billable_pattern},  # Walks and other services
             "status": "completed",  # Must be completed
             "scheduled_date": {"$gte": start_str, "$lte": end_str},
             "invoiced": {"$ne": True}
@@ -5521,13 +5522,15 @@ async def auto_generate_invoices(
         
         # Mark any scheduled day care/overnight appointments as completed since we're billing them
         for appt in appts:
-            if appt.get("status") == "scheduled" and appt.get("service_type") in auto_billable_services:
-                await db.appointments.update_one(
-                    {"id": appt["id"]},
-                    {"$set": {
-                        "status": "completed",
-                        "completed_at": datetime.now(timezone.utc).isoformat(),
-                        "auto_completed": True,
+            if appt.get("status") == "scheduled":
+                svc = appt.get("service_type", "").lower()
+                if any(x in svc for x in ["day_care", "daycare", "overnight", "petsit", "transport", "boarding"]):
+                    await db.appointments.update_one(
+                        {"id": appt["id"]},
+                        {"$set": {
+                            "status": "completed",
+                            "completed_at": datetime.now(timezone.utc).isoformat(),
+                            "auto_completed": True,
                         "completion_data": {"auto_completed": True, "reason": "Completed for billing - service not canceled"}
                     }}
                 )
