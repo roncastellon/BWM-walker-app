@@ -42,6 +42,21 @@ const AdminDashboard = () => {
     changeType: 'one_time', // 'one_time' (first/default) or 'permanent'
     specificDate: ''
   });
+  
+  // Add Appointment dialog state
+  const [addApptDialog, setAddApptDialog] = useState(false);
+  const [services, setServices] = useState([]);
+  const [selectedClientPets, setSelectedClientPets] = useState([]);
+  const [apptFormData, setApptFormData] = useState({
+    client_id: '',
+    walker_id: '',
+    pet_ids: [],
+    service_type: '',
+    scheduled_date: new Date().toISOString().split('T')[0],
+    scheduled_time: '',
+    notes: '',
+    duration_value: 1
+  });
 
   useEffect(() => {
     fetchData();
