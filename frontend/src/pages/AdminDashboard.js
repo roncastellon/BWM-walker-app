@@ -1000,6 +1000,176 @@ const AdminDashboard = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Add Appointment Dialog */}
+        <Dialog open={addApptDialog} onOpenChange={setAddApptDialog}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Appointment</DialogTitle>
+              <DialogDescription>Schedule a walk or service for a client</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateAppointment} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Client *</Label>
+                <Select 
+                  value={apptFormData.client_id} 
+                  onValueChange={(value) => {
+                    setApptFormData({ ...apptFormData, client_id: value, pet_ids: [] });
+                    fetchClientPets(value);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedClientPets.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Pet(s)</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedClientPets.map((pet) => (
+                      <Button
+                        key={pet.id}
+                        type="button"
+                        variant={apptFormData.pet_ids.includes(pet.id) ? 'default' : 'outline'}
+                        size="sm"
+                        className="rounded-full"
+                        onClick={() => {
+                          const ids = apptFormData.pet_ids.includes(pet.id)
+                            ? apptFormData.pet_ids.filter(id => id !== pet.id)
+                            : [...apptFormData.pet_ids, pet.id];
+                          setApptFormData({ ...apptFormData, pet_ids: ids });
+                        }}
+                      >
+                        {pet.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Service *</Label>
+                <Select 
+                  value={apptFormData.service_type} 
+                  onValueChange={(value) => {
+                    setApptFormData({ 
+                      ...apptFormData, 
+                      service_type: value,
+                      duration_value: 1,
+                      scheduled_time: isDayNightService(value) ? '' : apptFormData.scheduled_time
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {services.map((service) => (
+                      <SelectItem key={service.id} value={service.service_type}>
+                        {service.name} - ${service.price?.toFixed(2)}
+                        {getDurationTypeForService(service.service_type) === 'days' ? '/day' : ''}
+                        {getDurationTypeForService(service.service_type) === 'nights' ? '/night' : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Date *</Label>
+                  <Input 
+                    type="date" 
+                    value={apptFormData.scheduled_date}
+                    onChange={(e) => setApptFormData({ ...apptFormData, scheduled_date: e.target.value })}
+                  />
+                </div>
+                {isDayNightService(apptFormData.service_type) ? (
+                  <div className="space-y-2">
+                    <Label>
+                      {getDurationTypeForService(apptFormData.service_type) === 'days' 
+                        ? 'Number of Days *' 
+                        : 'Number of Nights *'}
+                    </Label>
+                    <Select 
+                      value={apptFormData.duration_value?.toString() || '1'} 
+                      onValueChange={(value) => setApptFormData({ ...apptFormData, duration_value: parseInt(value) })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 14, 21, 30].map((num) => (
+                          <SelectItem key={num} value={num.toString()}>
+                            {num} {getDurationTypeForService(apptFormData.service_type) === 'days' 
+                              ? (num === 1 ? 'Day' : 'Days') 
+                              : (num === 1 ? 'Night' : 'Nights')}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>Time *</Label>
+                    <Select value={apptFormData.scheduled_time} onValueChange={(value) => setApptFormData({ ...apptFormData, scheduled_time: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>{time}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              {/* Only show walker assignment for walk services */}
+              {isWalkService(apptFormData.service_type) && (
+                <div className="space-y-2">
+                  <Label>Assign Walker</Label>
+                  <Select value={apptFormData.walker_id || 'none'} onValueChange={(value) => setApptFormData({ ...apptFormData, walker_id: value === 'none' ? '' : value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a walker (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Unassigned</SelectItem>
+                      {walkers.map((walker) => (
+                        <SelectItem key={walker.id} value={walker.id}>
+                          {walker.full_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea
+                  placeholder="Any special instructions..."
+                  value={apptFormData.notes}
+                  onChange={(e) => setApptFormData({ ...apptFormData, notes: e.target.value })}
+                />
+              </div>
+
+              <Button type="submit" className="w-full rounded-full">
+                Create Appointment
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
