@@ -798,6 +798,9 @@ const AdminBillingPage = () => {
                           <Button size="sm" variant="outline" onClick={() => openInvoiceDetail(invoice)} className="rounded-full">
                             <Eye className="w-3 h-3 mr-1" /> View
                           </Button>
+                          <Button size="sm" variant="ghost" onClick={() => deleteInvoice(invoice.id)} className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
                         </div>
                       </div>
                     ))}
