@@ -727,6 +727,9 @@ const AdminBillingPage = () => {
                           ) : (
                             <Badge className="bg-sky-100 text-sky-800 rounded-full">Approved</Badge>
                           )}
+                          <Button size="sm" variant="ghost" onClick={() => deleteInvoice(invoice.id)} className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
                         </div>
                       </div>
                     ))}
