@@ -2061,16 +2061,25 @@ SAMPLE APPOINTMENTS:`;
                                 variant="default"
                                 className="bg-green-500 hover:bg-green-600"
                                 onClick={() => {
-                                  // Reset to default walk schedule when adding new
+                                  // Add defaults to one-time with client's existing service
+                                  const existingServiceType = clientRecurringSchedules.length > 0 
+                                    ? clientRecurringSchedules[0].service_type 
+                                    : 'walk_30';
+                                  const existingWalkerId = clientRecurringSchedules.length > 0 
+                                    ? clientRecurringSchedules[0].walker_id || ''
+                                    : '';
+                                  
                                   setWalkingSchedule({
-                                    service_type: 'walk_30',
+                                    service_type: existingServiceType,
                                     walks_per_day: 1,
                                     days: [],
                                     preferred_times: [],
-                                    preferred_walker_id: '',
+                                    preferred_walker_id: existingWalkerId,
                                     duration_value: 1,
                                     notes: '',
-                                    is_recurring: true,
+                                    is_recurring: false,
+                                    start_date: '',
+                                    end_date: ''
                                   });
                                   setScheduleView('add');
                                 }}
