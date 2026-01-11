@@ -1112,7 +1112,7 @@ SAMPLE APPOINTMENTS:`;
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
-                            Days Per Week
+                            Select Days for Service
                           </Label>
                           <div className="flex flex-wrap gap-2">
                             {DAYS_OF_WEEK.map((day) => (
@@ -1128,8 +1128,8 @@ SAMPLE APPOINTMENTS:`;
                               </Button>
                             ))}
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            {walkingSchedule.days.length} day(s) selected
+                          <p className="text-sm text-muted-foreground">
+                            Days per week: <span className="font-medium">{walkingSchedule.days.length}</span>
                           </p>
                         </div>
 
