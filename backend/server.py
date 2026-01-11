@@ -4685,12 +4685,12 @@ async def auto_complete_past_services(current_user: dict = Depends(get_current_u
     
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # Only auto-complete day care and overnight services (not walks)
-    auto_complete_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location", "transport"]
+    # Only auto-complete day care, overnight, transport services (not walks)
+    auto_complete_pattern = {"$regex": "day_care|day_camp|daycare|overnight|petsit|transport|boarding", "$options": "i"}
     
     # Find all past day care/overnight appointments that are still "scheduled"
     past_services = await db.appointments.find({
-        "service_type": {"$in": auto_complete_services},
+        "service_type": auto_complete_pattern,
         "scheduled_date": {"$lt": yesterday},
         "status": "scheduled"
     }, {"_id": 0}).to_list(1000)
