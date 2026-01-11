@@ -140,6 +140,7 @@ const AdminClientsPage = () => {
   // Schedule management state
   const [scheduleView, setScheduleView] = useState('list'); // 'list', 'edit', 'add', 'pause'
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [activeEditTab, setActiveEditTab] = useState('info'); // Track active tab in edit mode
   const [pauseForm, setPauseForm] = useState({
     start_date: '',
     end_date: '',
