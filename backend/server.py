@@ -4676,7 +4676,7 @@ async def get_revenue_summary(current_user: dict = Depends(get_current_user)):
 @api_router.post("/billing/auto-complete-services")
 async def auto_complete_past_services(current_user: dict = Depends(get_current_user)):
     """
-    Auto-complete overnight stays and daycare appointments when their scheduled date has passed.
+    Auto-complete overnight stays, daycare, and walk appointments when their scheduled date has passed.
     This makes them billable. Only affects appointments that are 'scheduled' status and not canceled.
     """
     if current_user['role'] != 'admin':
@@ -4684,9 +4684,8 @@ async def auto_complete_past_services(current_user: dict = Depends(get_current_u
     
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # Find all past overnight and daycare appointments that are still "scheduled"
+    # Find all past appointments that are still "scheduled" (includes walks, daycare, overnights, etc.)
     past_services = await db.appointments.find({
-        "service_type": {"$in": ["stay_overnight", "doggy_day_care", "day_care"]},
         "scheduled_date": {"$lt": yesterday},
         "status": "scheduled"
     }, {"_id": 0}).to_list(1000)
@@ -4708,7 +4707,7 @@ async def auto_complete_past_services(current_user: dict = Depends(get_current_u
         completed_count += 1
     
     return {
-        "message": f"Auto-completed {completed_count} past overnight/daycare appointments",
+        "message": f"Auto-completed {completed_count} past appointments",
         "count": completed_count
     }
 
