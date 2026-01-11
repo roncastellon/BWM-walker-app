@@ -467,19 +467,21 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               </Link>
-              <Link to="/admin/calendar">
-                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                      <CalendarPlus className="w-5 h-5 text-orange-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">Add Appointment</p>
-                      <p className="text-xs text-muted-foreground">Schedule new</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+              <Card 
+                className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full"
+                onClick={openAddApptDialog}
+                data-testid="add-appointment-dashboard-btn"
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <CalendarPlus className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Add Appointment</p>
+                    <p className="text-xs text-muted-foreground">Schedule new</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Today's Appointments */}
