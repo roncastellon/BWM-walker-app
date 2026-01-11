@@ -2543,6 +2543,84 @@ SAMPLE APPOINTMENTS:`;
                           </p>
                         </div>
                       )}
+
+                      {/* Walks Per Day - only show for walk services */}
+                      {(walkingSchedule.service_type?.includes('walk') || !walkingSchedule.service_type) && (
+                        <>
+                          <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              Walks Per Day
+                            </Label>
+                            <Select
+                              value={walkingSchedule.walks_per_day?.toString() || '1'}
+                              onValueChange={(value) => setWalkingSchedule({ 
+                                ...walkingSchedule, 
+                                walks_per_day: parseInt(value),
+                                preferred_times: walkingSchedule.preferred_times?.slice(0, parseInt(value)) || []
+                              })}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1 walk</SelectItem>
+                                <SelectItem value="2">2 walks</SelectItem>
+                                <SelectItem value="3">3 walks</SelectItem>
+                                <SelectItem value="4">4 walks</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Preferred Walk Times</Label>
+                            <div className="space-y-2">
+                              {(walkingSchedule.preferred_times || []).map((time, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                  <Select
+                                    value={time}
+                                    onValueChange={(value) => updatePreferredTime(index, value)}
+                                  >
+                                    <SelectTrigger className="w-32">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-60">
+                                      {TIME_SLOTS.map((slot) => (
+                                        <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <span className="text-sm text-muted-foreground">Walk {index + 1}</span>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removePreferredTime(index)}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              {(walkingSchedule.preferred_times?.length || 0) < (walkingSchedule.walks_per_day || 1) && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={addPreferredTime}
+                                  className="rounded-full"
+                                >
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Add Time
+                                </Button>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Time slots are in 15-minute increments
+                            </p>
+                          </div>
+                        </>
+                      )}
                       
                       {/* Create Schedule Button */}
                       <Button
