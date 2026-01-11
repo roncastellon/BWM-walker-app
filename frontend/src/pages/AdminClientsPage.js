@@ -2469,82 +2469,9 @@ SAMPLE APPOINTMENTS:`;
                       </div>
                       <p className="text-sm text-muted-foreground">
                         Days per week: <span className="font-medium">{walkingSchedule.days.length}</span>
-                        {!walkingSchedule.is_recurring && ' (uses date range for one-time)'}
                       </p>
-                      
-                      {/* Schedule Type Toggle: One-Time vs Recurring */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          type="button"
-                          variant={walkingSchedule.is_recurring ? 'outline' : 'default'}
-                          className={`h-auto py-3 flex flex-col ${!walkingSchedule.is_recurring ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
-                          onClick={() => setWalkingSchedule({ ...walkingSchedule, is_recurring: false })}
-                        >
-                          <CalendarDays className="w-4 h-4 mb-1" />
-                          <span className="font-bold">One-Time</span>
-                          <span className="text-xs opacity-80">Date range</span>
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={walkingSchedule.is_recurring ? 'default' : 'outline'}
-                          className={`h-auto py-3 flex flex-col ${walkingSchedule.is_recurring ? 'bg-green-500 hover:bg-green-600' : ''}`}
-                          onClick={() => setWalkingSchedule({ ...walkingSchedule, is_recurring: true })}
-                        >
-                          <Repeat className="w-4 h-4 mb-1" />
-                          <span className="font-bold">Recurring</span>
-                          <span className="text-xs opacity-80">Weekly repeat</span>
-                        </Button>
-                      </div>
 
-                      {/* One-Time: Date Range Picker */}
-                      {!walkingSchedule.is_recurring && (
-                        <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 space-y-3">
-                          <p className="font-medium text-sm text-sky-700 flex items-center gap-2">
-                            <CalendarDays className="w-4 h-4" />
-                            Select Date Range
-                          </p>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <Label className="text-xs text-sky-600">Start Date</Label>
-                              <Input
-                                type="date"
-                                value={walkingSchedule.start_date || ''}
-                                onChange={(e) => setWalkingSchedule({ ...walkingSchedule, start_date: e.target.value })}
-                                min={new Date().toISOString().split('T')[0]}
-                                className="mt-1"
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-xs text-sky-600">End Date</Label>
-                              <Input
-                                type="date"
-                                value={walkingSchedule.end_date || ''}
-                                onChange={(e) => setWalkingSchedule({ ...walkingSchedule, end_date: e.target.value })}
-                                min={walkingSchedule.start_date || new Date().toISOString().split('T')[0]}
-                                className="mt-1"
-                              />
-                            </div>
-                          </div>
-                          <p className="text-xs text-sky-600">
-                            Appointments will be created for each day from start to end date.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Recurring: Info Box */}
-                      {walkingSchedule.is_recurring && (
-                        <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                          <p className="font-medium text-sm text-green-700 flex items-center gap-2">
-                            <Repeat className="w-4 h-4" />
-                            Weekly Recurring Schedule
-                          </p>
-                          <p className="text-xs text-green-600 mt-1">
-                            Select the days above. Appointments will repeat every week on those days.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Walks Per Day - only show for walk services */}
+                      {/* Walks Per Day - only show for walk services, right after days */}
                       {(walkingSchedule.service_type?.includes('walk') || !walkingSchedule.service_type) && (
                         <>
                           <div className="space-y-2">
@@ -2620,6 +2547,78 @@ SAMPLE APPOINTMENTS:`;
                             </p>
                           </div>
                         </>
+                      )}
+                      
+                      {/* Schedule Type Toggle: One-Time vs Recurring */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant={walkingSchedule.is_recurring ? 'outline' : 'default'}
+                          className={`h-auto py-3 flex flex-col ${!walkingSchedule.is_recurring ? 'bg-sky-500 hover:bg-sky-600' : ''}`}
+                          onClick={() => setWalkingSchedule({ ...walkingSchedule, is_recurring: false })}
+                        >
+                          <CalendarDays className="w-4 h-4 mb-1" />
+                          <span className="font-bold">One-Time</span>
+                          <span className="text-xs opacity-80">Date range</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={walkingSchedule.is_recurring ? 'default' : 'outline'}
+                          className={`h-auto py-3 flex flex-col ${walkingSchedule.is_recurring ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                          onClick={() => setWalkingSchedule({ ...walkingSchedule, is_recurring: true })}
+                        >
+                          <Repeat className="w-4 h-4 mb-1" />
+                          <span className="font-bold">Recurring</span>
+                          <span className="text-xs opacity-80">Weekly repeat</span>
+                        </Button>
+                      </div>
+
+                      {/* One-Time: Date Range Picker */}
+                      {!walkingSchedule.is_recurring && (
+                        <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 space-y-3">
+                          <p className="font-medium text-sm text-sky-700 flex items-center gap-2">
+                            <CalendarDays className="w-4 h-4" />
+                            Select Date Range
+                          </p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs text-sky-600">Start Date</Label>
+                              <Input
+                                type="date"
+                                value={walkingSchedule.start_date || ''}
+                                onChange={(e) => setWalkingSchedule({ ...walkingSchedule, start_date: e.target.value })}
+                                min={new Date().toISOString().split('T')[0]}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-sky-600">End Date</Label>
+                              <Input
+                                type="date"
+                                value={walkingSchedule.end_date || ''}
+                                onChange={(e) => setWalkingSchedule({ ...walkingSchedule, end_date: e.target.value })}
+                                min={walkingSchedule.start_date || new Date().toISOString().split('T')[0]}
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-sky-600">
+                            Appointments will be created for each day from start to end date.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Recurring: Info Box */}
+                      {walkingSchedule.is_recurring && (
+                        <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                          <p className="font-medium text-sm text-green-700 flex items-center gap-2">
+                            <Repeat className="w-4 h-4" />
+                            Weekly Recurring Schedule
+                          </p>
+                          <p className="text-xs text-green-600 mt-1">
+                            Select the days above. Appointments will repeat every week on those days.
+                          </p>
+                        </div>
                       )}
                       
                       {/* Create Schedule Button */}
