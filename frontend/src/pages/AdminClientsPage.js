@@ -2451,7 +2451,7 @@ SAMPLE APPOINTMENTS:`;
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        Days Per Week
+                        Select Days for Service
                       </Label>
                       <div className="flex flex-wrap gap-2">
                         {DAYS_OF_WEEK.map((day) => (
@@ -2467,11 +2467,9 @@ SAMPLE APPOINTMENTS:`;
                           </Button>
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {walkingSchedule.is_recurring 
-                          ? `${walkingSchedule.days.length} day(s) selected - appointments will repeat on these days weekly`
-                          : 'Days are ignored for one-time schedules - uses date range below'
-                        }
+                      <p className="text-sm text-muted-foreground">
+                        Days per week: <span className="font-medium">{walkingSchedule.days.length}</span>
+                        {!walkingSchedule.is_recurring && ' (uses date range for one-time)'}
                       </p>
                       
                       {/* Schedule Type Toggle: One-Time vs Recurring */}
