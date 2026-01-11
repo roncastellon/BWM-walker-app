@@ -148,7 +148,7 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes, paysheetsRes] = await Promise.all([
+      const [statsRes, apptsRes, invoicesRes, clientsRes, walkersRes, sittersRes, contactsRes, paysheetsRes, servicesRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/appointments/calendar'),
         api.get('/invoices'),
@@ -157,6 +157,7 @@ const AdminDashboard = () => {
         api.get('/sitters').catch(() => ({ data: [] })),
         api.get('/messages/contacts'),
         api.get('/paysheets'),
+        api.get('/services'),
       ]);
       setStats(statsRes.data);
       setAppointments(apptsRes.data);
@@ -166,6 +167,7 @@ const AdminDashboard = () => {
       setSitters(sittersRes.data || []);
       setContacts(contactsRes.data || []);
       setPaysheets(paysheetsRes.data || []);
+      setServices(servicesRes.data || []);
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {
