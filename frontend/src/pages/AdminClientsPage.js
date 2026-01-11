@@ -2020,7 +2020,29 @@ SAMPLE APPOINTMENTS:`;
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                onClick={() => setScheduleView('edit')}
+                                onClick={() => {
+                                  // Load existing schedule data from recurring schedules
+                                  if (clientRecurringSchedules.length > 0) {
+                                    const firstSchedule = clientRecurringSchedules[0];
+                                    const days = [...new Set(clientRecurringSchedules.map(s => {
+                                      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                                      return dayNames[s.day_of_week];
+                                    }))];
+                                    const times = [...new Set(clientRecurringSchedules.map(s => s.scheduled_time))];
+                                    
+                                    setWalkingSchedule({
+                                      service_type: firstSchedule.service_type || 'walk_30',
+                                      walks_per_day: times.length || 1,
+                                      days: days,
+                                      preferred_times: times,
+                                      preferred_walker_id: firstSchedule.walker_id || '',
+                                      duration_value: firstSchedule.duration_value || 1,
+                                      notes: firstSchedule.notes || '',
+                                      is_recurring: true,
+                                    });
+                                  }
+                                  setScheduleView('edit');
+                                }}
                               >
                                 <Edit className="w-4 h-4 mr-1" />
                                 Edit
