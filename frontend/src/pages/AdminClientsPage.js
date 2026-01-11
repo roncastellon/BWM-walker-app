@@ -1874,7 +1874,7 @@ SAMPLE APPOINTMENTS:`;
             {/* Edit Mode */}
             {selectedClient && editMode && (
               <div className="space-y-6">
-                <Tabs defaultValue="info" className="w-full">
+                <Tabs value={activeEditTab} onValueChange={setActiveEditTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-3 gap-1">
                     <TabsTrigger value="info">Info</TabsTrigger>
                     <TabsTrigger value="pets">Pets</TabsTrigger>
