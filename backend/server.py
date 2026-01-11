@@ -5453,6 +5453,11 @@ async def auto_generate_invoices(
     
     # Determine date range based on cycle
     if cycle == "weekly":
+        # Current week up to today (Monday to today) - bill for completed services this week
+        days_since_monday = today.weekday()
+        start_date = today - timedelta(days=days_since_monday)  # This Monday
+        end_date = today  # Today
+    elif cycle == "previous_week":
         # Previous week (Monday to Sunday)
         days_since_monday = today.weekday()
         end_date = today - timedelta(days=days_since_monday + 1)  # Last Sunday
