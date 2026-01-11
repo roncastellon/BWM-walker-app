@@ -22,9 +22,10 @@ const generateTimeSlots = () => {
   const slots = [];
   for (let hour = 6; hour <= 20; hour++) {
     for (let min = 0; min < 60; min += 15) {
-      const h = hour.toString().padStart(2, '0');
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
       const m = min.toString().padStart(2, '0');
-      slots.push(`${h}:${m}`);
+      slots.push(`${hour12}:${m} ${period}`);
     }
   }
   return slots;
