@@ -1787,8 +1787,33 @@ const AdminBillingPage = () => {
                     <p className="text-sm text-gray-500 mt-1">Bow Wow Meow - Where pets are family</p>
                   </div>
 
-                  {/* Send Actions */}
-                  {invoiceDetail.status !== 'paid' && (
+                  {/* Approve Action for pending review invoices */}
+                  {invoiceDetail.review_status === 'pending' && (
+                    <div className="flex gap-3 pt-4 border-t">
+                      <Button
+                        onClick={() => {
+                          approveInvoice(invoiceDetail.id);
+                          // Update the local state too
+                          setInvoiceDetail({...invoiceDetail, review_status: 'approved'});
+                        }}
+                        className="rounded-full flex-1 bg-green-500 hover:bg-green-600"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Approve Invoice
+                      </Button>
+                      <Button
+                        onClick={() => deleteInvoice(invoiceDetail.id)}
+                        variant="destructive"
+                        className="rounded-full"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Send Actions - only for approved/open invoices */}
+                  {invoiceDetail.status !== 'paid' && invoiceDetail.review_status !== 'pending' && (
                     <div className="flex gap-3 pt-4 border-t">
                       <Button
                         onClick={() => sendInvoiceEmail(invoiceDetail.id)}
