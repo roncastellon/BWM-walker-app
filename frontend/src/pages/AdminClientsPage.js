@@ -2304,16 +2304,37 @@ SAMPLE APPOINTMENTS:`;
                           variant="outline"
                           className="w-full justify-start h-auto py-3"
                           onClick={() => {
-                            setWalkingSchedule({
-                              service_type: 'walk_30',
-                              walks_per_day: 1,
-                              days: [],
-                              preferred_times: [],
-                              preferred_walker_id: '',
-                              duration_value: 1,
-                              notes: '',
-                              is_recurring: true,
-                            });
+                            // Pre-populate with existing schedule data for editing
+                            if (clientRecurringSchedules.length > 0) {
+                              const firstSchedule = clientRecurringSchedules[0];
+                              const days = [...new Set(clientRecurringSchedules.map(s => {
+                                const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                                return dayNames[s.day_of_week];
+                              }))];
+                              const times = [...new Set(clientRecurringSchedules.map(s => s.scheduled_time))];
+                              
+                              setWalkingSchedule({
+                                service_type: firstSchedule.service_type || 'walk_30',
+                                walks_per_day: times.length || 1,
+                                days: days,
+                                preferred_times: times,
+                                preferred_walker_id: firstSchedule.walker_id || '',
+                                duration_value: firstSchedule.duration_value || 1,
+                                notes: firstSchedule.notes || '',
+                                is_recurring: true,
+                              });
+                            } else {
+                              setWalkingSchedule({
+                                service_type: 'walk_30',
+                                walks_per_day: 1,
+                                days: [],
+                                preferred_times: [],
+                                preferred_walker_id: '',
+                                duration_value: 1,
+                                notes: '',
+                                is_recurring: true,
+                              });
+                            }
                             setScheduleView('add');
                           }}
                         >
