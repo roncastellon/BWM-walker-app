@@ -1778,7 +1778,10 @@ SAMPLE APPOINTMENTS:`;
                     <Button variant="ghost" size="sm" onClick={viewScheduleDiagnostic} title="View schedule diagnostic info">
                       <AlertCircle className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={startEditClient} data-testid="edit-client-btn">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      setActiveEditTab('info');
+                      startEditClient();
+                    }} data-testid="edit-client-btn">
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
                     </Button>
