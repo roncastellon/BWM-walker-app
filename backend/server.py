@@ -4686,7 +4686,7 @@ async def auto_complete_past_services(current_user: dict = Depends(get_current_u
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
     
     # Only auto-complete day care and overnight services (not walks)
-    auto_complete_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location"]
+    auto_complete_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location", "transport"]
     
     # Find all past day care/overnight appointments that are still "scheduled"
     past_services = await db.appointments.find({
@@ -4725,7 +4725,7 @@ async def get_clients_due_for_billing(current_user: dict = Depends(get_current_u
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
     
     # Only auto-complete day care and overnight services (walks must be completed by walker)
-    auto_complete_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location"]
+    auto_complete_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location", "transport"]
     
     auto_complete_result = await db.appointments.update_many(
         {
@@ -5489,7 +5489,7 @@ async def auto_generate_invoices(
     invoices_created = []
     
     # Service types that are billable even if just scheduled (not canceled)
-    auto_billable_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location"]
+    auto_billable_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location", "transport"]
     
     for client in clients:
         # Get unbilled appointments for this client in the date range
