@@ -2149,7 +2149,20 @@ SAMPLE APPOINTMENTS:`;
                               variant="outline"
                               size="sm"
                               className="mt-3"
-                              onClick={() => setScheduleView('add')}
+                              onClick={() => {
+                                // Reset to default walk schedule when adding new
+                                setWalkingSchedule({
+                                  service_type: 'walk_30',
+                                  walks_per_day: 1,
+                                  days: [],
+                                  preferred_times: [],
+                                  preferred_walker_id: '',
+                                  duration_value: 1,
+                                  notes: '',
+                                  is_recurring: true,
+                                });
+                                setScheduleView('add');
+                              }}
                             >
                               <Plus className="w-4 h-4 mr-1" />
                               Create Schedule
