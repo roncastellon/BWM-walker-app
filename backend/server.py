@@ -4721,12 +4721,15 @@ async def get_clients_due_for_billing(current_user: dict = Depends(get_current_u
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
-    # First, auto-complete any past services (walks, overnight, daycare, etc.)
+    # First, auto-complete any past daycare/overnight services (not walks)
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # Auto-complete all past appointments that are still scheduled
+    # Only auto-complete day care and overnight services (walks must be completed by walker)
+    auto_complete_services = ["doggy_day_care", "day_care", "stay_overnight", "overnight", "petsit_our_location", "petsit_your_location"]
+    
     auto_complete_result = await db.appointments.update_many(
         {
+            "service_type": {"$in": auto_complete_services},
             "scheduled_date": {"$lt": yesterday},
             "status": "scheduled"
         },
