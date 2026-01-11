@@ -3432,6 +3432,32 @@ async def get_invoice(invoice_id: str, current_user: dict = Depends(get_current_
         raise HTTPException(status_code=404, detail="Invoice not found")
     return invoice
 
+@api_router.delete("/invoices/{invoice_id}")
+async def delete_invoice(invoice_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an invoice and unmark all associated appointments as invoiced"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Unmark all appointments on this invoice as invoiced (make them available for billing again)
+    appointment_ids = invoice.get('appointment_ids', [])
+    if appointment_ids:
+        await db.appointments.update_many(
+            {"id": {"$in": appointment_ids}},
+            {"$set": {"invoiced": False, "invoice_id": None}}
+        )
+    
+    # Delete the invoice
+    await db.invoices.delete_one({"id": invoice_id})
+    
+    return {
+        "message": f"Invoice deleted. {len(appointment_ids)} appointment(s) are now available for billing again.",
+        "appointments_released": len(appointment_ids)
+    }
+
 @api_router.get("/invoices/{invoice_id}/detail")
 async def get_invoice_detail(invoice_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed invoice with all related information"""
