@@ -203,6 +203,20 @@ const AdminBillingPage = () => {
     }
   };
 
+  // Delete invoice and release appointments for rebilling
+  const deleteInvoice = async (invoiceId) => {
+    if (!window.confirm('Delete this invoice? The appointments will become available for billing again.')) return;
+    try {
+      const response = await api.delete(`/invoices/${invoiceId}`);
+      toast.success(response.data.message || 'Invoice deleted');
+      setSelectedInvoice(null);
+      setInvoiceDetail(null);
+      fetchAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete invoice');
+    }
+  };
+
   // Fetch billing plans
   const fetchBillingPlans = async () => {
     try {
