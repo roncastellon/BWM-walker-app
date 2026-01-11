@@ -5481,16 +5481,30 @@ async def auto_generate_invoices(
     invoices_created = []
     
     for client in clients:
-        # Get unbilled completed appointments for this client in the date range
+        # Get unbilled appointments for this client in the date range
+        # Include both completed AND scheduled (not canceled) - if the date has passed and it wasn't canceled, it's billable
         appts = await db.appointments.find({
             "client_id": client["id"],
-            "status": "completed",
+            "status": {"$in": ["completed", "scheduled"]},  # Not canceled
             "scheduled_date": {"$gte": start_str, "$lte": end_str},
             "invoiced": {"$ne": True}
         }, {"_id": 0}).to_list(1000)
         
         if not appts:
             continue
+        
+        # Mark any scheduled appointments as completed since we're billing them
+        for appt in appts:
+            if appt.get("status") == "scheduled":
+                await db.appointments.update_one(
+                    {"id": appt["id"]},
+                    {"$set": {
+                        "status": "completed",
+                        "completed_at": datetime.now(timezone.utc).isoformat(),
+                        "auto_completed": True,
+                        "completion_data": {"auto_completed": True, "reason": "Completed for billing"}
+                    }}
+                )
         
         # Calculate total
         total = 0
@@ -5500,7 +5514,7 @@ async def auto_generate_invoices(
                 total += service["price"]
             else:
                 # Default prices
-                default_prices = {"walk_30": 25, "walk_60": 40}
+                default_prices = {"walk_30": 25, "walk_45": 35, "walk_60": 40, "doggy_day_care": 45, "stay_overnight": 75}
                 total += default_prices.get(appt["service_type"], 30)
         
         # Create invoice in "draft" status for review
