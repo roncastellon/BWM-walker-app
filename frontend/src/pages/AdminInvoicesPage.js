@@ -2299,6 +2299,73 @@ const AdminBillingPage = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Debug Modal */}
+        <Dialog open={!!debugData} onOpenChange={() => setDebugData(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Billing Debug Info</DialogTitle>
+              <DialogDescription>
+                Shows why appointments may not be appearing in invoices
+              </DialogDescription>
+            </DialogHeader>
+            {debugData && (
+              <div className="space-y-4 text-sm">
+                <div className="p-3 bg-muted rounded-lg">
+                  <p><strong>Today:</strong> {debugData.today}</p>
+                  <p><strong>Billing Period:</strong> {debugData.billing_period}</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-2">All Appointments in Date Range ({debugData.all_appointments_in_range?.length || 0})</h4>
+                  <div className="space-y-2">
+                    {debugData.all_appointments_in_range?.map((appt, i) => (
+                      <div key={i} className="p-2 border rounded text-xs">
+                        <p><strong>Date:</strong> {appt.date}</p>
+                        <p><strong>Service:</strong> {appt.service_type}</p>
+                        <p><strong>Status:</strong> <span className={appt.status === 'completed' ? 'text-green-600' : 'text-orange-600'}>{appt.status}</span></p>
+                        <p><strong>Invoiced:</strong> <span className={appt.invoiced ? 'text-red-600' : 'text-green-600'}>{appt.invoiced ? 'YES (already billed)' : 'NO (available)'}</span></p>
+                        {appt.invoice_id && <p><strong>Invoice ID:</strong> {appt.invoice_id}</p>}
+                      </div>
+                    ))}
+                    {debugData.all_appointments_in_range?.length === 0 && (
+                      <p className="text-muted-foreground">No appointments found in this date range</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">Billable Appointments ({debugData.billable_appointments?.length || 0})</h4>
+                  <div className="space-y-2">
+                    {debugData.billable_appointments?.map((appt, i) => (
+                      <div key={i} className="p-2 border border-green-300 bg-green-50 rounded text-xs">
+                        <p><strong>Date:</strong> {appt.date}</p>
+                        <p><strong>Service:</strong> {appt.service_type}</p>
+                        <p><strong>Status:</strong> {appt.status}</p>
+                      </div>
+                    ))}
+                    {debugData.billable_appointments?.length === 0 && (
+                      <p className="text-muted-foreground">No billable appointments found</p>
+                    )}
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={async () => {
+                    await api.post(`/billing/reset-invoiced/${debugClientId}`);
+                    toast.success('Billing reset for this client');
+                    setDebugData(null);
+                    fetchAllData();
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Reset Invoiced Status for This Client
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
