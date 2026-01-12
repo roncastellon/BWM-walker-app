@@ -811,9 +811,14 @@ const AdminBillingPage = () => {
                           <p className="font-medium text-sm">{client.full_name}</p>
                           <p className="text-xs text-muted-foreground">{client.unbilled_appointments} unbilled services</p>
                         </div>
-                        <Button size="sm" onClick={() => generateInvoice(client.id)} className="rounded-full">
-                          Create Invoice
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" onClick={() => debugClientBilling(client.id)} className="rounded-full text-xs">
+                            <AlertCircle className="w-3 h-3 mr-1" /> Debug
+                          </Button>
+                          <Button size="sm" onClick={() => generateInvoice(client.id)} className="rounded-full">
+                            Create Invoice
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
