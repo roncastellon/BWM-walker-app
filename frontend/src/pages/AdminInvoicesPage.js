@@ -221,6 +221,17 @@ const AdminBillingPage = () => {
     }
   };
 
+  // Debug billing for a client
+  const debugClientBilling = async (clientId) => {
+    try {
+      const response = await api.get(`/billing/debug/${clientId}`);
+      setDebugData(response.data);
+      setDebugClientId(clientId);
+    } catch (error) {
+      toast.error('Failed to fetch debug info');
+    }
+  };
+
   // Fetch billing plans
   const fetchBillingPlans = async () => {
     try {
