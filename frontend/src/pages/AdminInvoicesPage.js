@@ -677,6 +677,26 @@ const AdminBillingPage = () => {
                     )}
                     Generate Monthly
                   </Button>
+                  <Button 
+                    onClick={async () => {
+                      if (!window.confirm('This will reset ALL invoiced appointments, making them available for billing again. Continue?')) return;
+                      try {
+                        // Reset for all clients
+                        for (const client of clientsDue) {
+                          await api.post(`/billing/reset-invoiced/${client.id}`);
+                        }
+                        toast.success('All billing status reset. You can now regenerate invoices.');
+                        fetchAllData();
+                      } catch (error) {
+                        toast.error('Failed to reset billing status');
+                      }
+                    }} 
+                    variant="ghost"
+                    className="rounded-full text-orange-600 hover:text-orange-700 hover:bg-orange-100"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Reset Billing
+                  </Button>
                 </div>
               </CardContent>
             </Card>
