@@ -5599,52 +5599,54 @@ async def auto_generate_invoices(
     
     invoices_created = []
     
-    # Service types that are billable even if just scheduled (not canceled)
-    # Use regex patterns to catch variations
-    auto_billable_pattern = {"$regex": "day_care|day_camp|daycare|overnight|petsit|transport|boarding", "$options": "i"}
-    
     for client in clients:
         # Get unbilled appointments for this client in the date range
-        # For day care/overnights/transport: include scheduled (not canceled) - they're billable automatically
-        # For walks: only include completed ones
+        # Simple logic:
+        # - Walks (service_type contains "walk") = only billable when completed
+        # - Everything else = billable if scheduled or completed (not canceled)
         
-        # First get day care/overnight/transport appointments (billable if not canceled)
-        daycare_overnight_appts = await db.appointments.find({
+        # Get ALL appointments in date range that aren't invoiced
+        all_appts = await db.appointments.find({
             "client_id": client["id"],
-            "service_type": auto_billable_pattern,
             "status": {"$in": ["completed", "scheduled"]},  # Not canceled
             "scheduled_date": {"$gte": start_str, "$lte": end_str},
             "$or": [{"invoiced": {"$ne": True}}, {"invoiced": {"$exists": False}}]
         }, {"_id": 0}).to_list(1000)
         
-        # Then get walk appointments (only if completed)
-        walk_appts = await db.appointments.find({
-            "client_id": client["id"],
-            "service_type": {"$not": auto_billable_pattern},  # Walks and other services
-            "status": "completed",  # Must be completed
-            "scheduled_date": {"$gte": start_str, "$lte": end_str},
-            "$or": [{"invoiced": {"$ne": True}}, {"invoiced": {"$exists": False}}]
-        }, {"_id": 0}).to_list(1000)
+        # Filter: walks must be completed, everything else is billable
+        billable_appts = []
+        for appt in all_appts:
+            service_type = (appt.get("service_type") or "").lower()
+            is_walk = "walk" in service_type
+            
+            if is_walk:
+                # Walks must be completed to be billed
+                if appt.get("status") == "completed":
+                    billable_appts.append(appt)
+            else:
+                # Everything else (daycare, overnight, transport, etc.) is billable if not canceled
+                billable_appts.append(appt)
         
-        appts = daycare_overnight_appts + walk_appts
+        appts = billable_appts
         
         # Debug logging
-        print(f"Client {client.get('full_name')}: Found {len(daycare_overnight_appts)} daycare/overnight, {len(walk_appts)} walks")
+        print(f"Client {client.get('full_name')}: Found {len(all_appts)} total appts, {len(billable_appts)} billable")
+        for a in all_appts:
+            print(f"  - {a.get('scheduled_date')} | {a.get('service_type')} | status={a.get('status')} | invoiced={a.get('invoiced')}")
         
         if not appts:
             continue
         
-        # Mark any scheduled day care/overnight appointments as completed since we're billing them
+        # Mark any scheduled non-walk appointments as completed since we're billing them
         for appt in appts:
-            if appt.get("status") == "scheduled":
-                svc = appt.get("service_type", "").lower()
-                if any(x in svc for x in ["day_care", "daycare", "overnight", "petsit", "transport", "boarding"]):
-                    await db.appointments.update_one(
-                        {"id": appt["id"]},
-                        {"$set": {
-                            "status": "completed",
-                            "completed_at": datetime.now(timezone.utc).isoformat(),
-                            "auto_completed": True,
+            service_type = (appt.get("service_type") or "").lower()
+            if appt.get("status") == "scheduled" and "walk" not in service_type:
+                await db.appointments.update_one(
+                    {"id": appt["id"]},
+                    {"$set": {
+                        "status": "completed",
+                        "completed_at": datetime.now(timezone.utc).isoformat(),
+                        "auto_completed": True,
                         "completion_data": {"auto_completed": True, "reason": "Completed for billing - service not canceled"}
                     }}
                 )
