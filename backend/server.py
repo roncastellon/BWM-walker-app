@@ -3487,6 +3487,62 @@ async def reset_client_invoiced_status(client_id: str, current_user: dict = Depe
         "count": result.modified_count
     }
 
+@api_router.get("/billing/debug/{client_id}")
+async def debug_client_billing(client_id: str, current_user: dict = Depends(get_current_user)):
+    """Debug endpoint to see why appointments aren't being invoiced"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    from datetime import date, timedelta
+    today = date.today()
+    days_since_monday = today.weekday()
+    start_date = today - timedelta(days=days_since_monday)
+    end_date = today
+    start_str = start_date.strftime("%Y-%m-%d")
+    end_str = end_date.strftime("%Y-%m-%d")
+    
+    # Get all appointments for this client in the date range
+    all_appts = await db.appointments.find({
+        "client_id": client_id,
+        "scheduled_date": {"$gte": start_str, "$lte": end_str}
+    }, {"_id": 0}).to_list(100)
+    
+    # Check which ones are billable
+    auto_billable_pattern = {"$regex": "day_care|day_camp|daycare|overnight|petsit|transport|boarding", "$options": "i"}
+    billable_appts = await db.appointments.find({
+        "client_id": client_id,
+        "service_type": auto_billable_pattern,
+        "status": {"$in": ["completed", "scheduled"]},
+        "scheduled_date": {"$gte": start_str, "$lte": end_str},
+        "$or": [{"invoiced": {"$ne": True}}, {"invoiced": {"$exists": False}}]
+    }, {"_id": 0}).to_list(100)
+    
+    return {
+        "today": str(today),
+        "billing_period": f"{start_str} to {end_str}",
+        "all_appointments_in_range": [
+            {
+                "id": a.get("id", "")[:8],
+                "date": a.get("scheduled_date"),
+                "service_type": a.get("service_type"),
+                "status": a.get("status"),
+                "invoiced": a.get("invoiced"),
+                "invoice_id": a.get("invoice_id", "")[:8] if a.get("invoice_id") else None
+            }
+            for a in all_appts
+        ],
+        "billable_appointments": [
+            {
+                "id": a.get("id", "")[:8],
+                "date": a.get("scheduled_date"),
+                "service_type": a.get("service_type"),
+                "status": a.get("status"),
+                "invoiced": a.get("invoiced")
+            }
+            for a in billable_appts
+        ]
+    }
+
 @api_router.get("/invoices/{invoice_id}/detail")
 async def get_invoice_detail(invoice_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed invoice with all related information"""
