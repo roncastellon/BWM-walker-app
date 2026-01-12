@@ -6398,6 +6398,11 @@ async def complete_staff_onboarding(
 # Include router
 app.include_router(api_router)
 
+# Health check endpoint for Kubernetes
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
