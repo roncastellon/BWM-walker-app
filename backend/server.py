@@ -3451,10 +3451,17 @@ async def delete_invoice(invoice_id: str, current_user: dict = Depends(get_curre
     # Unmark all appointments on this invoice as invoiced (make them available for billing again)
     appointment_ids = invoice.get('appointment_ids', [])
     if appointment_ids:
-        await db.appointments.update_many(
+        result = await db.appointments.update_many(
             {"id": {"$in": appointment_ids}},
-            {"$set": {"invoiced": False, "invoice_id": None}}
+            {"$set": {"invoiced": False, "invoice_id": None}, "$unset": {"invoiced_at": ""}}
         )
+        print(f"Reset invoiced status for {result.modified_count} appointments")
+    
+    # Also reset any appointments that reference this invoice_id directly
+    await db.appointments.update_many(
+        {"invoice_id": invoice_id},
+        {"$set": {"invoiced": False, "invoice_id": None}, "$unset": {"invoiced_at": ""}}
+    )
     
     # Delete the invoice
     await db.invoices.delete_one({"id": invoice_id})
@@ -3462,6 +3469,22 @@ async def delete_invoice(invoice_id: str, current_user: dict = Depends(get_curre
     return {
         "message": f"Invoice deleted. {len(appointment_ids)} appointment(s) are now available for billing again.",
         "appointments_released": len(appointment_ids)
+    }
+
+@api_router.post("/billing/reset-invoiced/{client_id}")
+async def reset_client_invoiced_status(client_id: str, current_user: dict = Depends(get_current_user)):
+    """Reset invoiced status for all of a client's appointments (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    result = await db.appointments.update_many(
+        {"client_id": client_id, "invoiced": True},
+        {"$set": {"invoiced": False, "invoice_id": None}, "$unset": {"invoiced_at": ""}}
+    )
+    
+    return {
+        "message": f"Reset invoiced status for {result.modified_count} appointments",
+        "count": result.modified_count
     }
 
 @api_router.get("/invoices/{invoice_id}/detail")
