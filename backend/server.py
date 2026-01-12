@@ -5558,7 +5558,7 @@ async def auto_generate_invoices(
             "service_type": auto_billable_pattern,
             "status": {"$in": ["completed", "scheduled"]},  # Not canceled
             "scheduled_date": {"$gte": start_str, "$lte": end_str},
-            "invoiced": {"$ne": True}
+            "$or": [{"invoiced": {"$ne": True}}, {"invoiced": {"$exists": False}}]
         }, {"_id": 0}).to_list(1000)
         
         # Then get walk appointments (only if completed)
@@ -5567,10 +5567,13 @@ async def auto_generate_invoices(
             "service_type": {"$not": auto_billable_pattern},  # Walks and other services
             "status": "completed",  # Must be completed
             "scheduled_date": {"$gte": start_str, "$lte": end_str},
-            "invoiced": {"$ne": True}
+            "$or": [{"invoiced": {"$ne": True}}, {"invoiced": {"$exists": False}}]
         }, {"_id": 0}).to_list(1000)
         
         appts = daycare_overnight_appts + walk_appts
+        
+        # Debug logging
+        print(f"Client {client.get('full_name')}: Found {len(daycare_overnight_appts)} daycare/overnight, {len(walk_appts)} walks")
         
         if not appts:
             continue
