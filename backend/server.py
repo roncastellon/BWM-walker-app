@@ -818,6 +818,12 @@ async def get_sitters(current_user: dict = Depends(get_current_user)):
     sitters = await db.users.find({"role": "sitter", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
     return sitters
 
+@api_router.get("/sitters")
+async def get_sitters_shortcut(current_user: dict = Depends(get_current_user)):
+    """Shortcut endpoint for /users/sitters"""
+    sitters = await db.users.find({"role": "sitter", "is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
+    return sitters
+
 @api_router.get("/users/staff")
 async def get_all_staff(current_user: dict = Depends(get_current_user)):
     """Get all walkers and sitters (staff who can be assigned appointments)"""
