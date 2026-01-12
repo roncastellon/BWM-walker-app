@@ -57,6 +57,10 @@ const AdminBillingPage = () => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [sendingSms, setSendingSms] = useState(false);
   
+  // Debug modal
+  const [debugData, setDebugData] = useState(null);
+  const [debugClientId, setDebugClientId] = useState(null);
+  
   // Notification config
   const [notificationConfig, setNotificationConfig] = useState({
     sendgrid_configured: false,
