@@ -561,7 +561,7 @@ const AdminBillingPage = () => {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="revenue" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6 h-auto p-1">
             <TabsTrigger value="revenue" className="flex flex-col py-3 gap-1 data-[state=active]:bg-sky-500 data-[state=active]:text-white" data-testid="tab-revenue">
               <TrendingUp className="w-5 h-5" />
