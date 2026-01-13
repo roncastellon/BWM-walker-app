@@ -721,7 +721,7 @@ const AdminBillingPage = () => {
             {pendingReviewInvoices.length > 0 && (
               <Card className="rounded-xl border-orange-200 bg-orange-50">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3">
                     <div>
                       <CardTitle className="text-lg flex items-center gap-2 text-orange-800">
                         <FileCheck className="w-5 h-5" />
@@ -730,30 +730,32 @@ const AdminBillingPage = () => {
                       </CardTitle>
                       <CardDescription>Review and approve invoices before sending</CardDescription>
                     </div>
-                    <Button 
-                      onClick={massSendInvoices} 
-                      disabled={sendingAllInvoices || pendingReviewInvoices.filter(i => i.review_status === 'approved').length === 0}
-                      className="rounded-full bg-orange-500 hover:bg-orange-600"
-                    >
-                      {sendingAllInvoices ? (
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <SendHorizonal className="w-4 h-4 mr-2" />
-                      )}
-                      Send All Approved
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        // Approve all pending invoices
-                        pendingReviewInvoices.filter(i => i.review_status === 'pending').forEach(inv => approveInvoice(inv.id));
-                      }}
-                      disabled={pendingReviewInvoices.filter(i => i.review_status === 'pending').length === 0}
-                      className="rounded-full bg-green-500 hover:bg-green-600"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Approve All
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          pendingReviewInvoices.filter(i => i.review_status === 'pending').forEach(inv => approveInvoice(inv.id));
+                        }}
+                        disabled={pendingReviewInvoices.filter(i => i.review_status === 'pending').length === 0}
+                        className="rounded-full bg-green-500 hover:bg-green-600"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Approve All ({pendingReviewInvoices.filter(i => i.review_status === 'pending').length})
+                      </Button>
+                      <Button 
+                        onClick={massSendInvoices} 
+                        size="sm"
+                        disabled={sendingAllInvoices || pendingReviewInvoices.filter(i => i.review_status === 'approved').length === 0}
+                        className="rounded-full bg-orange-500 hover:bg-orange-600"
+                      >
+                        {sendingAllInvoices ? (
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <SendHorizonal className="w-4 h-4 mr-2" />
+                        )}
+                        Send All Approved ({pendingReviewInvoices.filter(i => i.review_status === 'approved').length})
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
