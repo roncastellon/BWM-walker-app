@@ -26,6 +26,7 @@ const AdminBillingPage = () => {
   const [revenue, setRevenue] = useState({});
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('invoices'); // Start on invoices tab
   const [editingService, setEditingService] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', description: '' });
   const [paymentSettings, setPaymentSettings] = useState({
