@@ -775,7 +775,16 @@ const AdminBillingPage = () => {
                               Approve
                             </Button>
                           ) : (
-                            <Badge className="bg-sky-100 text-sky-800 rounded-full">Approved</Badge>
+                            <>
+                              <Button 
+                                size="sm" 
+                                onClick={() => sendInvoiceEmail(invoice.id)} 
+                                disabled={sendingEmail || !notificationConfig.sendgrid_configured}
+                                className="rounded-full bg-green-500 hover:bg-green-600"
+                              >
+                                <SendHorizonal className="w-3 h-3 mr-1" /> Send
+                              </Button>
+                            </>
                           )}
                           <Button size="sm" variant="ghost" onClick={() => deleteInvoice(invoice.id)} className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10">
                             <Trash2 className="w-3 h-3" />
