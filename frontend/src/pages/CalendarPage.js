@@ -291,7 +291,9 @@ const CalendarPage = () => {
       setAddDialogOpen(false);
       fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create appointment');
+      console.error('Create appointment error:', error.response?.data || error.message);
+      const errorMsg = error.response?.data?.detail || error.message || 'Failed to create appointment';
+      toast.error(errorMsg);
     }
   };
 
