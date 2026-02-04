@@ -2948,33 +2948,46 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
-    scheduled_date = appt_data.get('scheduled_date')
-    scheduled_time = appt_data.get('scheduled_time')
-    walker_id = appt_data.get('walker_id')
-    service_type = appt_data.get('service_type', 'walk_30')
-    
-    # Check walker availability with 15-minute buffer after walk ends
-    if walker_id:
-        availability = await check_walker_availability(
-            walker_id, scheduled_date, scheduled_time,
-            service_type=service_type
+    try:
+        scheduled_date = appt_data.get('scheduled_date')
+        scheduled_time = appt_data.get('scheduled_time')
+        walker_id = appt_data.get('walker_id')
+        service_type = appt_data.get('service_type', 'walk_30')
+        client_id = appt_data.get('client_id')
+        
+        # Validate client exists
+        if client_id:
+            client = await db.users.find_one({"id": client_id}, {"_id": 0})
+            if not client:
+                raise HTTPException(status_code=400, detail=f"Client not found: {client_id}")
+        
+        # Check walker availability with 15-minute buffer after walk ends
+        if walker_id:
+            availability = await check_walker_availability(
+                walker_id, scheduled_date, scheduled_time,
+                service_type=service_type
+            )
+            if not availability["available"]:
+                raise HTTPException(status_code=400, detail=availability["message"])
+        
+        appointment = Appointment(
+            client_id=client_id,
+            walker_id=walker_id,
+            pet_ids=appt_data.get('pet_ids', []),
+            service_type=service_type,
+            scheduled_date=scheduled_date,
+            scheduled_time=scheduled_time,
+            notes=appt_data.get('notes', '')
         )
-        if not availability["available"]:
-            raise HTTPException(status_code=400, detail=availability["message"])
-    
-    appointment = Appointment(
-        client_id=appt_data.get('client_id'),
-        walker_id=walker_id,
-        pet_ids=appt_data.get('pet_ids', []),
-        service_type=service_type,
-        scheduled_date=scheduled_date,
-        scheduled_time=scheduled_time,
-        notes=appt_data.get('notes', '')
-    )
-    appt_dict = appointment.model_dump()
-    appt_dict['created_at'] = appt_dict['created_at'].isoformat()
-    await db.appointments.insert_one(appt_dict)
-    return appointment
+        appt_dict = appointment.model_dump()
+        appt_dict['created_at'] = appt_dict['created_at'].isoformat()
+        await db.appointments.insert_one(appt_dict)
+        return appointment
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error creating appointment: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create appointment: {str(e)}")
 
 @api_router.post("/appointments/{appt_id}/start")
 async def start_walk(appt_id: str, current_user: dict = Depends(get_current_user)):
