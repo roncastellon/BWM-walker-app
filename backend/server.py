@@ -377,7 +377,7 @@ class Appointment(BaseModel):
     client_id: str
     walker_id: Optional[str] = None
     pet_ids: List[str]
-    service_type: ServiceType
+    service_type: str  # Changed from ServiceType enum to str to support custom services
     scheduled_date: str
     scheduled_time: str = ""  # Optional for day/night based services
     status: AppointmentStatus = AppointmentStatus.SCHEDULED
@@ -415,7 +415,7 @@ class RecurringSchedule(BaseModel):
     client_id: str
     walker_id: Optional[str] = None
     pet_ids: List[str]
-    service_type: ServiceType
+    service_type: str  # Changed from ServiceType enum to str to support custom services
     scheduled_time: str  # Time of day
     day_of_week: int  # 0=Monday, 6=Sunday
     notes: Optional[str] = None
@@ -427,7 +427,7 @@ class RecurringSchedule(BaseModel):
 
 class AppointmentCreate(BaseModel):
     pet_ids: List[str]
-    service_type: ServiceType
+    service_type: str  # Changed from ServiceType enum to str to support custom services
     scheduled_date: str
     scheduled_time: str = ""  # Optional for day/night based services
     walker_id: Optional[str] = None
