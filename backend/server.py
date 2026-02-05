@@ -441,7 +441,7 @@ class AppointmentCreate(BaseModel):
 class RecurringScheduleCreate(BaseModel):
     client_id: Optional[str] = None  # Admin can set this, clients auto-filled
     pet_ids: List[str]
-    service_type: ServiceType
+    service_type: str  # Changed from ServiceType enum to str to support custom services
     scheduled_time: str
     day_of_week: int  # 0=Monday, 6=Sunday
     walker_id: Optional[str] = None
