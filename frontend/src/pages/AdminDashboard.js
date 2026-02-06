@@ -398,7 +398,7 @@ const AdminDashboard = () => {
                           <div>
                             <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
                             <p className="text-xs text-muted-foreground">
-                              {appt.scheduled_time} • {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name}
+                              {formatTime12Hour(appt.scheduled_time)} • {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name}
                             </p>
                           </div>
                         </div>
