@@ -320,11 +320,18 @@ const WalkerDashboard = () => {
                 params: { lat: position.coords.latitude, lng: position.coords.longitude }
               });
               toast.success('Walk started with GPS tracking!');
-              navigate('/tracking');
+              // Stay on dashboard instead of navigating to tracking page
+              setActiveWalk({
+                ...todayAppointments.find(a => a.id === pendingWalkId),
+                start_time: new Date().toISOString(),
+                status: 'in_progress',
+                is_tracking: true
+              });
+              setNextWalk(null);
+              fetchData();
             } catch {
               await startWalkWithoutGps();
             }
-            fetchData();
           },
           async () => { await startWalkWithoutGps(); },
           { enableHighAccuracy: true, timeout: 10000 }
