@@ -1157,7 +1157,7 @@ const CalendarPage = () => {
                 Appointment Details
               </DialogTitle>
               <DialogDescription>
-                {selectedAppointment?.scheduled_date} at {selectedAppointment?.scheduled_time}
+                {selectedAppointment?.scheduled_date} at {formatTime12Hour(selectedAppointment?.scheduled_time)}
               </DialogDescription>
             </DialogHeader>
             
