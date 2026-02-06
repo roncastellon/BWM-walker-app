@@ -773,7 +773,7 @@ const WalkerDashboard = () => {
                         </div>
                         {trade.appointment && (
                           <p className="text-xs text-muted-foreground mb-2">
-                            {trade.appointment.scheduled_date} at {trade.appointment.scheduled_time}
+                            {trade.appointment.scheduled_date} at {formatTime12Hour(trade.appointment.scheduled_time)}
                           </p>
                         )}
                         {trade.target_walker_id === user?.id && (
