@@ -667,7 +667,7 @@ const WalkerDashboard = () => {
                           </div>
                           <div>
                             <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
-                            <p className="text-xs text-muted-foreground">{appt.scheduled_time} • {appt.client_name}</p>
+                            <p className="text-xs text-muted-foreground">{formatTime12Hour(appt.scheduled_time)} • {appt.client_name}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
