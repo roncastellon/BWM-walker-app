@@ -509,7 +509,7 @@ const AdminDashboard = () => {
                                         </div>
                                         <div>
                                           <p className="text-sm">
-                                            {getDayName(schedule.day_of_week)} at {schedule.scheduled_time}
+                                            {getDayName(schedule.day_of_week)} at {formatTime12Hour(schedule.scheduled_time)}
                                           </p>
                                           <p className="text-xs text-muted-foreground capitalize">
                                             {schedule.service_type?.replace('_', ' ') || 'Walk'}
