@@ -593,7 +593,7 @@ const WalkerDashboard = () => {
                   <div>
                     <Badge className="bg-sky-100 text-sky-800 rounded-full mb-1">Up Next</Badge>
                     <p className="font-medium capitalize">{nextWalk.service_type?.replace('_', ' ')}</p>
-                    <p className="text-xs text-muted-foreground">{nextWalk.scheduled_time} • {nextWalk.client_name}</p>
+                    <p className="text-xs text-muted-foreground">{formatTime12Hour(nextWalk.scheduled_time)} • {nextWalk.client_name}</p>
                   </div>
                 </div>
                 <Button 
