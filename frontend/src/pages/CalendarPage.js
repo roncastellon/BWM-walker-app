@@ -896,10 +896,10 @@ const CalendarPage = () => {
                               key={appt.id}
                               className="text-xs p-1 rounded truncate cursor-pointer hover:opacity-80"
                               style={getAppointmentStyles(appt)}
-                              title={`${appt.scheduled_time} - ${appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name} (${getWalkerName(appt.walker_id)})`}
+                              title={`${formatTime12Hour(appt.scheduled_time)} - ${appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name} (${getWalkerName(appt.walker_id)})`}
                               onClick={() => openAppointmentDetail(appt)}
                             >
-                              {appt.scheduled_time} {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.service_type?.replace(/_/g, ' ')}
+                              {formatTime12Hour(appt.scheduled_time)} {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.service_type?.replace(/_/g, ' ')}
                             </div>
                           ))}
                           {dayAppts.length > 3 && (
