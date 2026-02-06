@@ -313,7 +313,7 @@ const LiveTrackingPage = () => {
                     <div key={appt.id} className="p-3 rounded-xl bg-muted/50 flex items-center justify-between">
                       <div>
                         <p className="font-medium">{appt.client_name}</p>
-                        <p className="text-sm text-muted-foreground">{appt.scheduled_time}</p>
+                        <p className="text-sm text-muted-foreground">{formatTime12Hour(appt.scheduled_time)}</p>
                       </div>
                       <Button 
                         size="sm" 
