@@ -498,7 +498,7 @@ const CalendarPage = () => {
         onClick={() => openAppointmentDetail(appt)}
       >
         <div className="flex items-center justify-between gap-1">
-          <span className="font-medium">{appt.scheduled_time || 'All Day'}</span>
+          <span className="font-medium">{appt.scheduled_time ? formatTime12Hour(appt.scheduled_time) : 'All Day'}</span>
           {!compact && (
             <Badge className={`${getStatusBadgeColor(appt.status)} text-xs rounded-full`}>
               {appt.status}
