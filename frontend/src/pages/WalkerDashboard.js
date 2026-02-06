@@ -1203,7 +1203,7 @@ const WalkerDashboard = () => {
             <div className="p-4 rounded-lg bg-muted/50 my-2">
               <p className="font-medium capitalize">{selectedApptForTrade.service_type?.replace('_', ' ')}</p>
               <p className="text-sm text-muted-foreground">
-                {selectedApptForTrade.scheduled_date} at {selectedApptForTrade.scheduled_time}
+                {selectedApptForTrade.scheduled_date} at {formatTime12Hour(selectedApptForTrade.scheduled_time)}
               </p>
             </div>
           )}
@@ -1249,7 +1249,7 @@ const WalkerDashboard = () => {
             <div className="p-4 rounded-lg bg-muted/50 my-2">
               <p className="font-medium capitalize">{selectedApptForCancel.service_type?.replace('_', ' ')}</p>
               <p className="text-sm text-muted-foreground">
-                {selectedApptForCancel.scheduled_date} at {selectedApptForCancel.scheduled_time}
+                {selectedApptForCancel.scheduled_date} at {formatTime12Hour(selectedApptForCancel.scheduled_time)}
               </p>
             </div>
           )}
