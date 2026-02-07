@@ -882,7 +882,13 @@ async def get_clients(include_frozen: bool = False, current_user: dict = Depends
     # Include frozen users if requested (for admin management pages)
     query = {"role": "client"} if include_frozen else {"role": "client", "is_active": True}
     clients = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(100)
-    return [UserResponse(**c) for c in clients]
+    
+    # Include pets for each client
+    for client in clients:
+        pets = await db.pets.find({"owner_id": client['id']}, {"_id": 0}).to_list(50)
+        client['pets'] = pets
+    
+    return clients
 
 @api_router.get("/users/{user_id}", response_model=UserResponse)
 async def get_user(user_id: str):
