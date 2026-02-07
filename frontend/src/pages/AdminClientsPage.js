@@ -922,18 +922,18 @@ SAMPLE APPOINTMENTS:`;
 
   return (
     <Layout>
-      <div className="space-y-8" data-testid="admin-clients-page">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="space-y-6 px-2 sm:px-0" data-testid="admin-clients-page">
+        {/* Header - Mobile First */}
+        <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold">Clients</h1>
-            <p className="text-muted-foreground">{clients.length} registered clients</p>
+            <h1 className="text-2xl sm:text-3xl font-heading font-bold">Clients</h1>
+            <p className="text-sm text-muted-foreground">{filteredPets.length} pets • {clients.length} owners</p>
           </div>
-          <div className="flex gap-3">
-            <div className="relative w-full md:w-64">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search clients..."
+                placeholder="Search by pet or owner name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 rounded-full"
@@ -942,7 +942,7 @@ SAMPLE APPOINTMENTS:`;
             </div>
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
-                <Button className="rounded-full" data-testid="add-client-btn">
+                <Button className="rounded-full w-full sm:w-auto" data-testid="add-client-btn">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Customer
                 </Button>
