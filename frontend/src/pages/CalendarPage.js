@@ -1082,11 +1082,11 @@ const CalendarPage = () => {
                     <Label>Time *</Label>
                     <Select value={formData.scheduled_time} onValueChange={(value) => setFormData({ ...formData, scheduled_time: value })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
+                        <SelectValue placeholder="Select time">{formData.scheduled_time ? formatTime12Hour(formData.scheduled_time) : "Select time"}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {timeSlots.map((time) => (
-                          <SelectItem key={time} value={time}>{time}</SelectItem>
+                        {timeSlots.map((slot) => (
+                          <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
