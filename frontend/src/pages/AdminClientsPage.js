@@ -1882,6 +1882,30 @@ SAMPLE APPOINTMENTS:`;
                   </TabsList>
                   
                   <TabsContent value="info" className="space-y-4 mt-4">
+                    {/* Username and Password - Admin Only */}
+                    <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                      <p className="text-xs font-medium text-amber-700 mb-2">Account Credentials (Admin Only)</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Username</Label>
+                          <Input
+                            value={customerForm.username || ''}
+                            onChange={(e) => setCustomerForm({ ...customerForm, username: e.target.value })}
+                            placeholder={selectedClient?.username}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>New Password</Label>
+                          <Input
+                            type="password"
+                            value={customerForm.password || ''}
+                            onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
+                            placeholder="Leave blank to keep current"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Full Name</Label>
