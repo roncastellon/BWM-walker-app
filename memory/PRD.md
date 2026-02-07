@@ -97,6 +97,12 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - Edit paysheet (adjust earnings, remove services, add notes)
   - Approve submissions and mark as paid
   - Summary cards show totals for each status
+- ✅ **Pet-Centric Client View (Feb 7, 2026)**: Clients page reorganized by pet
+  - Pets displayed first, sorted alphabetically by name
+  - Owner name shown below each pet card
+  - Color-coded icons (orange=dog, purple=cat)
+  - Search by pet name or owner name
+  - Mobile-first responsive design
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
