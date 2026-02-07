@@ -72,12 +72,19 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - Overnight services: Show "Assign Sitter (Optional)" dropdown
   - Day Care/Transport/Concierge: No walker/sitter dropdown
 - ✅ Day Care appointments working from Calendar page
-- ✅ **Quick Actions Context Menu (NEW)**: Right-click on calendar appointments for:
+- ✅ **Quick Actions Context Menu**: Right-click on calendar appointments for:
   - Change Status (Scheduled/In Progress/Completed/Cancelled)
   - Reassign Walker (for walk services only)
   - Reschedule
   - View Details
   - Cancel Appointment
+- ✅ **Flat-Rate Payroll System**: Walker earnings calculated by flat rate per service (not duration)
+- ✅ **Admin Walker Management**: Full edit UI for walker profiles, username, password, and custom pay rates
+- ✅ **Admin Client Management**: Full edit UI for client profiles, username, password
+- ✅ **12-Hour Clock Format**: All times across app display in AM/PM format
+- ✅ **Auto-Select Pets**: All client pets auto-selected when scheduling
+- ✅ **Admin Walk Review**: Admins can view completed walk details including GPS routes and notes
+- ✅ **Password Change Bug Fix (Jan 10, 2026)**: Fixed bcrypt 5.0.0/passlib incompatibility by downgrading to bcrypt 4.2.0
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
