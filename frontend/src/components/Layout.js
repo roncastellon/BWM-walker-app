@@ -30,6 +30,7 @@ import {
   Crown,
   Bed,
   Trees,
+  DollarSign,
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
