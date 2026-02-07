@@ -4296,6 +4296,10 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
     for ts in submitted_paysheets:
         submitted_appointment_ids.update(ts.get('appointment_ids', []))
     
+    # Get walker's custom pay rates if set
+    walker_data = await db.users.find_one({"id": current_user['id']}, {"_id": 0, "custom_pay_rates": 1})
+    custom_pay_rates = walker_data.get('custom_pay_rates') if walker_data else None
+    
     # Get completed appointments NOT yet submitted
     all_appointments = await db.appointments.find({
         "walker_id": current_user['id'],
@@ -4305,7 +4309,7 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
     # Filter out already submitted walks
     pending_walks = [a for a in all_appointments if a['id'] not in submitted_appointment_ids]
     
-    # Calculate totals
+    # Calculate totals using flat rate per service
     total_minutes = 0
     total_earnings = 0.0
     walk_details = []
@@ -4313,7 +4317,8 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
     for walk in pending_walks:
         duration = walk.get('actual_duration_minutes', 0)
         service_type = walk.get('service_type', '')
-        earnings = calculate_walk_earnings(service_type, duration)
+        # Use flat rate per service, not duration-based
+        earnings = calculate_walk_earnings(service_type, duration, custom_pay_rates)
         
         total_minutes += duration
         total_earnings += earnings
@@ -4338,13 +4343,16 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
             "distance_meters": walk.get('distance_meters', 0)
         })
     
+    # Use walker's custom rates or defaults
+    active_rates = custom_pay_rates or WALKER_PAY_RATES
+    
     return {
         "total_hours": round(total_minutes / 60, 2),
         "total_minutes": total_minutes,
         "total_walks": len(pending_walks),
         "total_earnings": round(total_earnings, 2),
         "walks": walk_details,
-        "pay_rates": WALKER_PAY_RATES
+        "pay_rates": active_rates
     }
 
 @api_router.post("/paysheets/submit")
