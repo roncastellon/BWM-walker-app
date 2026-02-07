@@ -89,6 +89,7 @@ const Layout = ({ children }) => {
         { path: '/admin/clients', label: 'Clients', icon: Users },
         { path: '/admin/walkers', label: 'Walkers', icon: PawPrint },
         { path: '/admin/sitters', label: 'Sitters', icon: Bed },
+        { path: '/admin/payroll', label: 'Staff Payroll', icon: DollarSign },
         { path: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
         { path: '/admin/chat', label: 'Team Chat', icon: MessageCircle },
         { path: '/subscription', label: 'Subscription', icon: Crown },
