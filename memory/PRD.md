@@ -90,6 +90,13 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - Shows service breakdown by type with individual earnings
   - "Submit to Admin" confirms final submission
   - Only completed services can be submitted
+- ✅ **Admin Payroll Management (Feb 7, 2026)**: Full admin control over walker payroll
+  - New "Staff Payroll" page accessible from admin sidebar
+  - Three-tab workflow: Pending Review → Ready to Pay → Paid
+  - View detailed breakdown of each submission
+  - Edit paysheet (adjust earnings, remove services, add notes)
+  - Approve submissions and mark as paid
+  - Summary cards show totals for each status
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
