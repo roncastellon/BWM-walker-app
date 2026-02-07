@@ -528,14 +528,33 @@ class WalkCancellationRequest(BaseModel):
 
 # Walker/Sitter default pay rates
 DEFAULT_WALKER_PAY_RATES = {
-    "walk_30": 15.00,   # 30-minute walk
-    "walk_45": 22.00,   # 45-minute walk
-    "walk_60": 30.00,   # 60-minute walk
+    # Walk services - flat rate per walk
+    "walk_30": 15.00,
+    "walk_45": 22.00,
+    "walk_60": 30.00,
+    "standard_walk": 15.00,  # Custom walk type
+    
+    # Overnight/Pet Sitting services - flat rate per stay
+    "overnight": 30.00,
+    "stay_overnight": 30.00,
+    "petsit_our_location": 40.00,
+    "petsit_your_location": 50.00,
+    
+    # Day care services
+    "doggy_day_care": 25.00,
+    "doggy_day_camp": 25.00,
+    "day_visit": 20.00,
+    
+    # Concierge/Transport services
+    "concierge": 30.00,
+    "transport": 20.00,
 }
 
 DEFAULT_SITTER_PAY_RATES = {
-    "petsit_walker_location": 40.00,  # At walker's/sitter's location
-    "petsit_client_location": 50.00,  # At client's location
+    "petsit_our_location": 40.00,
+    "petsit_your_location": 50.00,
+    "overnight": 30.00,
+    "stay_overnight": 30.00,
 }
 
 # Combined default pay rates
