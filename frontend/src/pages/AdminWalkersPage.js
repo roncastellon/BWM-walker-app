@@ -706,10 +706,10 @@ const AdminWalkersPage = () => {
                       </Button>
                     </div>
 
-                    {/* Walker Pay Rates */}
+                    {/* Walk Services */}
                     <div className="space-y-3">
                       <Label className="text-sm font-medium text-green-800">Walk Services</Label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-4 gap-3">
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">30 min</Label>
                           <div className="relative">
@@ -749,22 +749,48 @@ const AdminWalkersPage = () => {
                             />
                           </div>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Sitter Pay Rates */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium text-green-800">Pet Sitting Services</Label>
-                      <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">Walker's Location</Label>
+                          <Label className="text-xs text-muted-foreground">Standard</Label>
                           <div className="relative">
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                             <Input
                               type="number"
                               step="0.01"
-                              value={payRates.petsit_walker_location}
-                              onChange={(e) => setPayRates({...payRates, petsit_walker_location: parseFloat(e.target.value) || 0})}
+                              value={payRates.standard_walk}
+                              onChange={(e) => setPayRates({...payRates, standard_walk: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Overnight/Pet Sitting Services */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-green-800">Overnight / Pet Sitting</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Overnight Stay</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.overnight}
+                              onChange={(e) => setPayRates({...payRates, overnight: parseFloat(e.target.value) || 0, stay_overnight: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Our Location</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.petsit_our_location}
+                              onChange={(e) => setPayRates({...payRates, petsit_our_location: parseFloat(e.target.value) || 0})}
                               className="pl-6"
                             />
                           </div>
@@ -776,8 +802,60 @@ const AdminWalkersPage = () => {
                             <Input
                               type="number"
                               step="0.01"
-                              value={payRates.petsit_client_location}
-                              onChange={(e) => setPayRates({...payRates, petsit_client_location: parseFloat(e.target.value) || 0})}
+                              value={payRates.petsit_your_location}
+                              onChange={(e) => setPayRates({...payRates, petsit_your_location: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Day Care</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.doggy_day_care}
+                              onChange={(e) => setPayRates({...payRates, doggy_day_care: parseFloat(e.target.value) || 0, doggy_day_camp: parseFloat(e.target.value) || 0, day_visit: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Concierge/Transport Services */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-green-800">Concierge / Transport</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Concierge</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.concierge}
+                              onChange={(e) => setPayRates({...payRates, concierge: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Transport</Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={payRates.transport}
+                              onChange={(e) => setPayRates({...payRates, transport: parseFloat(e.target.value) || 0})}
+                              className="pl-6"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>}
                               className="pl-6"
                             />
                           </div>
