@@ -581,14 +581,35 @@ def get_service_duration_type(service_type: str) -> str:
         return "nights"
     return "minutes"
 
-def calculate_walk_earnings(service_type: str, duration_minutes: int = None) -> float:
-    """Calculate walker earnings for a walk"""
-    if service_type in WALKER_PAY_RATES:
-        return WALKER_PAY_RATES[service_type]
-    # For other services, calculate based on duration at $30/hour
-    if duration_minutes:
-        return round((duration_minutes / 60) * 30, 2)
-    return 0.0
+def calculate_walk_earnings(service_type: str, duration_minutes: int = None, custom_pay_rates: dict = None) -> float:
+    """Calculate walker earnings for a service using flat rate per service"""
+    # Use custom rates if provided, otherwise use defaults
+    rates = custom_pay_rates or WALKER_PAY_RATES
+    
+    # Direct match for service type
+    if service_type in rates:
+        return rates[service_type]
+    
+    # Try case-insensitive match
+    service_lower = service_type.lower()
+    for key, value in rates.items():
+        if key.lower() == service_lower:
+            return value
+    
+    # Try partial match for walk services
+    if 'walk' in service_lower:
+        return rates.get('walk_30', 15.00)
+    
+    # Try partial match for overnight services
+    if any(term in service_lower for term in ['overnight', 'stay', 'petsit']):
+        return rates.get('overnight', 30.00)
+    
+    # Try partial match for day care
+    if any(term in service_lower for term in ['day_care', 'daycare', 'day_camp']):
+        return rates.get('doggy_day_care', 25.00)
+    
+    # Default flat rate for unknown services
+    return 15.00
 
 class PaymentTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
