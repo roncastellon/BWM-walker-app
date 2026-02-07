@@ -2166,6 +2166,28 @@ def get_walk_duration(service_type: str) -> int:
     }
     return durations.get(service_type, 30)  # Default to 30 minutes
 
+def format_time_12h(time_str: str) -> str:
+    """Convert 24h time string (HH:MM) to 12h format (H:MM AM/PM)"""
+    if not time_str:
+        return ""
+    try:
+        parts = time_str.split(':')
+        hour = int(parts[0])
+        minute = parts[1] if len(parts) > 1 else "00"
+        ampm = "AM" if hour < 12 else "PM"
+        hour12 = hour % 12 or 12
+        return f"{hour12}:{minute} {ampm}"
+    except:
+        return time_str
+
+def minutes_to_time_12h(minutes: int) -> str:
+    """Convert minutes since midnight to 12h time format"""
+    hours = minutes // 60
+    mins = minutes % 60
+    ampm = "AM" if hours < 12 else "PM"
+    hour12 = hours % 12 or 12
+    return f"{hour12}:{mins:02d} {ampm}"
+
 async def check_walker_availability(walker_id: str, scheduled_date: str, scheduled_time: str, exclude_appt_id: str = None, service_type: str = 'walk_30') -> dict:
     """
     Check if walker is available at the given time.
