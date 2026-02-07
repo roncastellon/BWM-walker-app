@@ -306,6 +306,8 @@ class UserResponse(BaseModel):
     pricing_setup_at: Optional[str] = None
     # Walking schedule
     walkingSchedule: Optional[Dict] = None
+    # Pets (populated for clients)
+    pets: Optional[List[Dict]] = None
 
 class TokenResponse(BaseModel):
     access_token: str
