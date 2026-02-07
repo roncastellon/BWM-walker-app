@@ -929,24 +929,14 @@ const AdminWalkersPage = () => {
                     </div>
                   </div>
                 )}
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Sitter (their loc):</span>
-                        <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_walker_location || DEFAULT_SITTER_PAY.petsit_walker_location}</span>
-                      </div>
-                      <div className="flex justify-between col-span-2">
-                        <span className="text-muted-foreground">Sitter (client loc):</span>
-                        <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_client_location || DEFAULT_SITTER_PAY.petsit_client_location}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 
-                {selectedWalker.bio && (
+                {selectedWalker.bio && !editMode && !paySetupMode && (
                   <div className="p-3 rounded-xl bg-muted/50">
                     <p className="text-sm">{selectedWalker.bio}</p>
                   </div>
                 )}
                 
+                {!editMode && !paySetupMode && (
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-3">Performance Stats</h4>
                   <div className="grid grid-cols-3 gap-4">
