@@ -140,30 +140,30 @@ const Layout = ({ children }) => {
     <div className="min-h-screen bg-background">
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="container flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4">
           {/* Logo and Dog Park Button */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <Dog className="w-6 h-6 text-primary-foreground" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary flex items-center justify-center">
+                <Dog className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
               </div>
-              <span className="font-heading text-xl font-bold hidden sm:inline">BowWowMeow</span>
+              <span className="font-heading text-lg sm:text-xl font-bold hidden sm:inline">BowWowMeow</span>
             </Link>
             
-            {/* Dog Park Icon - Green irregular oval with balloon font */}
+            {/* Dog Park Icon - Hidden on mobile */}
             <Link
               to="/dog-park"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[50%_40%_45%_55%/40%_50%_45%_55%] bg-green-500 hover:bg-green-600 text-white transition-all shadow-md hover:shadow-lg hover:scale-105"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-[50%_40%_45%_55%/40%_50%_45%_55%] bg-green-500 hover:bg-green-600 text-white transition-all shadow-md hover:shadow-lg hover:scale-105"
               style={{ fontFamily: "'Comic Sans MS', cursive, sans-serif" }}
               data-testid="dog-park-link"
             >
               <PawPrint className="w-4 h-4" />
-              <span className="text-sm font-bold hidden sm:inline">Dog Park</span>
+              <span className="text-sm font-bold">Dog Park</span>
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Desktop Navigation - Only on large screens */}
+          <nav className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -185,7 +185,7 @@ const Layout = ({ children }) => {
           </nav>
 
           {/* Right side - Message Icon & User Menu */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Message Notification Icon */}
             <Link
               to={getMessagesPath()}
@@ -213,10 +213,10 @@ const Layout = ({ children }) => {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10">
+                <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                     <AvatarImage src={user?.profile_image} alt={user?.full_name} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm sm:text-base">
                       {user?.full_name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
