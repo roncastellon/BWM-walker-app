@@ -96,13 +96,28 @@ const PayrollPage = () => {
           </Button>
         </div>
 
-        {/* Pay Rates Info */}
+        {/* Pay Rates Info - Categorized by Service Type */}
         <Card className="rounded-2xl shadow-sm bg-primary/5 border-primary/20">
           <CardContent className="p-4">
-            <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span className="font-medium">Pay Rates:</span>
-              <Badge className="bg-primary/10 text-primary rounded-full">30-min walk: $15.00</Badge>
-              <Badge className="bg-primary/10 text-primary rounded-full">60-min walk: $30.00</Badge>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-medium text-sm w-24">Walks:</span>
+                <Badge className="bg-sky-100 text-sky-800 rounded-full">30-min: ${currentPayroll?.pay_rates?.walk_30 || 15}</Badge>
+                <Badge className="bg-sky-100 text-sky-800 rounded-full">45-min: ${currentPayroll?.pay_rates?.walk_45 || 22}</Badge>
+                <Badge className="bg-sky-100 text-sky-800 rounded-full">60-min: ${currentPayroll?.pay_rates?.walk_60 || 30}</Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-medium text-sm w-24">Overnight:</span>
+                <Badge className="bg-purple-100 text-purple-800 rounded-full">Stay: ${currentPayroll?.pay_rates?.overnight || 30}</Badge>
+                <Badge className="bg-purple-100 text-purple-800 rounded-full">Our Location: ${currentPayroll?.pay_rates?.petsit_our_location || 40}</Badge>
+                <Badge className="bg-purple-100 text-purple-800 rounded-full">Client Location: ${currentPayroll?.pay_rates?.petsit_your_location || 50}</Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-medium text-sm w-24">Other:</span>
+                <Badge className="bg-orange-100 text-orange-800 rounded-full">Day Care: ${currentPayroll?.pay_rates?.doggy_day_care || 25}</Badge>
+                <Badge className="bg-orange-100 text-orange-800 rounded-full">Concierge: ${currentPayroll?.pay_rates?.concierge || 30}</Badge>
+                <Badge className="bg-orange-100 text-orange-800 rounded-full">Transport: ${currentPayroll?.pay_rates?.transport || 20}</Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -113,12 +128,12 @@ const PayrollPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Hours Walked</p>
+                  <p className="text-sm text-muted-foreground">Services Completed</p>
                   <p className="text-3xl font-bold mt-1">
-                    {currentPayroll?.total_hours || 0}h
+                    {currentPayroll?.total_walks || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    ({currentPayroll?.total_minutes || 0} minutes)
+                    this period
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
