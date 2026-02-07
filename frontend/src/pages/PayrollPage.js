@@ -4,8 +4,8 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Clock, DollarSign, CheckCircle, Send, PawPrint, Route, RefreshCw } from 'lucide-react';
-import { format } from 'date-fns';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
+import { Clock, DollarSign, CheckCircle, Send, PawPrint, RefreshCw, FileText, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PayrollPage = () => {
@@ -14,6 +14,7 @@ const PayrollPage = () => {
   const [paysheets, setPaysheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -35,17 +36,21 @@ const PayrollPage = () => {
     }
   };
 
-  const submitPaysheet = async () => {
+  const openReviewModal = () => {
     if (!currentPayroll || currentPayroll.total_walks === 0) {
-      toast.error('No walks to submit');
+      toast.error('No completed services to submit');
       return;
     }
+    setReviewModalOpen(true);
+  };
 
+  const submitPaysheet = async () => {
     setSubmitting(true);
     try {
       await api.post('/paysheets/submit');
-      toast.success('Paysheet submitted successfully!');
-      fetchData(); // Refresh to show reset and new paysheet
+      toast.success('Paysheet submitted to admin for payment!');
+      setReviewModalOpen(false);
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to submit paysheet');
     } finally {
@@ -71,6 +76,51 @@ const PayrollPage = () => {
     return `${mins} min`;
   };
 
+  // Group walks by service type for review
+  const getServiceBreakdown = () => {
+    if (!currentPayroll?.walks) return {};
+    
+    const breakdown = {};
+    currentPayroll.walks.forEach(walk => {
+      const type = walk.service_type || 'other';
+      if (!breakdown[type]) {
+        breakdown[type] = {
+          count: 0,
+          earnings: 0,
+          walks: []
+        };
+      }
+      breakdown[type].count += 1;
+      breakdown[type].earnings += walk.earnings || 0;
+      breakdown[type].walks.push(walk);
+    });
+    return breakdown;
+  };
+
+  const formatServiceType = (type) => {
+    const labels = {
+      'walk_30': '30-Min Walk',
+      'walk_45': '45-Min Walk',
+      'walk_60': '60-Min Walk',
+      'overnight': 'Overnight Stay',
+      'petsit_our_location': 'Pet Sit (Our Location)',
+      'petsit_your_location': 'Pet Sit (Your Location)',
+      'doggy_day_care': 'Doggy Day Care',
+      'concierge': 'Concierge Service',
+      'transport': 'Transport',
+    };
+    return labels[type] || type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Other';
+  };
+
+  const getServiceColor = (type) => {
+    if (type?.includes('walk')) return 'bg-sky-100 text-sky-800 border-sky-200';
+    if (type?.includes('overnight') || type?.includes('petsit')) return 'bg-purple-100 text-purple-800 border-purple-200';
+    if (type === 'doggy_day_care') return 'bg-orange-100 text-orange-800 border-orange-200';
+    if (type === 'transport') return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (type === 'concierge') return 'bg-pink-100 text-pink-800 border-pink-200';
+    return 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -81,6 +131,8 @@ const PayrollPage = () => {
     );
   }
 
+  const serviceBreakdown = getServiceBreakdown();
+
   return (
     <Layout>
       <div className="space-y-6" data-testid="payroll-page">
@@ -88,7 +140,7 @@ const PayrollPage = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-heading font-bold">Time Sheets & Payroll</h1>
-            <p className="text-muted-foreground">Track your hours and submit paysheets</p>
+            <p className="text-muted-foreground">Track your completed services and submit for payment</p>
           </div>
           <Button variant="outline" className="rounded-full" onClick={fetchData}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -96,7 +148,7 @@ const PayrollPage = () => {
           </Button>
         </div>
 
-        {/* Pay Rates Info - Categorized by Service Type */}
+        {/* Pay Rates Info */}
         <Card className="rounded-2xl shadow-sm bg-primary/5 border-primary/20">
           <CardContent className="p-4">
             <div className="space-y-3">
@@ -133,7 +185,7 @@ const PayrollPage = () => {
                     {currentPayroll?.total_walks || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    this period
+                    ready for submission
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -147,9 +199,9 @@ const PayrollPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Walks Completed</p>
+                  <p className="text-sm text-muted-foreground">Total Hours</p>
                   <p className="text-3xl font-bold mt-1">
-                    {currentPayroll?.total_walks || 0}
+                    {currentPayroll?.total_hours || 0}h
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
@@ -176,31 +228,31 @@ const PayrollPage = () => {
           </Card>
         </div>
 
-        {/* Current Period Walks */}
+        {/* Completed Services - Ready for Submission */}
         <Card className="rounded-2xl shadow-sm">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle>Pending Walks</CardTitle>
+              <CardTitle>Completed Services</CardTitle>
               <CardDescription>
-                Walks accumulated since last paysheet submission
+                Only completed services can be submitted for payment
               </CardDescription>
             </div>
             <Button
-              onClick={submitPaysheet}
-              disabled={submitting || !currentPayroll || currentPayroll.total_walks === 0}
-              className="rounded-full"
-              data-testid="submit-paysheet-btn"
+              onClick={openReviewModal}
+              disabled={!currentPayroll || currentPayroll.total_walks === 0}
+              className="rounded-full bg-green-600 hover:bg-green-700"
+              data-testid="submit-for-pay-btn"
             >
-              <Send className="w-4 h-4 mr-2" />
-              {submitting ? 'Submitting...' : 'Submit Paysheet'}
+              <FileText className="w-4 h-4 mr-2" />
+              Submit for Pay
             </Button>
           </CardHeader>
           <CardContent>
             {!currentPayroll || currentPayroll.walks?.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <CheckCircle className="w-16 h-16 mx-auto mb-4 opacity-30 text-green-500" />
-                <p className="text-lg">All caught up!</p>
-                <p className="text-sm">Complete walks to add hours to your paysheet</p>
+                <p className="text-lg">No completed services pending</p>
+                <p className="text-sm">Complete services to add them to your paysheet</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -228,8 +280,8 @@ const PayrollPage = () => {
                               {walk.time}
                             </Badge>
                           )}
-                          <Badge variant="outline" className="rounded-full text-xs capitalize">
-                            {walk.service_type?.replace('_', ' ')}
+                          <Badge className={`rounded-full text-xs ${getServiceColor(walk.service_type)}`}>
+                            {formatServiceType(walk.service_type)}
                           </Badge>
                         </div>
                       </div>
@@ -282,7 +334,7 @@ const PayrollPage = () => {
                         {ts.period_start} to {ts.period_end}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {ts.total_hours}h • {ts.total_walks} walks
+                        {ts.total_hours}h • {ts.total_walks} services
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -294,7 +346,7 @@ const PayrollPage = () => {
                             ? 'bg-blue-100 text-blue-800' 
                             : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {ts.paid ? 'Paid' : ts.approved ? 'Approved' : 'Pending'}
+                        {ts.paid ? 'Paid' : ts.approved ? 'Approved' : 'Pending Review'}
                       </Badge>
                     </div>
                   </div>
@@ -304,6 +356,91 @@ const PayrollPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Review & Submit Modal */}
+      <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Review Paysheet Submission
+            </DialogTitle>
+            <DialogDescription>
+              Review your completed services before submitting to admin for payment
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Important Notice */}
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-amber-800">Only completed services are included</p>
+                <p className="text-amber-700">Once submitted, this paysheet will be sent to admin for review and payment.</p>
+              </div>
+            </div>
+
+            {/* Service Breakdown by Type */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Service Breakdown</h4>
+              {Object.entries(serviceBreakdown).map(([type, data]) => (
+                <div key={type} className={`p-4 rounded-xl border ${getServiceColor(type)}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold">{formatServiceType(type)}</span>
+                    <Badge variant="secondary" className="rounded-full">
+                      {data.count} {data.count === 1 ? 'service' : 'services'}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    {data.walks.map(walk => (
+                      <div key={walk.id} className="flex justify-between text-sm py-1 border-t border-current/10 first:border-0">
+                        <span>{walk.client_name} - {walk.date}</span>
+                        <span className="font-medium">${walk.earnings?.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between mt-2 pt-2 border-t border-current/20 font-semibold">
+                    <span>Subtotal</span>
+                    <span>${data.earnings.toFixed(2)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Total Summary */}
+            <div className="p-4 rounded-xl bg-green-50 border-2 border-green-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold text-green-800">Total Payment Due</p>
+                  <p className="text-sm text-green-600">{currentPayroll?.total_walks} completed services</p>
+                </div>
+                <p className="text-3xl font-bold text-green-700">
+                  ${currentPayroll?.total_earnings?.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setReviewModalOpen(false)}
+              className="rounded-full"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={submitPaysheet}
+              disabled={submitting}
+              className="rounded-full bg-green-600 hover:bg-green-700"
+              data-testid="confirm-submit-btn"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {submitting ? 'Submitting...' : 'Submit to Admin'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
