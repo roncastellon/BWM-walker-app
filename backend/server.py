@@ -4442,8 +4442,103 @@ async def mark_paysheet_paid(paysheet_id: str, current_user: dict = Depends(get_
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
-    await db.paysheets.update_one({"id": paysheet_id}, {"$set": {"paid": True}})
+    paid_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await db.paysheets.update_one({"id": paysheet_id}, {"$set": {"paid": True, "paid_date": paid_date}})
     return {"message": "Paysheet marked as paid"}
+
+@api_router.get("/paysheets/{paysheet_id}")
+async def get_paysheet(paysheet_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a single paysheet by ID"""
+    paysheet = await db.paysheets.find_one({"id": paysheet_id}, {"_id": 0})
+    if not paysheet:
+        raise HTTPException(status_code=404, detail="Paysheet not found")
+    
+    # Only admin or the walker who owns it can view
+    if current_user['role'] != 'admin' and paysheet.get('walker_id') != current_user['id']:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get walker name
+    walker = await db.users.find_one({"id": paysheet.get('walker_id')}, {"_id": 0, "full_name": 1})
+    paysheet['walker_name'] = walker.get('full_name', 'Unknown') if walker else 'Unknown'
+    
+    return paysheet
+
+@api_router.put("/paysheets/{paysheet_id}")
+async def update_paysheet(paysheet_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    """Update a paysheet (admin only) - can edit walk details and earnings"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    paysheet = await db.paysheets.find_one({"id": paysheet_id}, {"_id": 0})
+    if not paysheet:
+        raise HTTPException(status_code=404, detail="Paysheet not found")
+    
+    # Don't allow editing paid paysheets
+    if paysheet.get('paid'):
+        raise HTTPException(status_code=400, detail="Cannot edit paid paysheets")
+    
+    data = await request.json()
+    
+    # Allowed fields to update
+    update_dict = {}
+    if 'walk_details' in data:
+        update_dict['walk_details'] = data['walk_details']
+        # Recalculate totals from walk details
+        total_earnings = sum(w.get('earnings', 0) for w in data['walk_details'])
+        total_walks = len(data['walk_details'])
+        total_minutes = sum(w.get('duration_minutes', 0) for w in data['walk_details'])
+        update_dict['total_earnings'] = round(total_earnings, 2)
+        update_dict['total_walks'] = total_walks
+        update_dict['total_hours'] = round(total_minutes / 60, 2)
+    
+    if 'notes' in data:
+        update_dict['admin_notes'] = data['notes']
+    
+    if update_dict:
+        update_dict['updated_at'] = datetime.now(timezone.utc).isoformat()
+        update_dict['updated_by'] = current_user['id']
+        await db.paysheets.update_one({"id": paysheet_id}, {"$set": update_dict})
+    
+    # Return updated paysheet
+    updated = await db.paysheets.find_one({"id": paysheet_id}, {"_id": 0})
+    walker = await db.users.find_one({"id": updated.get('walker_id')}, {"_id": 0, "full_name": 1})
+    updated['walker_name'] = walker.get('full_name', 'Unknown') if walker else 'Unknown'
+    
+    return updated
+
+@api_router.delete("/paysheets/{paysheet_id}/walks/{walk_id}")
+async def remove_walk_from_paysheet(paysheet_id: str, walk_id: str, current_user: dict = Depends(get_current_user)):
+    """Remove a specific walk from a paysheet (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    paysheet = await db.paysheets.find_one({"id": paysheet_id}, {"_id": 0})
+    if not paysheet:
+        raise HTTPException(status_code=404, detail="Paysheet not found")
+    
+    if paysheet.get('paid'):
+        raise HTTPException(status_code=400, detail="Cannot edit paid paysheets")
+    
+    # Remove walk from details and appointment_ids
+    walk_details = [w for w in paysheet.get('walk_details', []) if w.get('id') != walk_id]
+    appointment_ids = [aid for aid in paysheet.get('appointment_ids', []) if aid != walk_id]
+    
+    # Recalculate totals
+    total_earnings = sum(w.get('earnings', 0) for w in walk_details)
+    total_walks = len(walk_details)
+    total_minutes = sum(w.get('duration_minutes', 0) for w in walk_details)
+    
+    await db.paysheets.update_one({"id": paysheet_id}, {"$set": {
+        "walk_details": walk_details,
+        "appointment_ids": appointment_ids,
+        "total_earnings": round(total_earnings, 2),
+        "total_walks": total_walks,
+        "total_hours": round(total_minutes / 60, 2),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": current_user['id']
+    }})
+    
+    return {"message": "Walk removed from paysheet"}
 
 # 1099 Payroll Reports
 @api_router.get("/reports/payroll/1099")
