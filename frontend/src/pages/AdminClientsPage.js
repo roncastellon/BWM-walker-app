@@ -1436,12 +1436,12 @@ SAMPLE APPOINTMENTS:`;
           </div>
         </div>
 
-        {/* Clients Grid */}
-        {filteredClients.length === 0 ? (
+        {/* Pets Grid - Pet-centric view sorted by pet name */}
+        {filteredPets.length === 0 ? (
           <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-12 text-center">
-              <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-lg text-muted-foreground">No clients found</p>
+            <CardContent className="p-8 sm:p-12 text-center">
+              <PawPrint className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-base sm:text-lg text-muted-foreground">No pets found</p>
               <Button onClick={() => setDialogOpen(true)} className="mt-4 rounded-full">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Your First Customer
@@ -1449,73 +1449,69 @@ SAMPLE APPOINTMENTS:`;
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClients.map((client) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {filteredPets.map((pet) => (
               <Card 
-                key={client.id} 
-                className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer ${!client.is_active ? 'opacity-60 border-red-300' : ''}`}
-                data-testid={`client-card-${client.id}`}
-                onClick={() => viewClientDetails(client)}
+                key={pet.id} 
+                className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer ${!pet.ownerActive ? 'opacity-60 border-red-300' : ''}`}
+                data-testid={`pet-card-${pet.id}`}
+                onClick={() => viewClientDetails(pet.owner)}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="w-14 h-14">
-                      <AvatarImage src={client.profile_image} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                        {client.full_name?.charAt(0) || 'C'}
-                      </AvatarFallback>
-                    </Avatar>
+                <CardContent className="p-4 sm:p-5">
+                  {/* Pet Name - Primary */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center ${
+                      pet.isPlaceholder ? 'bg-gray-100' :
+                      pet.species === 'dog' ? 'bg-orange-100' : 
+                      pet.species === 'cat' ? 'bg-purple-100' : 'bg-blue-100'
+                    }`}>
+                      <PawPrint className={`w-6 h-6 sm:w-7 sm:h-7 ${
+                        pet.isPlaceholder ? 'text-gray-400' :
+                        pet.species === 'dog' ? 'text-orange-600' : 
+                        pet.species === 'cat' ? 'text-purple-600' : 'text-blue-600'
+                      }`} />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold truncate">{client.full_name}</h3>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge className="bg-blue-100 text-blue-800 rounded-full text-xs">
-                          Client
-                        </Badge>
-                        {!client.is_active && (
-                          <Badge className="bg-red-100 text-red-800 rounded-full text-xs">
-                            <Lock className="w-3 h-3 mr-1" />
-                            Frozen
+                      <h3 className={`text-lg sm:text-xl font-bold truncate ${pet.isPlaceholder ? 'text-muted-foreground italic' : ''}`}>
+                        {pet.name}
+                      </h3>
+                      {!pet.isPlaceholder && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={`rounded-full text-xs ${
+                            pet.species === 'dog' ? 'bg-orange-100 text-orange-800' : 
+                            pet.species === 'cat' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {pet.species}
                           </Badge>
-                        )}
-                        <Badge variant="outline" className="rounded-full text-xs capitalize">
-                          {client.billing_cycle || 'weekly'}
-                        </Badge>
-                      </div>
+                          {pet.breed && (
+                            <span className="text-xs text-muted-foreground truncate">{pet.breed}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="mt-4 space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="w-4 h-4" />
-                      <span className="truncate">{client.email}</span>
-                    </div>
-                    {client.phone && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="w-4 h-4" />
-                        <span>{client.phone}</span>
-                      </div>
+
+                  {/* Owner Info - Secondary */}
+                  <div className="border-t pt-3">
+                    <p className="text-xs text-muted-foreground mb-1">Owner</p>
+                    <p className="font-medium text-sm sm:text-base truncate">{pet.ownerName}</p>
+                    {pet.ownerPhone && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                        <Phone className="w-3 h-3" />
+                        {pet.ownerPhone}
+                      </p>
                     )}
                   </div>
-                  {/* Quick Actions */}
-                  <div className="mt-4 pt-3 border-t flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleFreezeUser(client.id, client.is_active !== false); }}
-                      className={client.is_active === false ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}
-                    >
-                      {client.is_active === false ? <Unlock className="w-4 h-4 mr-1" /> : <Lock className="w-4 h-4 mr-1" />}
-                      {client.is_active === false ? 'Unfreeze' : 'Freeze'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); confirmDelete(client); }}
-                      className="text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
+
+                  {/* Status indicators */}
+                  {!pet.ownerActive && (
+                    <div className="mt-2">
+                      <Badge className="bg-red-100 text-red-800 rounded-full text-xs">
+                        <Lock className="w-3 h-3 mr-1" />
+                        Account Frozen
+                      </Badge>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
