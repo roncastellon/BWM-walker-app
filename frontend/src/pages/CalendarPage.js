@@ -475,13 +475,21 @@ const CalendarPage = () => {
   };
 
   // Generate 15-minute increment time slots
+  // Generate time slots with 12-hour labels but 24-hour values for API
   const generateTimeSlots = () => {
     const slots = [];
     for (let hour = 6; hour <= 20; hour++) {
       for (let min = 0; min < 60; min += 15) {
-        const h = hour.toString().padStart(2, '0');
+        const h24 = hour.toString().padStart(2, '0');
         const m = min.toString().padStart(2, '0');
-        slots.push(`${h}:${m}`);
+        const value = `${h24}:${m}`;
+        
+        // Convert to 12-hour format for label
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const h12 = hour % 12 || 12;
+        const label = `${h12}:${m} ${ampm}`;
+        
+        slots.push({ value, label });
       }
     }
     return slots;
