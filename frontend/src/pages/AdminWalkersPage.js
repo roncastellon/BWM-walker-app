@@ -855,12 +855,6 @@ const AdminWalkersPage = () => {
                           </div>
                         </div>
                       </div>
-                    </div>}
-                              className="pl-6"
-                            />
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     <div className="flex gap-2 pt-2">
@@ -874,8 +868,8 @@ const AdminWalkersPage = () => {
                   </div>
                 )}
 
-                {/* Show Current Pay Rates if setup complete and not in edit mode */}
-                {selectedWalker.pay_setup_completed && !paySetupMode && (
+                {/* Show Current Pay Rates if setup complete and not in edit/pay mode */}
+                {selectedWalker.pay_setup_completed && !paySetupMode && !editMode && (
                   <div className="p-4 rounded-xl bg-muted/50">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium flex items-center gap-2">
@@ -883,22 +877,58 @@ const AdminWalkersPage = () => {
                         Current Pay Rates
                       </h4>
                       <Button variant="outline" size="sm" onClick={() => initPaySetup(selectedWalker)}>
-                        Edit
+                        Edit Pay
                       </Button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">30 min walk:</span>
-                        <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_30 || DEFAULT_WALKER_PAY.walk_30}</span>
+                    <div className="space-y-2 text-sm">
+                      <div className="font-medium text-xs text-muted-foreground">WALKS</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">30 min:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_30 || DEFAULT_PAY_RATES.walk_30}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">45 min:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_45 || DEFAULT_PAY_RATES.walk_45}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">60 min:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_60 || DEFAULT_PAY_RATES.walk_60}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">45 min walk:</span>
-                        <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_45 || DEFAULT_WALKER_PAY.walk_45}</span>
+                      <div className="font-medium text-xs text-muted-foreground pt-2">OVERNIGHT / PET SITTING</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Overnight:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.overnight || DEFAULT_PAY_RATES.overnight}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Our Loc:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_our_location || DEFAULT_PAY_RATES.petsit_our_location}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Client Loc:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_your_location || DEFAULT_PAY_RATES.petsit_your_location}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Day Care:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.doggy_day_care || DEFAULT_PAY_RATES.doggy_day_care}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">60 min walk:</span>
-                        <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_60 || DEFAULT_WALKER_PAY.walk_60}</span>
+                      <div className="font-medium text-xs text-muted-foreground pt-2">OTHER</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Concierge:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.concierge || DEFAULT_PAY_RATES.concierge}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Transport:</span>
+                          <span className="font-medium">${selectedWalker.custom_pay_rates?.transport || DEFAULT_PAY_RATES.transport}</span>
+                        </div>
                       </div>
+                    </div>
+                  </div>
+                )}
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Sitter (their loc):</span>
                         <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_walker_location || DEFAULT_SITTER_PAY.petsit_walker_location}</span>
