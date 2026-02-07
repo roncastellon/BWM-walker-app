@@ -99,6 +99,8 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ UI improvements for admin client management (Jan 2026)
 
 ### P1 (High Priority - Next Phase)
+- Improve Walker "Start Walk" UX (currently navigates to confusing separate page)
+- Admin Service Management (create/edit/delete services, not just pay rates)
 - Overhaul "Add Appointment" dialog on Calendar Page (add one-time vs. recurring toggle, consistent with admin client editor)
 - Push notifications for appointments
 - SMS reminders via Twilio
