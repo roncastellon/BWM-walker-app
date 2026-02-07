@@ -183,6 +183,13 @@ const CalendarPage = () => {
     try {
       const response = await api.get(`/pets?owner_id=${clientId}`);
       setSelectedClientPets(response.data);
+      // Auto-select all pets when client is selected
+      if (response.data.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          pet_ids: response.data.map(pet => pet.id)
+        }));
+      }
     } catch (error) {
       setSelectedClientPets([]);
     }
