@@ -35,7 +35,7 @@ const ClientDashboard = () => {
   const [saving, setSaving] = useState(false);
   
   // Schedule view filter state
-  const [scheduleView, setScheduleView] = useState('week'); // 'day', 'week', 'month'
+  const [scheduleView, setScheduleView] = useState('day'); // Default to day view
   
   // Completed walks review state
   const [completedWalksDate, setCompletedWalksDate] = useState(new Date().toISOString().split('T')[0]);
