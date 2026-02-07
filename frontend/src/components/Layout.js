@@ -237,11 +237,11 @@ const Layout = ({ children }) => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle - Visible on screens smaller than lg */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden rounded-lg hover:bg-muted"
+              className="lg:hidden rounded-lg hover:bg-muted"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               data-testid="mobile-menu-toggle"
             >
@@ -251,12 +251,23 @@ const Layout = ({ children }) => {
         </div>
       </header>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - Slide in from left */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <nav className="fixed top-16 left-0 bottom-0 w-64 bg-background border-r p-4 overflow-y-auto">
-            <div className="space-y-2">
+          <nav className="fixed top-14 sm:top-16 left-0 bottom-0 w-72 bg-background border-r p-4 overflow-y-auto shadow-xl">
+            {/* Dog Park Link in Mobile Menu */}
+            <Link
+              to="/dog-park"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 mb-3 rounded-xl bg-green-500 hover:bg-green-600 text-white transition-all"
+              style={{ fontFamily: "'Comic Sans MS', cursive, sans-serif" }}
+            >
+              <PawPrint className="w-5 h-5" />
+              <span className="font-bold">Dog Park</span>
+            </Link>
+            
+            <div className="space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
