@@ -610,13 +610,26 @@ const AdminClientsPage = () => {
     setSaving(true);
     
     try {
-      // Update user profile
-      await api.put(`/users/${selectedClient.id}`, {
+      // Build update data
+      const updateData = {
         full_name: customerForm.full_name,
         email: customerForm.email,
         phone: customerForm.phone,
         address: customerForm.address,
-      });
+      };
+      
+      // Include username if changed
+      if (customerForm.username && customerForm.username !== selectedClient.username) {
+        updateData.username = customerForm.username;
+      }
+      
+      // Include password if provided
+      if (customerForm.password) {
+        updateData.password = customerForm.password;
+      }
+      
+      // Update user profile
+      await api.put(`/users/${selectedClient.id}`, updateData);
       
       // Update billing cycle
       await api.put(`/users/${selectedClient.id}/billing-cycle?billing_cycle=${customerForm.billing_cycle}`);
