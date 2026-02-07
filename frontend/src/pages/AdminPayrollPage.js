@@ -176,21 +176,21 @@ const AdminPayrollPage = () => {
 
   return (
     <Layout>
-      <div className="space-y-6" data-testid="admin-payroll-page">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="space-y-4 sm:space-y-6 px-2 sm:px-0" data-testid="admin-payroll-page">
+        {/* Header - Mobile First */}
+        <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-heading font-bold">Staff Payroll</h1>
-            <p className="text-muted-foreground">Review, approve and pay walker submissions</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold">Staff Payroll</h1>
+            <p className="text-sm text-muted-foreground">Review, approve and pay walker submissions</p>
           </div>
-          <Button variant="outline" className="rounded-full" onClick={fetchPaysheets}>
+          <Button variant="outline" className="rounded-full w-full sm:w-auto" onClick={fetchPaysheets}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Summary Cards - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <Card className="rounded-2xl shadow-sm border-yellow-200 bg-yellow-50/50">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
