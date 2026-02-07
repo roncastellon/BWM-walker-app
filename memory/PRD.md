@@ -85,6 +85,11 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ **Auto-Select Pets**: All client pets auto-selected when scheduling
 - ✅ **Admin Walk Review**: Admins can view completed walk details including GPS routes and notes
 - ✅ **Password Change Bug Fix (Jan 10, 2026)**: Fixed bcrypt 5.0.0/passlib incompatibility by downgrading to bcrypt 4.2.0
+- ✅ **Payroll Review Flow (Feb 7, 2026)**: Walkers must review & confirm before submitting paysheet
+  - "Submit for Pay" button opens review modal
+  - Shows service breakdown by type with individual earnings
+  - "Submit to Admin" confirms final submission
+  - Only completed services can be submitted
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
