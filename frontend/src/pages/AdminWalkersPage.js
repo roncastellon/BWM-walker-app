@@ -12,16 +12,25 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { PawPrint, Search, Mail, Phone, Plus, User, Calendar, CheckCircle, Lock, Unlock, Trash2, UserX, DollarSign, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Default pay rates
-const DEFAULT_WALKER_PAY = {
+// Default pay rates - all service types
+const DEFAULT_PAY_RATES = {
+  // Walks
   walk_30: 15.00,
   walk_45: 22.00,
   walk_60: 30.00,
-};
-
-const DEFAULT_SITTER_PAY = {
-  petsit_walker_location: 40.00,
-  petsit_client_location: 50.00,
+  standard_walk: 15.00,
+  // Overnight/Pet Sitting
+  overnight: 30.00,
+  stay_overnight: 30.00,
+  petsit_our_location: 40.00,
+  petsit_your_location: 50.00,
+  // Day Care
+  doggy_day_care: 25.00,
+  doggy_day_camp: 25.00,
+  day_visit: 20.00,
+  // Concierge/Transport
+  concierge: 30.00,
+  transport: 20.00,
 };
 
 const AdminWalkersPage = () => {
@@ -34,9 +43,20 @@ const AdminWalkersPage = () => {
   const [walkerStats, setWalkerStats] = useState({});
   const [saving, setSaving] = useState(false);
   
+  // Edit mode state
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    full_name: '',
+    phone: '',
+    bio: '',
+  });
+  
   // Pay setup state
   const [paySetupMode, setPaySetupMode] = useState(false);
-  const [payRates, setPayRates] = useState({...DEFAULT_WALKER_PAY, ...DEFAULT_SITTER_PAY});
+  const [payRates, setPayRates] = useState({...DEFAULT_PAY_RATES});
   const [pendingPaySetup, setPendingPaySetup] = useState([]);
   
   // Delete confirmation state
