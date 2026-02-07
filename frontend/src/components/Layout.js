@@ -285,7 +285,7 @@ const Layout = ({ children }) => {
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="w-5 h-5" />
-                      {item.label}
+                      <span className="font-medium">{item.label}</span>
                     </div>
                     {isMessageItem && unreadCount > 0 && (
                       <span className={`min-w-[20px] h-[20px] rounded-full text-xs font-bold flex items-center justify-center ${
@@ -300,12 +300,36 @@ const Layout = ({ children }) => {
                 );
               })}
             </div>
+            
+            {/* User info at bottom of sidebar */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-background">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user?.profile_image} alt={user?.full_name} />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {user?.full_name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{user?.full_name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full mt-3 rounded-full text-destructive hover:bg-destructive/10"
+                onClick={() => { setSidebarOpen(false); handleLogout(); }}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Log out
+              </Button>
+            </div>
           </nav>
         </div>
       )}
 
       {/* Main Content */}
-      <main className="container px-4 py-6">
+      <main className="container px-3 sm:px-4 py-4 sm:py-6">
         {children}
       </main>
     </div>
