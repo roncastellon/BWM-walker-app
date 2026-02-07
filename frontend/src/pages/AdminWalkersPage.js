@@ -558,66 +558,143 @@ const AdminWalkersPage = () => {
         )}
 
         {/* Walker Details Dialog */}
-        <Dialog open={!!selectedWalker} onOpenChange={() => { setSelectedWalker(null); setPaySetupMode(false); }}>
+        <Dialog open={!!selectedWalker} onOpenChange={() => { setSelectedWalker(null); setPaySetupMode(false); setEditMode(false); }}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Walker Details</DialogTitle>
+              <DialogTitle>{editMode ? 'Edit Walker Info' : 'Walker Details'}</DialogTitle>
             </DialogHeader>
             {selectedWalker && (
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-16 h-16">
-                    <AvatarImage src={selectedWalker.profile_image} />
-                    <AvatarFallback className="bg-secondary/10 text-secondary text-2xl">
-                      {selectedWalker.full_name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-xl font-bold">{selectedWalker.full_name}</h3>
-                    <p className="text-muted-foreground">{selectedWalker.email}</p>
-                    {selectedWalker.phone && <p className="text-sm text-muted-foreground">{selectedWalker.phone}</p>}
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Badge className="bg-secondary/10 text-secondary rounded-full">
-                    <PawPrint className="w-3 h-3 mr-1" />
-                    Walker
-                  </Badge>
-                  {selectedWalker.pay_setup_completed ? (
-                    <Badge className="bg-green-100 text-green-700 rounded-full">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Pay Setup Complete
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-amber-100 text-amber-700 rounded-full">
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      Needs Pay Setup
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Pay Setup Required Banner */}
-                {!selectedWalker.pay_setup_completed && !paySetupMode && (
-                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5 text-amber-600" />
-                        <div>
-                          <p className="font-semibold text-amber-800">Pay Setup Required</p>
-                          <p className="text-sm text-amber-600">Set pay rates for this walker</p>
-                        </div>
+                {/* Edit Mode - User Info */}
+                {editMode ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Username</Label>
+                        <Input
+                          value={editForm.username}
+                          onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                          placeholder="Username"
+                        />
                       </div>
-                      <Button size="sm" onClick={() => initPaySetup(selectedWalker)} className="bg-amber-500 hover:bg-amber-600">
-                        <DollarSign className="w-4 h-4 mr-1" />
-                        Set Pay
+                      <div className="space-y-2">
+                        <Label>New Password</Label>
+                        <Input
+                          type="password"
+                          value={editForm.password}
+                          onChange={(e) => setEditForm({...editForm, password: e.target.value})}
+                          placeholder="Leave blank to keep current"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Full Name</Label>
+                      <Input
+                        value={editForm.full_name}
+                        onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
+                        placeholder="Full name"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input
+                          type="email"
+                          value={editForm.email}
+                          onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                          placeholder="Email"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Phone</Label>
+                        <Input
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                          placeholder="Phone"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bio</Label>
+                      <Textarea
+                        value={editForm.bio}
+                        onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                        placeholder="Short bio..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button variant="outline" onClick={() => setEditMode(false)} className="flex-1">
+                        Cancel
+                      </Button>
+                      <Button onClick={saveUserInfo} disabled={saving} className="flex-1">
+                        {saving ? 'Saving...' : 'Save Changes'}
                       </Button>
                     </div>
                   </div>
+                ) : (
+                  <>
+                    {/* View Mode - User Info */}
+                    <div className="flex items-center gap-4">
+                      <Avatar className="w-16 h-16">
+                        <AvatarImage src={selectedWalker.profile_image} />
+                        <AvatarFallback className="bg-secondary/10 text-secondary text-2xl">
+                          {selectedWalker.full_name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold">{selectedWalker.full_name}</h3>
+                        <p className="text-muted-foreground">{selectedWalker.email}</p>
+                        {selectedWalker.phone && <p className="text-sm text-muted-foreground">{selectedWalker.phone}</p>}
+                        <p className="text-xs text-muted-foreground mt-1">Username: {selectedWalker.username}</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => initEditMode(selectedWalker)}>
+                        <User className="w-4 h-4 mr-1" />
+                        Edit Info
+                      </Button>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Badge className="bg-secondary/10 text-secondary rounded-full">
+                        <PawPrint className="w-3 h-3 mr-1" />
+                        Walker
+                      </Badge>
+                      {selectedWalker.pay_setup_completed ? (
+                        <Badge className="bg-green-100 text-green-700 rounded-full">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Pay Setup Complete
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-amber-100 text-amber-700 rounded-full">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          Needs Pay Setup
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Pay Setup Required Banner */}
+                    {!selectedWalker.pay_setup_completed && !paySetupMode && (
+                      <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="w-5 h-5 text-amber-600" />
+                            <div>
+                              <p className="font-semibold text-amber-800">Pay Setup Required</p>
+                              <p className="text-sm text-amber-600">Set pay rates for this walker</p>
+                            </div>
+                          </div>
+                          <Button size="sm" onClick={() => initPaySetup(selectedWalker)} className="bg-amber-500 hover:bg-amber-600">
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            Set Pay
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Pay Setup Mode */}
-                {paySetupMode && (
+                {paySetupMode && !editMode && (
                   <div className="space-y-4 p-4 rounded-xl bg-green-50 border border-green-200">
                     <div className="flex items-center justify-between">
                       <h4 className="font-semibold text-green-800 flex items-center gap-2">
