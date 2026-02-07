@@ -901,10 +901,19 @@ async def update_user(user_id: str, update_data: dict, current_user: dict = Depe
     
     # Admin can also update these fields
     if current_user['role'] == 'admin':
-        admin_fields = ['is_active', 'onboarding_completed', 'role']
+        admin_fields = ['is_active', 'onboarding_completed', 'role', 'username']
         for field in admin_fields:
-            if field in update_data:
+            if field in update_data and update_data[field]:
+                # Check username is unique if being changed
+                if field == 'username':
+                    existing = await db.users.find_one({"username": update_data['username'], "id": {"$ne": user_id}})
+                    if existing:
+                        raise HTTPException(status_code=400, detail="Username already taken")
                 update_dict[field] = update_data[field]
+        
+        # Handle password change (admin only can change other users' passwords)
+        if 'password' in update_data and update_data['password']:
+            update_dict['password_hash'] = pwd_context.hash(update_data['password'])
     
     await db.users.update_one({"id": user_id}, {"$set": update_dict})
     
