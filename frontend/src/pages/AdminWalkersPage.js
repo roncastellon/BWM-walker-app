@@ -102,13 +102,26 @@ const AdminWalkersPage = () => {
     // Initialize with existing custom rates or defaults
     const existingRates = walker.custom_pay_rates || {};
     setPayRates({
-      walk_30: existingRates.walk_30 ?? DEFAULT_WALKER_PAY.walk_30,
-      walk_45: existingRates.walk_45 ?? DEFAULT_WALKER_PAY.walk_45,
-      walk_60: existingRates.walk_60 ?? DEFAULT_WALKER_PAY.walk_60,
-      petsit_walker_location: existingRates.petsit_walker_location ?? DEFAULT_SITTER_PAY.petsit_walker_location,
-      petsit_client_location: existingRates.petsit_client_location ?? DEFAULT_SITTER_PAY.petsit_client_location,
+      // Walks
+      walk_30: existingRates.walk_30 ?? DEFAULT_PAY_RATES.walk_30,
+      walk_45: existingRates.walk_45 ?? DEFAULT_PAY_RATES.walk_45,
+      walk_60: existingRates.walk_60 ?? DEFAULT_PAY_RATES.walk_60,
+      standard_walk: existingRates.standard_walk ?? DEFAULT_PAY_RATES.standard_walk,
+      // Overnight/Pet Sitting
+      overnight: existingRates.overnight ?? DEFAULT_PAY_RATES.overnight,
+      stay_overnight: existingRates.stay_overnight ?? DEFAULT_PAY_RATES.stay_overnight,
+      petsit_our_location: existingRates.petsit_our_location ?? DEFAULT_PAY_RATES.petsit_our_location,
+      petsit_your_location: existingRates.petsit_your_location ?? DEFAULT_PAY_RATES.petsit_your_location,
+      // Day Care
+      doggy_day_care: existingRates.doggy_day_care ?? DEFAULT_PAY_RATES.doggy_day_care,
+      doggy_day_camp: existingRates.doggy_day_camp ?? DEFAULT_PAY_RATES.doggy_day_camp,
+      day_visit: existingRates.day_visit ?? DEFAULT_PAY_RATES.day_visit,
+      // Concierge/Transport
+      concierge: existingRates.concierge ?? DEFAULT_PAY_RATES.concierge,
+      transport: existingRates.transport ?? DEFAULT_PAY_RATES.transport,
     });
     setPaySetupMode(true);
+    setEditMode(false);
   };
 
   const savePayRates = async () => {
@@ -130,8 +143,56 @@ const AdminWalkersPage = () => {
   };
 
   const useDefaultRates = () => {
-    setPayRates({...DEFAULT_WALKER_PAY, ...DEFAULT_SITTER_PAY});
+    setPayRates({...DEFAULT_PAY_RATES});
     toast.info('Default rates applied');
+  };
+
+  // Edit user info
+  const initEditMode = (walker) => {
+    setEditForm({
+      username: walker.username || '',
+      email: walker.email || '',
+      password: '', // Don't show existing password
+      full_name: walker.full_name || '',
+      phone: walker.phone || '',
+      bio: walker.bio || '',
+    });
+    setEditMode(true);
+    setPaySetupMode(false);
+  };
+
+  const saveUserInfo = async () => {
+    if (!selectedWalker) return;
+    setSaving(true);
+    try {
+      const updateData = {
+        full_name: editForm.full_name,
+        email: editForm.email,
+        phone: editForm.phone,
+        bio: editForm.bio,
+      };
+      
+      // Only include username if changed
+      if (editForm.username && editForm.username !== selectedWalker.username) {
+        updateData.username = editForm.username;
+      }
+      
+      // Only include password if provided
+      if (editForm.password) {
+        updateData.password = editForm.password;
+      }
+      
+      await api.put(`/users/${selectedWalker.id}`, updateData);
+      toast.success('User info updated successfully!');
+      setEditMode(false);
+      fetchWalkers();
+      // Update selected walker
+      setSelectedWalker({...selectedWalker, ...updateData});
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update user info');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const resetForm = () => {
