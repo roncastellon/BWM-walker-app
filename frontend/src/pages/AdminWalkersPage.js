@@ -957,6 +957,7 @@ const AdminWalkersPage = () => {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
           </DialogContent>
