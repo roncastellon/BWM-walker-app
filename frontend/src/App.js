@@ -26,6 +26,7 @@ import AdminClientsPage from "./pages/AdminClientsPage";
 import AdminWalkersPage from "./pages/AdminWalkersPage";
 import AdminSittersPage from "./pages/AdminSittersPage";
 import AdminInvoicesPage from "./pages/AdminInvoicesPage";
+import AdminPayrollPage from "./pages/AdminPayrollPage";
 import AdminProfilePage from "./pages/AdminProfilePage";
 import LiveTrackingPage from "./pages/LiveTrackingPage";
 import MassTextPage from "./pages/MassTextPage";
