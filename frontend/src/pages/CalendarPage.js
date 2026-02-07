@@ -1417,13 +1417,78 @@ const CalendarPage = () => {
                     </div>
                   )}
 
-                  {/* Duration info if completed */}
-                  {appointmentDetail.status === 'completed' && appointmentDetail.actual_duration_minutes && (
-                    <div className="p-3 rounded-lg bg-green-50 text-green-800">
-                      <p className="text-sm">
-                        <Clock className="w-4 h-4 inline mr-1" />
-                        Completed in {appointmentDetail.actual_duration_minutes} minutes
-                      </p>
+                  {/* Completion Data - shown for completed walks */}
+                  {appointmentDetail.status === 'completed' && (
+                    <div className="space-y-3 border-t pt-3">
+                      <h4 className="font-medium text-sm flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        Walk Completion Report
+                      </h4>
+                      
+                      {/* Duration */}
+                      {appointmentDetail.actual_duration_minutes && (
+                        <div className="p-3 rounded-lg bg-green-50 text-green-800">
+                          <p className="text-sm">
+                            <Clock className="w-4 h-4 inline mr-1" />
+                            Completed in <strong>{appointmentDetail.actual_duration_minutes} minutes</strong>
+                          </p>
+                          {appointmentDetail.start_time && appointmentDetail.end_time && (
+                            <p className="text-xs mt-1">
+                              {formatTime12Hour(appointmentDetail.start_time.split('T')[1]?.substring(0,5))} - {formatTime12Hour(appointmentDetail.end_time.split('T')[1]?.substring(0,5))}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Pee, Poop & Water Status */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="p-2 rounded-lg bg-yellow-50 border border-yellow-100 text-center">
+                          <p className="text-lg font-bold text-yellow-700">{appointmentDetail.pee_count || 0}</p>
+                          <p className="text-xs text-yellow-600">🟡 Pee</p>
+                        </div>
+                        <div className="p-2 rounded-lg bg-amber-50 border border-amber-100 text-center">
+                          <p className="text-lg font-bold text-amber-700">{appointmentDetail.poop_count || 0}</p>
+                          <p className="text-xs text-amber-600">💩 Poop</p>
+                        </div>
+                        <div className={`p-2 rounded-lg text-center ${appointmentDetail.water_given ? 'bg-blue-50 border border-blue-100' : 'bg-gray-50 border border-gray-100'}`}>
+                          <p className={`text-lg font-bold ${appointmentDetail.water_given ? 'text-blue-700' : 'text-gray-400'}`}>
+                            {appointmentDetail.water_given ? '✓' : '—'}
+                          </p>
+                          <p className={`text-xs ${appointmentDetail.water_given ? 'text-blue-600' : 'text-gray-400'}`}>💧 Water</p>
+                        </div>
+                      </div>
+                      
+                      {/* Walker Notes */}
+                      {appointmentDetail.walker_notes && (
+                        <div className="p-3 rounded-lg bg-sky-50 border border-sky-100">
+                          <p className="font-medium text-xs text-sky-700 mb-1">Walker Notes:</p>
+                          <p className="text-sm text-gray-700">{appointmentDetail.walker_notes}</p>
+                        </div>
+                      )}
+                      
+                      {/* GPS Route */}
+                      {appointmentDetail.gps_route && appointmentDetail.gps_route.length > 0 ? (
+                        <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-blue-500" />
+                              <p className="font-medium text-sm text-blue-700">GPS Route Recorded</p>
+                            </div>
+                            <Badge className="bg-blue-100 text-blue-700">
+                              {appointmentDetail.gps_route.length} points
+                            </Badge>
+                          </div>
+                          {appointmentDetail.distance_meters && (
+                            <p className="text-xs text-blue-600 mt-1">
+                              Distance: {(appointmentDetail.distance_meters / 1609.34).toFixed(2)} miles
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="p-2 rounded-lg bg-gray-50 text-center">
+                          <p className="text-xs text-gray-500">No GPS route recorded</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
