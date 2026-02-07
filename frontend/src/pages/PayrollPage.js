@@ -135,49 +135,49 @@ const PayrollPage = () => {
 
   return (
     <Layout>
-      <div className="space-y-6" data-testid="payroll-page">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="space-y-4 sm:space-y-6 px-2 sm:px-0" data-testid="payroll-page">
+        {/* Header - Mobile First */}
+        <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-heading font-bold">Time Sheets & Payroll</h1>
-            <p className="text-muted-foreground">Track your completed services and submit for payment</p>
+            <h1 className="text-xl sm:text-2xl font-heading font-bold">Time Sheets & Payroll</h1>
+            <p className="text-sm text-muted-foreground">Track your completed services and submit for payment</p>
           </div>
-          <Button variant="outline" className="rounded-full" onClick={fetchData}>
+          <Button variant="outline" className="rounded-full w-full sm:w-auto" onClick={fetchData}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
         </div>
 
-        {/* Pay Rates Info */}
+        {/* Pay Rates Info - Collapsible on mobile */}
         <Card className="rounded-2xl shadow-sm bg-primary/5 border-primary/20">
-          <CardContent className="p-4">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-medium text-sm w-24">Walks:</span>
-                <Badge className="bg-sky-100 text-sky-800 rounded-full">30-min: ${currentPayroll?.pay_rates?.walk_30 || 15}</Badge>
-                <Badge className="bg-sky-100 text-sky-800 rounded-full">45-min: ${currentPayroll?.pay_rates?.walk_45 || 22}</Badge>
-                <Badge className="bg-sky-100 text-sky-800 rounded-full">60-min: ${currentPayroll?.pay_rates?.walk_60 || 30}</Badge>
+          <CardContent className="p-3 sm:p-4">
+            <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-medium w-20 sm:w-24">Walks:</span>
+                <Badge className="bg-sky-100 text-sky-800 rounded-full text-xs">30m: ${currentPayroll?.pay_rates?.walk_30 || 15}</Badge>
+                <Badge className="bg-sky-100 text-sky-800 rounded-full text-xs">45m: ${currentPayroll?.pay_rates?.walk_45 || 22}</Badge>
+                <Badge className="bg-sky-100 text-sky-800 rounded-full text-xs">60m: ${currentPayroll?.pay_rates?.walk_60 || 30}</Badge>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-medium text-sm w-24">Overnight:</span>
-                <Badge className="bg-purple-100 text-purple-800 rounded-full">Stay: ${currentPayroll?.pay_rates?.overnight || 30}</Badge>
-                <Badge className="bg-purple-100 text-purple-800 rounded-full">Our Location: ${currentPayroll?.pay_rates?.petsit_our_location || 40}</Badge>
-                <Badge className="bg-purple-100 text-purple-800 rounded-full">Client Location: ${currentPayroll?.pay_rates?.petsit_your_location || 50}</Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-medium w-20 sm:w-24">Overnight:</span>
+                <Badge className="bg-purple-100 text-purple-800 rounded-full text-xs">Stay: ${currentPayroll?.pay_rates?.overnight || 30}</Badge>
+                <Badge className="bg-purple-100 text-purple-800 rounded-full text-xs">Our: ${currentPayroll?.pay_rates?.petsit_our_location || 40}</Badge>
+                <Badge className="bg-purple-100 text-purple-800 rounded-full text-xs">Yours: ${currentPayroll?.pay_rates?.petsit_your_location || 50}</Badge>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-medium text-sm w-24">Other:</span>
-                <Badge className="bg-orange-100 text-orange-800 rounded-full">Day Care: ${currentPayroll?.pay_rates?.doggy_day_care || 25}</Badge>
-                <Badge className="bg-orange-100 text-orange-800 rounded-full">Concierge: ${currentPayroll?.pay_rates?.concierge || 30}</Badge>
-                <Badge className="bg-orange-100 text-orange-800 rounded-full">Transport: ${currentPayroll?.pay_rates?.transport || 20}</Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-medium w-20 sm:w-24">Other:</span>
+                <Badge className="bg-orange-100 text-orange-800 rounded-full text-xs">Day Care: ${currentPayroll?.pay_rates?.doggy_day_care || 25}</Badge>
+                <Badge className="bg-orange-100 text-orange-800 rounded-full text-xs">Concierge: ${currentPayroll?.pay_rates?.concierge || 30}</Badge>
+                <Badge className="bg-orange-100 text-orange-800 rounded-full text-xs">Transport: ${currentPayroll?.pay_rates?.transport || 20}</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Current Period Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Current Period Summary - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Services Completed</p>
