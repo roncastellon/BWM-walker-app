@@ -2246,7 +2246,7 @@ async def check_walker_availability(walker_id: str, scheduled_date: str, schedul
             return {
                 "available": False,
                 "conflict_time": appt.get("scheduled_time"),
-                "message": f"Walker has a walk at {appt.get('scheduled_time')} that ends at {minutes_to_time(existing_end)}. Next walk can start at {minutes_to_time(existing_end + buffer_minutes)} (15-min buffer after walk ends)."
+                "message": f"Walker has a walk at {format_time_12h(appt.get('scheduled_time'))} that ends at {minutes_to_time_12h(existing_end)}. Next walk can start at {minutes_to_time_12h(existing_end + buffer_minutes)} (15-min buffer after walk ends)."
             }
         
         # Case 2: New walk would end during or too close to existing walk start
@@ -2256,7 +2256,7 @@ async def check_walker_availability(walker_id: str, scheduled_date: str, schedul
             return {
                 "available": False,
                 "conflict_time": appt.get("scheduled_time"),
-                "message": f"Walker has a walk starting at {appt.get('scheduled_time')}. Your walk would end too close to it (15-min buffer required)."
+                "message": f"Walker has a walk starting at {format_time_12h(appt.get('scheduled_time'))}. Your walk would end too close to it (15-min buffer required)."
             }
         
         # Case 3: New walk completely overlaps existing walk
@@ -2264,7 +2264,7 @@ async def check_walker_availability(walker_id: str, scheduled_date: str, schedul
             return {
                 "available": False,
                 "conflict_time": appt.get("scheduled_time"),
-                "message": f"Walker already has a walk scheduled at {appt.get('scheduled_time')}."
+                "message": f"Walker already has a walk scheduled at {format_time_12h(appt.get('scheduled_time'))}."
             }
     
     return {"available": True}
