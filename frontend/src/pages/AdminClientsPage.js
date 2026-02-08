@@ -893,7 +893,7 @@ SAMPLE APPOINTMENTS:`;
         <div className="flex flex-col gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-heading font-bold">Clients</h1>
-            <p className="text-sm text-muted-foreground">{filteredPets.length} pets • {clients.length} owners</p>
+            <p className="text-sm text-muted-foreground">{totalPets} pets • {clients.length} owners</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
