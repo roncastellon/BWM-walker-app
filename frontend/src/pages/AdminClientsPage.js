@@ -859,56 +859,22 @@ SAMPLE APPOINTMENTS:`;
     setDeleteConfirmOpen(true);
   };
 
-  // Create pet-centric list - each pet as primary, with owner info
-  const getPetList = () => {
-    const petList = [];
-    clients.forEach(client => {
-      const clientPets = client.pets || [];
-      if (clientPets.length > 0) {
-        clientPets.forEach(pet => {
-          petList.push({
-            ...pet,
-            owner: client,
-            ownerId: client.id,
-            ownerName: client.full_name,
-            ownerEmail: client.email,
-            ownerPhone: client.phone,
-            ownerActive: client.is_active,
-          });
-        });
-      } else {
-        // Clients with no pets - show as placeholder
-        petList.push({
-          id: `no-pet-${client.id}`,
-          name: 'No pets yet',
-          species: 'none',
-          owner: client,
-          ownerId: client.id,
-          ownerName: client.full_name,
-          ownerEmail: client.email,
-          ownerPhone: client.phone,
-          ownerActive: client.is_active,
-          isPlaceholder: true,
-        });
-      }
-    });
-    return petList;
-  };
-
-  // Filter and sort by pet name
-  const filteredPets = getPetList()
-    .filter(pet =>
-      pet.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pet.ownerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pet.ownerEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter clients and sort by first pet name
+  const filteredClients = clients
+    .filter(client =>
+      client.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.pets?.some(pet => pet.name?.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
-      // Placeholders at the end
-      if (a.isPlaceholder && !b.isPlaceholder) return 1;
-      if (!a.isPlaceholder && b.isPlaceholder) return -1;
-      // Sort by pet name alphabetically
-      return (a.name || '').localeCompare(b.name || '');
+      // Get first pet name for sorting
+      const aPetName = a.pets?.[0]?.name || 'zzz'; // No pets go to end
+      const bPetName = b.pets?.[0]?.name || 'zzz';
+      return aPetName.localeCompare(bPetName);
     });
+
+  // Count total pets
+  const totalPets = clients.reduce((sum, c) => sum + (c.pets?.length || 0), 0);
 
   if (loading) {
     return (
