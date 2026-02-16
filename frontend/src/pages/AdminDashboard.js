@@ -52,6 +52,9 @@ const AdminDashboard = () => {
     changeType: 'one_time', // 'one_time' (first/default) or 'permanent'
     specificDate: ''
   });
+  
+  // Schedule view filter - default to pending
+  const [scheduleViewFilter, setScheduleViewFilter] = useState('pending');
 
   useEffect(() => {
     fetchData();
