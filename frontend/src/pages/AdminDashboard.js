@@ -389,18 +389,45 @@ const AdminDashboard = () => {
 
             {/* Today's Appointments */}
             <Card className="rounded-xl">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" />
                   Today&apos;s Schedule
-                  <Badge variant="secondary" className="rounded-full ml-2">{todayAppts.length}</Badge>
+                  <Badge variant="secondary" className="rounded-full ml-2">{allTodayAppts.length}</Badge>
                 </CardTitle>
+                {/* Filter Tabs */}
+                <div className="flex gap-1 mt-2">
+                  <Button
+                    size="sm"
+                    variant={scheduleViewFilter === 'pending' ? 'default' : 'outline'}
+                    className="rounded-full text-xs h-7 px-3"
+                    onClick={() => setScheduleViewFilter('pending')}
+                  >
+                    Pending ({pendingCount})
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={scheduleViewFilter === 'completed' ? 'default' : 'outline'}
+                    className="rounded-full text-xs h-7 px-3"
+                    onClick={() => setScheduleViewFilter('completed')}
+                  >
+                    Completed ({completedCount})
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={scheduleViewFilter === 'cancelled' ? 'default' : 'outline'}
+                    className="rounded-full text-xs h-7 px-3"
+                    onClick={() => setScheduleViewFilter('cancelled')}
+                  >
+                    Cancelled ({cancelledCount})
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {todayAppts.length === 0 ? (
                   <div className="text-center py-6 text-muted-foreground">
                     <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No appointments today</p>
+                    <p className="text-sm">No {scheduleViewFilter} appointments today</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -432,7 +459,7 @@ const AdminDashboard = () => {
                     {todayAppts.length > 5 && (
                       <Link to="/admin/calendar">
                         <Button variant="ghost" size="sm" className="w-full rounded-full">
-                          View all {todayAppts.length} appointments
+                          View all {todayAppts.length} {scheduleViewFilter} appointments
                         </Button>
                       </Link>
                     )}
