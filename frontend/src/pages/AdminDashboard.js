@@ -201,10 +201,29 @@ const AdminDashboard = () => {
     }
   };
 
-  const todayAppts = appointments.filter(a => {
+  // Get today's appointments
+  const allTodayAppts = appointments.filter(a => {
     const today = new Date().toISOString().split('T')[0];
     return a.scheduled_date === today;
   });
+  
+  // Filter by status view
+  const todayAppts = allTodayAppts.filter(a => {
+    if (scheduleViewFilter === 'pending') {
+      return a.status === 'scheduled' || a.status === 'in_progress';
+    } else if (scheduleViewFilter === 'completed') {
+      return a.status === 'completed';
+    } else if (scheduleViewFilter === 'cancelled') {
+      return a.status === 'cancelled';
+    }
+    return true; // 'all' view
+  });
+  
+  // Count for each status
+  const pendingCount = allTodayAppts.filter(a => a.status === 'scheduled' || a.status === 'in_progress').length;
+  const completedCount = allTodayAppts.filter(a => a.status === 'completed').length;
+  const cancelledCount = allTodayAppts.filter(a => a.status === 'cancelled').length;
+  
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
   const pendingPaysheets = paysheets.filter(ts => !ts.paid);
   const walkerContacts = contacts.filter(c => c.role === 'walker');
