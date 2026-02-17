@@ -723,47 +723,54 @@ const WalkerDashboard = () => {
                     {todayAppointments.map((appt) => (
                       <div
                         key={appt.id}
-                        className={`flex items-center justify-between p-3 rounded-lg ${
+                        className={`p-3 rounded-lg ${
                           appt.status === 'in_progress' ? 'bg-orange-100 border border-orange-400' :
                           appt.status === 'completed' ? 'bg-sky-50' : 'bg-muted/50'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            appt.status === 'in_progress' ? 'bg-orange-500 text-white' :
-                            appt.status === 'completed' ? 'bg-sky-100 text-sky-600' :
-                            'bg-sky-100 text-sky-600'
-                          }`}>
-                            {appt.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                        {/* Top row: Icon, Service info, Status badge */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                              appt.status === 'in_progress' ? 'bg-orange-500 text-white' :
+                              appt.status === 'completed' ? 'bg-sky-100 text-sky-600' :
+                              'bg-sky-100 text-sky-600'
+                            }`}>
+                              {appt.status === 'completed' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium text-sm capitalize truncate">{appt.service_type?.replace('_', ' ')}</p>
+                              <p className="text-xs text-muted-foreground truncate">{formatTime12Hour(appt.scheduled_time)} • {appt.client_name}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
-                            <p className="text-xs text-muted-foreground">{formatTime12Hour(appt.scheduled_time)} • {appt.client_name}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
+                          <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs shrink-0`}>
                             {appt.status?.replace('_', ' ')}
                           </Badge>
-                          {appt.status === 'scheduled' && (
-                            <>
-                              <Button size="sm" variant="ghost" onClick={() => openRescheduleModal(appt)} className="h-8 w-8 p-0" title="Reschedule">
-                                <Clock className="w-4 h-4" />
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => openTradeModal(appt)} className="h-8 w-8 p-0" title="Trade">
-                                <ArrowLeftRight className="w-4 h-4" />
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => openCancelModal(appt)} className="h-8 w-8 p-0 text-destructive hover:text-destructive" title="Cancel">
-                                <X className="w-4 h-4" />
-                              </Button>
-                              {!activeWalk && (
-                                <Button size="sm" variant="outline" onClick={() => startWalk(appt.id)} className="rounded-full">
-                                  <Play className="w-3 h-3" />
-                                </Button>
-                              )}
-                            </>
-                          )}
                         </div>
+                        
+                        {/* Bottom row: Action buttons (only for scheduled) */}
+                        {appt.status === 'scheduled' && (
+                          <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-border/50">
+                            <Button size="sm" variant="outline" onClick={() => openRescheduleModal(appt)} className="h-8 px-2 rounded-full text-xs" title="Reschedule">
+                              <Clock className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">Reschedule</span>
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => openTradeModal(appt)} className="h-8 px-2 rounded-full text-xs" title="Swap">
+                              <ArrowLeftRight className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">Swap</span>
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => openCancelModal(appt)} className="h-8 px-2 rounded-full text-xs text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10" title="Cancel">
+                              <X className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">Cancel</span>
+                            </Button>
+                            {!activeWalk && (
+                              <Button size="sm" onClick={() => startWalk(appt.id)} className="h-8 px-3 rounded-full text-xs bg-green-600 hover:bg-green-700">
+                                <Play className="w-3 h-3 mr-1" />
+                                Start
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
