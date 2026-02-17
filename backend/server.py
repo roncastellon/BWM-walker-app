@@ -5841,6 +5841,68 @@ async def walker_cancel_appointment(
     
     return {"message": "Appointment cancelled and flagged for reassignment"}
 
+class WalkerRescheduleRequest(BaseModel):
+    new_time: str
+
+@api_router.put("/appointments/{appt_id}/walker-reschedule")
+async def walker_reschedule_appointment(
+    appt_id: str,
+    request: WalkerRescheduleRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Walker reschedules their appointment to a later time on the same day"""
+    if current_user["role"] not in ["walker", "sitter"]:
+        raise HTTPException(status_code=403, detail="Only walkers can reschedule appointments")
+    
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if appt["walker_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not your appointment")
+    
+    if appt["status"] != "scheduled":
+        raise HTTPException(status_code=400, detail="Can only reschedule scheduled appointments")
+    
+    # Validate new time is later than current time
+    current_time = appt.get("scheduled_time", "00:00")
+    if request.new_time <= current_time:
+        raise HTTPException(status_code=400, detail="New time must be later than current scheduled time")
+    
+    # Update the appointment time
+    old_time = current_time
+    await db.appointments.update_one(
+        {"id": appt_id},
+        {"$set": {
+            "scheduled_time": request.new_time,
+            "rescheduled_by_walker": True,
+            "rescheduled_from": old_time,
+            "rescheduled_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Notify admin about the reschedule
+    admins = await db.users.find({"role": "admin"}, {"_id": 0}).to_list(100)
+    
+    # Format times for message
+    def format_time(t):
+        if not t: return t
+        h, m = t.split(':')
+        hour = int(h)
+        ampm = 'PM' if hour >= 12 else 'AM'
+        hour12 = hour % 12 or 12
+        return f"{hour12}:{m} {ampm}"
+    
+    for admin in admins:
+        notification = Message(
+            sender_id=current_user["id"],
+            receiver_id=admin["id"],
+            content=f"Walker {current_user['full_name']} rescheduled appointment on {appt['scheduled_date']} from {format_time(old_time)} to {format_time(request.new_time)}."
+        )
+        await db.messages.insert_one(notification.model_dump())
+    
+    return {"message": "Appointment rescheduled successfully"}
+
 
 # ============================================
 # DOG PARK - SOCIAL FEED
