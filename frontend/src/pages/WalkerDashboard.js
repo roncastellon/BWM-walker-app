@@ -1347,6 +1347,60 @@ const WalkerDashboard = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Reschedule Appointment Modal */}
+      <Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              Reschedule Walk
+            </DialogTitle>
+            <DialogDescription>
+              Move this walk to a later time today. You can only reschedule to a later time.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedApptForReschedule && (
+            <div className="p-4 rounded-lg bg-muted/50 my-2">
+              <p className="font-medium capitalize">{selectedApptForReschedule.service_type?.replace('_', ' ')}</p>
+              <p className="text-sm text-muted-foreground">
+                Currently: {selectedApptForReschedule.scheduled_date} at {formatTime12Hour(selectedApptForReschedule.scheduled_time)}
+              </p>
+              {selectedApptForReschedule.pet_names?.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Pets: {selectedApptForReschedule.pet_names.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>New Time (later times only)</Label>
+              <Select value={newScheduledTime} onValueChange={setNewScheduledTime}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a later time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableTimeSlots().map((slot) => (
+                    <SelectItem key={slot.value} value={slot.value}>
+                      {slot.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Only times later than {formatTime12Hour(selectedApptForReschedule?.scheduled_time)} are available
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRescheduleModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleRescheduleAppointment} disabled={saving || !newScheduledTime || newScheduledTime <= selectedApptForReschedule?.scheduled_time}>
+              {saving ? 'Rescheduling...' : 'Reschedule Walk'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Time-Off Request Modal */}
       <Dialog open={timeOffModalOpen} onOpenChange={setTimeOffModalOpen}>
         <DialogContent>
