@@ -1478,6 +1478,116 @@ const WalkerDashboard = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Late Start Modal */}
+      <Dialog open={lateStartModalOpen} onOpenChange={setLateStartModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-orange-600 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              Late Start
+            </DialogTitle>
+            <DialogDescription>
+              This walk was scheduled for {formatTime12Hour(lateStartAppt?.scheduled_time)}. 
+              You are {lateStartMinutes} minutes late.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {lateStartAppt && (
+            <div className="p-4 rounded-lg bg-orange-50 border border-orange-200 my-2">
+              <p className="font-medium capitalize">{lateStartAppt.service_type?.replace('_', ' ')}</p>
+              <p className="text-sm text-muted-foreground">
+                Scheduled: {formatTime12Hour(lateStartAppt.scheduled_time)} • {lateStartAppt.client_name}
+              </p>
+              {lateStartAppt.pet_names?.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Pets: {lateStartAppt.pet_names.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+          
+          <div className="space-y-4 py-2">
+            <p className="text-sm font-medium">What would you like to do?</p>
+            
+            {/* Option 1: Continue anyway */}
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-green-800">Start Walk Now</p>
+                  <p className="text-xs text-green-600">Continue with the walk despite being late</p>
+                </div>
+                <Button 
+                  onClick={handleLateStartContinue} 
+                  className="bg-green-600 hover:bg-green-700 rounded-full"
+                  disabled={saving}
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  Continue
+                </Button>
+              </div>
+            </div>
+            
+            {/* Option 2: Reschedule */}
+            <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+              <div className="space-y-2">
+                <div>
+                  <p className="font-medium text-blue-800">Reschedule Walk</p>
+                  <p className="text-xs text-blue-600">Move to a later time today</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select value={lateRescheduleTime} onValueChange={setLateRescheduleTime}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select new time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getLateRescheduleSlots().map((slot) => (
+                        <SelectItem key={slot.value} value={slot.value}>
+                          {slot.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    onClick={handleLateStartReschedule} 
+                    className="bg-blue-600 hover:bg-blue-700 rounded-full"
+                    disabled={saving || !lateRescheduleTime}
+                  >
+                    <Clock className="w-4 h-4 mr-1" />
+                    Reschedule
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Option 3: Cancel */}
+            <div className="p-3 rounded-lg border bg-red-50 border-red-200">
+              <div className="space-y-2">
+                <div>
+                  <p className="font-medium text-red-800">Cancel Walk</p>
+                  <p className="text-xs text-red-600">Cancel and notify admin (reason required)</p>
+                </div>
+                <Textarea
+                  placeholder="Please explain why you need to cancel..."
+                  value={lateCancelReason}
+                  onChange={(e) => setLateCancelReason(e.target.value)}
+                  rows={2}
+                  className="text-sm"
+                />
+                <Button 
+                  onClick={handleLateStartCancel} 
+                  variant="destructive"
+                  className="w-full rounded-full"
+                  disabled={saving || !lateCancelReason.trim()}
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel Walk
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Reschedule Appointment Modal */}
       <Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
         <DialogContent>
