@@ -245,6 +245,65 @@ const WalkerDashboard = () => {
     }
   };
 
+  // Reschedule appointment (same day, later time only)
+  const openRescheduleModal = (appt) => {
+    setSelectedApptForReschedule(appt);
+    setNewScheduledTime(appt.scheduled_time || '');
+    setRescheduleModalOpen(true);
+  };
+
+  const handleRescheduleAppointment = async () => {
+    if (!selectedApptForReschedule || !newScheduledTime) {
+      toast.error('Please select a new time');
+      return;
+    }
+    
+    // Validate that new time is later than current time
+    const currentTime = selectedApptForReschedule.scheduled_time;
+    if (newScheduledTime <= currentTime) {
+      toast.error('New time must be later than the current scheduled time');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      await api.put(`/appointments/${selectedApptForReschedule.id}/walker-reschedule`, {
+        new_time: newScheduledTime
+      });
+      toast.success('Appointment rescheduled successfully');
+      setRescheduleModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to reschedule appointment');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Generate available time slots (only times later than current)
+  const getAvailableTimeSlots = () => {
+    if (!selectedApptForReschedule) return [];
+    const currentTime = selectedApptForReschedule.scheduled_time;
+    const slots = [];
+    
+    // Generate 30-minute slots from current time to 8 PM
+    for (let hour = 6; hour <= 20; hour++) {
+      for (let min = 0; min < 60; min += 30) {
+        const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+        // Only include times later than current scheduled time
+        if (timeStr > currentTime) {
+          const hour12 = hour % 12 || 12;
+          const ampm = hour >= 12 ? 'PM' : 'AM';
+          slots.push({
+            value: timeStr,
+            label: `${hour12}:${min.toString().padStart(2, '0')} ${ampm}`
+          });
+        }
+      }
+    }
+    return slots;
+  };
+
   // Time-off request
   const handleTimeOffRequest = async () => {
     if (!timeOffForm.start_date || !timeOffForm.end_date) {
