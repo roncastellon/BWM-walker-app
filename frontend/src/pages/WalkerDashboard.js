@@ -747,6 +747,9 @@ const WalkerDashboard = () => {
                           </Badge>
                           {appt.status === 'scheduled' && (
                             <>
+                              <Button size="sm" variant="ghost" onClick={() => openRescheduleModal(appt)} className="h-8 w-8 p-0" title="Reschedule">
+                                <Clock className="w-4 h-4" />
+                              </Button>
                               <Button size="sm" variant="ghost" onClick={() => openTradeModal(appt)} className="h-8 w-8 p-0" title="Trade">
                                 <ArrowLeftRight className="w-4 h-4" />
                               </Button>
