@@ -62,6 +62,11 @@ const WalkerDashboard = () => {
   const [timeOffForm, setTimeOffForm] = useState({ start_date: '', end_date: '', reason: '' });
   const [saving, setSaving] = useState(false);
   
+  // Reschedule Modal State
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
+  const [selectedApptForReschedule, setSelectedApptForReschedule] = useState(null);
+  const [newScheduledTime, setNewScheduledTime] = useState('');
+  
   // Walk Completion Dialog State
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [completionAnswers, setCompletionAnswers] = useState({
