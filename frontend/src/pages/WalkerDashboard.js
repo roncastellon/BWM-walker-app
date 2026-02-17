@@ -787,7 +787,10 @@ const WalkerDashboard = () => {
                   </div>
                   <div>
                     <Badge className="bg-sky-100 text-sky-800 rounded-full mb-1">Up Next</Badge>
-                    <p className="font-medium capitalize">{nextWalk.service_type?.replace('_', ' ')}</p>
+                    <p className="font-bold text-lg">
+                      {nextWalk.pet_names?.length > 0 ? nextWalk.pet_names.join(' & ') : 'No pets assigned'}
+                    </p>
+                    <p className="text-sm text-muted-foreground capitalize">{nextWalk.service_type?.replace('_', ' ')}</p>
                     <p className="text-xs text-muted-foreground">{formatTime12Hour(nextWalk.scheduled_time)} • {nextWalk.client_name}</p>
                   </div>
                 </div>
