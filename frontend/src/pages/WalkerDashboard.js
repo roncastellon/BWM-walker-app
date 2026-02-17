@@ -330,7 +330,47 @@ const WalkerDashboard = () => {
     }
   };
 
+  // Check if a walk is late (current time > scheduled time)
+  const isWalkLate = (appt) => {
+    if (!appt?.scheduled_time) return false;
+    const now = new Date();
+    const [hours, minutes] = appt.scheduled_time.split(':').map(Number);
+    const scheduledDate = new Date();
+    scheduledDate.setHours(hours, minutes, 0, 0);
+    return now > scheduledDate;
+  };
+  
+  // Calculate how many minutes late
+  const getMinutesLate = (appt) => {
+    if (!appt?.scheduled_time) return 0;
+    const now = new Date();
+    const [hours, minutes] = appt.scheduled_time.split(':').map(Number);
+    const scheduledDate = new Date();
+    scheduledDate.setHours(hours, minutes, 0, 0);
+    const diffMs = now - scheduledDate;
+    return Math.max(0, Math.floor(diffMs / 60000));
+  };
+
   const startWalk = async (apptId) => {
+    // Find the appointment
+    const appt = todayAppointments.find(a => a.id === apptId);
+    
+    // Check if late
+    if (appt && isWalkLate(appt)) {
+      const minutesLate = getMinutesLate(appt);
+      setLateStartAppt(appt);
+      setLateStartMinutes(minutesLate);
+      setLateCancelReason('');
+      setLateRescheduleTime('');
+      setLateStartModalOpen(true);
+      return;
+    }
+    
+    // Not late - proceed with normal start flow
+    proceedWithStartWalk(apptId);
+  };
+  
+  const proceedWithStartWalk = async (apptId) => {
     setPendingWalkId(apptId);
     setGpsStatus('checking');
     setGpsDialogOpen(true);
@@ -356,6 +396,83 @@ const WalkerDashboard = () => {
     } else {
       setGpsStatus('prompt');
     }
+  };
+  
+  // Handle late start - Continue anyway
+  const handleLateStartContinue = () => {
+    setLateStartModalOpen(false);
+    if (lateStartAppt) {
+      proceedWithStartWalk(lateStartAppt.id);
+    }
+  };
+  
+  // Handle late start - Reschedule
+  const handleLateStartReschedule = async () => {
+    if (!lateStartAppt || !lateRescheduleTime) {
+      toast.error('Please select a new time');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      await api.put(`/appointments/${lateStartAppt.id}/walker-reschedule`, {
+        new_time: lateRescheduleTime
+      });
+      toast.success('Walk rescheduled to ' + formatTime12Hour(lateRescheduleTime));
+      setLateStartModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to reschedule');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  // Handle late start - Cancel
+  const handleLateStartCancel = async () => {
+    if (!lateStartAppt || !lateCancelReason.trim()) {
+      toast.error('Please provide a reason for cancellation');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      await api.post(`/appointments/${lateStartAppt.id}/walker-cancel`, {
+        reason: lateCancelReason
+      });
+      toast.success('Walk cancelled - admin notified');
+      setLateStartModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to cancel');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  // Get available time slots for late reschedule (later times only from now)
+  const getLateRescheduleSlots = () => {
+    const slots = [];
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+    
+    // Start from next 30-min slot after now
+    for (let hour = currentHour; hour <= 20; hour++) {
+      for (let min = 0; min < 60; min += 30) {
+        // Skip times before now
+        if (hour === currentHour && min <= currentMin) continue;
+        
+        const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+        const hour12 = hour % 12 || 12;
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        slots.push({
+          value: timeStr,
+          label: `${hour12}:${min.toString().padStart(2, '0')} ${ampm}`
+        });
+      }
+    }
+    return slots;
   };
 
   const requestGpsPermission = () => {
