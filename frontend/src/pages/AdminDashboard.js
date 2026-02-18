@@ -1067,6 +1067,96 @@ const AdminDashboard = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Walk Completion Dialog */}
+        <Dialog open={completionDialogOpen} onOpenChange={setCompletionDialogOpen}>
+          <DialogContent className="rounded-xl">
+            <DialogHeader>
+              <DialogTitle>Complete Walk</DialogTitle>
+              <DialogDescription>
+                {activeWalk && `Walk with ${activeWalk.pet_names?.join(' & ') || 'pet'}`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label className="font-medium">Did the dog pee?</Label>
+                <div className="flex gap-3 mt-2">
+                  <Button 
+                    variant={completionAnswers.did_pee === true ? 'default' : 'outline'}
+                    onClick={() => setCompletionAnswers({...completionAnswers, did_pee: true})}
+                    className="flex-1 rounded-full"
+                  >
+                    Yes
+                  </Button>
+                  <Button 
+                    variant={completionAnswers.did_pee === false ? 'default' : 'outline'}
+                    onClick={() => setCompletionAnswers({...completionAnswers, did_pee: false})}
+                    className="flex-1 rounded-full"
+                  >
+                    No
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label className="font-medium">Did the dog poop?</Label>
+                <div className="flex gap-3 mt-2">
+                  <Button 
+                    variant={completionAnswers.did_poop === true ? 'default' : 'outline'}
+                    onClick={() => setCompletionAnswers({...completionAnswers, did_poop: true})}
+                    className="flex-1 rounded-full"
+                  >
+                    Yes
+                  </Button>
+                  <Button 
+                    variant={completionAnswers.did_poop === false ? 'default' : 'outline'}
+                    onClick={() => setCompletionAnswers({...completionAnswers, did_poop: false})}
+                    className="flex-1 rounded-full"
+                  >
+                    No
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label className="font-medium">Checked/refilled water?</Label>
+                <div className="flex gap-3 mt-2">
+                  <Button 
+                    variant={completionAnswers.checked_water === true ? 'default' : 'outline'}
+                    onClick={() => setCompletionAnswers({...completionAnswers, checked_water: true})}
+                    className="flex-1 rounded-full"
+                  >
+                    Yes
+                  </Button>
+                  <Button 
+                    variant={completionAnswers.checked_water === false ? 'default' : 'outline'}
+                    onClick={() => setCompletionAnswers({...completionAnswers, checked_water: false})}
+                    className="flex-1 rounded-full"
+                  >
+                    No
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label className="font-medium">Notes (optional)</Label>
+                <Textarea 
+                  value={completionAnswers.notes}
+                  onChange={(e) => setCompletionAnswers({...completionAnswers, notes: e.target.value})}
+                  placeholder="Any notes about the walk..."
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCompletionDialogOpen(false)}>Cancel</Button>
+              <Button 
+                onClick={completeWalk}
+                disabled={completionAnswers.did_pee === null || completionAnswers.did_poop === null}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                Complete Walk
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
