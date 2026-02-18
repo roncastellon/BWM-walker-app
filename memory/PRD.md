@@ -134,6 +134,13 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - Three options: Per Visit (with time), Per Day, Per Night
   - Services list displays billing type badge (per day/per night)
   - User-provided duration_type is respected when creating services
+- ✅ **Admin Dual-Role Walker (Feb 18, 2026)**: Admins can also function as walkers
+  - Added `is_walker` field to users - admins can enable walker mode
+  - PUT `/users/{id}/toggle-walker` endpoint to enable/disable walker status
+  - Admins with is_walker=true appear in the walkers dropdown for assignment
+  - GET `/appointments/my-walks` returns walks assigned to admin
+  - Admin dashboard shows "Up Next" banner with pet names and "Start Walk" button
+  - Full walk completion flow available (pee/poop/water questions, notes)
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
