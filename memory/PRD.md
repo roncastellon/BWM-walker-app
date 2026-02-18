@@ -141,6 +141,15 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - GET `/appointments/my-walks` returns walks assigned to admin
   - Admin dashboard shows "Up Next" banner with pet names and "Start Walk" button
   - Full walk completion flow available (pee/poop/water questions, notes)
+- ✅ **Staff Management Overhaul (Feb 18, 2026)**: Full staff management for all roles
+  - Renamed "Walkers" page to "Staff" page
+  - GET `/users/staff` returns all staff (Admin, Walker, Sitter)
+  - Can create staff with any role: Admin, Walker, Sitter
+  - Admin role can have additional capabilities: is_walker, is_sitter
+  - Walker/Sitter roles can have combo capabilities
+  - Staff cards show role badges (Admin=purple, Walker=orange, Sitter=blue)
+  - Edit staff to change roles and add/remove capabilities
+  - Auto-assigns walker_color when enabling walker/sitter capabilities
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
