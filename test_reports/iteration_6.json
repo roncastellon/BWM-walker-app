@@ -1,0 +1,85 @@
+{
+  "summary": "Bug fix verified: Service pricing edit and billing type selection features are working correctly. Backend PUT /services/{id} accepts JSON body with name, price, description, duration_minutes, duration_type. Frontend shows billing type buttons (Per Visit, Per Day, Per Night) in create/edit forms. Services list displays per day/per night badges.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "AdminInvoicesPage.js - Pricing tab",
+        "issues": ["Minor HTML nesting issue: Badge (div) inside <p> tag on line 1349 causes hydration warning. Change <p> to <div> on line 1346 to fix."]
+      }
+    ]
+  },
+
+  "passed_tests": [
+    "TEST 1: GET /services returns list of services with duration_type field - PASSED",
+    "TEST 2: PUT /services/{id} updates name, price, description via JSON body - PASSED",
+    "TEST 3: PUT /services/{id} updates duration_type field - PASSED",
+    "TEST 4: POST /services with duration_type='minutes' creates per-visit service - PASSED",
+    "TEST 5: POST /services with duration_type='days' creates per-day service - PASSED",
+    "TEST 6: POST /services with duration_type='nights' creates per-night service - PASSED",
+    "TEST 7: DELETE /services/{id} removes service - PASSED",
+    "TEST 8: PUT /services/{id} returns 404 for nonexistent service - PASSED",
+    "UI TEST 1: Pricing tab loads correctly with services list - PASSED",
+    "UI TEST 2: Services with per day/per night duration show badges - PASSED",
+    "UI TEST 3: Add Service form shows billing type selection buttons - PASSED",
+    "UI TEST 4: Edit Service form shows billing type selection buttons - PASSED",
+    "UI TEST 5: Creating Per Day service works - shows success toast - PASSED"
+  ],
+
+  "bug_fix_verification": {
+    "original_issues": [
+      "1) Can't edit service pricing in live environment",
+      "2) Need option to choose billing type (per visit, per day, per night)"
+    ],
+    "fixes_applied": [
+      "Backend PUT /services/{id} now accepts JSON body instead of query params",
+      "Added ServiceUpdate Pydantic model at line 371",
+      "Frontend sends updates as JSON body in updateServicePricing function",
+      "Added duration_type field to edit/create forms with UI buttons",
+      "Backend respects user-provided duration_type when creating services"
+    ],
+    "files_changed": [
+      "/app/backend/server.py - ServiceUpdate model (line 371), PUT endpoint (line 5036)",
+      "/app/frontend/src/pages/AdminInvoicesPage.js - updateServicePricing, createNewService, edit/create forms"
+    ],
+    "verification": "All service pricing edit operations work. Billing type selection available with 3 options: Per Visit (with time), Per Day, Per Night. Services list shows badges for per day/per night services."
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_service_pricing.py",
+    "/app/test_reports/pytest/pytest_service_pricing.xml"
+  ],
+  
+  "action_items": [
+    "Optional: Fix minor HTML nesting issue - change <p> to <div> on AdminInvoicesPage.js line 1346 to avoid hydration warning"
+  ],
+  
+  "critical_code_review_comments": [],
+
+  "updated_files": [
+    "/app/backend/tests/test_service_pricing.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (8/8 tests passed)",
+    "frontend": "100% (5/5 UI tests passed)"
+  },
+
+  "test_credentials": {
+    "admin": {"username": "demo_admin", "password": "demo123"}
+  },
+
+  "seed_data_creation": "Created TEST Per Day Service during UI testing (deleted after verification)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Service pricing features verified working: 1) PUT /services/{id} accepts JSON body with name, price, description, duration_minutes, duration_type. 2) POST /services accepts duration_type for new services (minutes/days/nights). 3) Frontend shows billing type selection buttons in create/edit forms. 4) Services list shows 'per day' and 'per night' badges. All tests passed."
+}
