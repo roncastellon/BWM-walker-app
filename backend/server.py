@@ -2066,8 +2066,13 @@ async def create_service(service: ServicePricing, current_user: dict = Depends(g
         # Create a slug from the name: "Doggy Day Camp" -> "doggy_day_camp"
         service_dict['service_type'] = service_dict['name'].lower().replace(' ', '_').replace('-', '_')
     
-    # Auto-detect duration type based on service type
-    service_dict['duration_type'] = get_service_duration_type(service_dict['service_type'])
+    # Use user-provided duration_type if not default, otherwise auto-detect
+    if service_dict.get('duration_type') == 'minutes':
+        # Check if we should auto-detect based on service name
+        auto_detected = get_service_duration_type(service_dict['service_type'])
+        if auto_detected != 'minutes':
+            service_dict['duration_type'] = auto_detected
+    # If user explicitly set days or nights, keep it
     
     # Ensure we have a unique service_type
     existing = await db.services.find_one({"service_type": service_dict['service_type']}, {"_id": 0})
