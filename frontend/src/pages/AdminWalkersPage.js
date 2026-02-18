@@ -210,7 +210,7 @@ const AdminWalkersPage = () => {
       setEditMode(false);
       fetchStaff();
       // Update selected walker
-      setSelectedWalker({...selectedStaff, ...updateData});
+      setSelectedStaff({...selectedStaff, ...updateData});
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to update user info');
     } finally {
@@ -260,10 +260,10 @@ const AdminWalkersPage = () => {
         scheduled: scheduledWalks,
         total: walkerAppts.length,
       });
-      setSelectedWalker(walker);
+      setSelectedStaff(walker);
     } catch (error) {
       setWalkerStats({ completed: 0, scheduled: 0, total: 0 });
-      setSelectedWalker(walker);
+      setSelectedStaff(walker);
     }
   };
 
@@ -275,7 +275,7 @@ const AdminWalkersPage = () => {
       toast.success(`${userToDelete.full_name} has been deleted`);
       setDeleteConfirmOpen(false);
       setUserToDelete(null);
-      setSelectedWalker(null);
+      setSelectedStaff(null);
       fetchStaff();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to delete user');
@@ -664,7 +664,7 @@ const AdminWalkersPage = () => {
         )}
 
         {/* Walker Details Dialog */}
-        <Dialog open={!!selectedStaff} onOpenChange={() => { setSelectedWalker(null); setPaySetupMode(false); setEditMode(false); }}>
+        <Dialog open={!!selectedStaff} onOpenChange={() => { setSelectedStaff(null); setPaySetupMode(false); setEditMode(false); }}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editMode ? 'Edit Walker Info' : 'Walker Details'}</DialogTitle>
