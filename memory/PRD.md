@@ -126,6 +126,14 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ **Walker Dashboard Pet Names Fix (Feb 18, 2026)**: "Up Next" banner now shows pet names
   - Updated `/appointments` endpoint to include `pet_names` and `client_name`
   - Walker can now see which pet(s) they're walking at a glance
+- ✅ **Service Pricing Edit Fix (Feb 18, 2026)**: Fixed pricing edit not working in live
+  - Backend PUT /services/{id} now accepts JSON body instead of query params
+  - Added ServiceUpdate Pydantic model for validation
+  - Frontend sends updates as JSON body
+- ✅ **Billing Type Selection (Feb 18, 2026)**: Create/edit services with billing type
+  - Three options: Per Visit (with time), Per Day, Per Night
+  - Services list displays billing type badge (per day/per night)
+  - User-provided duration_type is respected when creating services
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
