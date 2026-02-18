@@ -878,13 +878,30 @@ async def get_sitters(current_user: dict = Depends(get_current_user)):
     return sitters
 
 @api_router.get("/users/staff")
-async def get_all_staff(current_user: dict = Depends(get_current_user)):
-    """Get all walkers and sitters (staff who can be assigned appointments)"""
-    staff = await db.users.find(
-        {"role": {"$in": ["walker", "sitter"]}, "is_active": True}, 
-        {"_id": 0, "password_hash": 0}
-    ).to_list(200)
-    return staff
+async def get_all_staff(include_frozen: bool = False, current_user: dict = Depends(get_current_user)):
+    """Get all staff members (admins, walkers, sitters)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Include all staff roles
+    query = {"role": {"$in": ["admin", "walker", "sitter"]}}
+    if not include_frozen:
+        query["is_active"] = True
+    
+    staff = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(200)
+    
+    # Auto-assign colors to staff who do walks/sits and don't have a color
+    default_colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
+    color_index = 0
+    
+    for member in staff:
+        if (member.get('role') in ['walker', 'sitter'] or member.get('is_walker') or member.get('is_sitter')):
+            if not member.get('walker_color'):
+                member['walker_color'] = default_colors[color_index % len(default_colors)]
+                await db.users.update_one({"id": member['id']}, {"$set": {"walker_color": member['walker_color']}})
+                color_index += 1
+    
+    return [UserResponse(**s) for s in staff]
 
 @api_router.put("/users/{user_id}/color")
 async def update_walker_color(user_id: str, color: str, current_user: dict = Depends(get_current_user)):
