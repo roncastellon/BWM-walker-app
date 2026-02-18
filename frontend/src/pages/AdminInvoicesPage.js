@@ -1282,38 +1282,89 @@ const AdminBillingPage = () => {
                 {/* Existing Services */}
                 <div className="space-y-3">
                   {services.map((service) => (
-                    <div key={service.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50" data-testid={`service-${service.id}`}>
+                    <div key={service.id} className="flex flex-col p-3 rounded-lg bg-muted/50" data-testid={`service-${service.id}`}>
                       {editingService === service.id ? (
-                        <div className="flex-1 grid grid-cols-3 gap-2">
-                          <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Service name" />
-                          <Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} placeholder="Price" />
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Service name" />
+                            <Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} placeholder="Price" />
+                          </div>
                           <Input value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} placeholder="Description" />
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
-                            <DollarSign className="w-5 h-5 text-sky-600" />
+                          <div>
+                            <Label className="text-xs font-medium mb-1 block">Billing Type</Label>
+                            <div className="flex gap-2">
+                              <Button 
+                                type="button"
+                                size="sm"
+                                variant={editForm.duration_type === 'minutes' ? 'default' : 'outline'}
+                                onClick={() => setEditForm({...editForm, duration_type: 'minutes'})}
+                                className="rounded-full flex-1 text-xs"
+                              >
+                                Per Visit
+                              </Button>
+                              <Button 
+                                type="button"
+                                size="sm"
+                                variant={editForm.duration_type === 'days' ? 'default' : 'outline'}
+                                onClick={() => setEditForm({...editForm, duration_type: 'days'})}
+                                className="rounded-full flex-1 text-xs"
+                              >
+                                Per Day
+                              </Button>
+                              <Button 
+                                type="button"
+                                size="sm"
+                                variant={editForm.duration_type === 'nights' ? 'default' : 'outline'}
+                                onClick={() => setEditForm({...editForm, duration_type: 'nights'})}
+                                className="rounded-full flex-1 text-xs"
+                              >
+                                Per Night
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{service.name}</p>
-                            <p className="text-xs text-muted-foreground">{service.description}</p>
-                          </div>
-                          <p className="text-lg font-bold text-sky-600">${service.price.toFixed(2)}</p>
-                        </div>
-                      )}
-                      <div className="flex gap-2 ml-3">
-                        {editingService === service.id ? (
-                          <>
+                          {editForm.duration_type === 'minutes' && (
+                            <Input 
+                              type="number" 
+                              value={editForm.duration} 
+                              onChange={(e) => setEditForm({ ...editForm, duration: e.target.value })} 
+                              placeholder="Duration (minutes)" 
+                            />
+                          )}
+                          <div className="flex gap-2">
                             <Button size="sm" onClick={() => updateServicePricing(service.id)} className="rounded-full"><Save className="w-3 h-3 mr-1" /> Save</Button>
                             <Button size="sm" variant="outline" onClick={() => setEditingService(null)} className="rounded-full">Cancel</Button>
-                          </>
-                        ) : (
-                          <>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+                              <DollarSign className="w-5 h-5 text-sky-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{service.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {service.description}
+                                {service.duration_type && service.duration_type !== 'minutes' && (
+                                  <Badge className="ml-2 bg-blue-100 text-blue-700 text-[10px]">
+                                    per {service.duration_type === 'days' ? 'day' : 'night'}
+                                  </Badge>
+                                )}
+                              </p>
+                            </div>
+                            <p className="text-lg font-bold text-sky-600">
+                              ${service.price.toFixed(2)}
+                              {service.duration_type && service.duration_type !== 'minutes' && (
+                                <span className="text-xs font-normal text-muted-foreground">/{service.duration_type === 'days' ? 'day' : 'night'}</span>
+                              )}
+                            </p>
+                          </div>
+                          <div className="flex gap-2 ml-3">
                             <Button size="sm" variant="outline" onClick={() => startEditing(service)} className="rounded-full" data-testid={`edit-service-${service.id}`}><Edit2 className="w-3 h-3" /></Button>
                             <Button size="sm" variant="outline" onClick={() => deleteService(service.id)} className="rounded-full text-red-500 hover:text-red-600"><Trash2 className="w-3 h-3" /></Button>
-                          </>
-                        )}
-                      </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
