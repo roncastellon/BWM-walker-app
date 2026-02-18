@@ -177,12 +177,13 @@ const AdminBillingPage = () => {
         name: newService.name,
         price: parseFloat(newService.price),
         description: newService.description || '',
-        duration_minutes: newService.duration ? parseInt(newService.duration) : 30
+        duration_minutes: newService.duration ? parseInt(newService.duration) : (newService.duration_type === 'minutes' ? 30 : 1),
+        duration_type: newService.duration_type || 'minutes'
       });
       
       console.log('Service created:', response.data);
       toast.success(`Service "${newService.name}" created successfully!`);
-      setNewService({ name: '', price: '', description: '', duration: '' });
+      setNewService({ name: '', price: '', description: '', duration: '', duration_type: 'minutes' });
       setShowNewServiceForm(false);
       fetchAllData();
     } catch (error) {
