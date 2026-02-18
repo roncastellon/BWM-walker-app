@@ -110,6 +110,17 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - User info and logout at bottom
   - Semi-transparent overlay backdrop
   - Smaller header and touch-friendly buttons
+- ✅ **Overnights Calendar (Feb 18, 2026)**: Dedicated calendar for overnight stays
+  - Week view showing overnight boardings
+  - Check-in on arrival day, Check-out on departure
+  - "Stays Ending Today" alert after 6 PM with extend/complete options
+  - Extend stay by 1-7 nights
+  - "Currently Staying" summary section
+- ✅ **Daycare Calendar (Feb 18, 2026)**: Dedicated calendar for daily daycare
+  - Summary: "Currently Here" and "Awaiting Check-in" counts
+  - Quick Check-in/Pick-up buttons
+  - Pickup notes for end-of-day handoff
+  - Week view with status badges (Expected, Here, Done)
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
