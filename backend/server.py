@@ -2843,6 +2843,10 @@ async def get_appointments(current_user: dict = Depends(get_current_user)):
         query['client_id'] = current_user['id']
     elif current_user['role'] == 'walker':
         query['walker_id'] = current_user['id']
+    elif current_user['role'] == 'admin':
+        # Admins can also be assigned walks - get walks where they are the walker
+        # This allows admins with dual roles to see their assigned walks
+        query['walker_id'] = current_user['id']
     
     appointments = await db.appointments.find(query, {"_id": 0}).to_list(500)
     
