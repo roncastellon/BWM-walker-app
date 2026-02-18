@@ -620,7 +620,7 @@ const AdminWalkersPage = () => {
                       </div>
                     )}
                     {member.bio && (
-                      <p className="text-muted-foreground text-xs mt-2 line-clamp-2">{walker.bio}</p>
+                      <p className="text-muted-foreground text-xs mt-2 line-clamp-2">{member.bio}</p>
                     )}
                   </div>
                   {/* Quick Actions */}
@@ -628,19 +628,19 @@ const AdminWalkersPage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleFreezeUser(walker.id, walker.is_active !== false); }}
-                      className={walker.is_active === false ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}
+                      onClick={(e) => { e.stopPropagation(); handleFreezeUser(member.id, member.is_active !== false); }}
+                      className={member.is_active === false ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}
                     >
-                      {walker.is_active === false ? <Unlock className="w-4 h-4 mr-1" /> : <Lock className="w-4 h-4 mr-1" />}
-                      {walker.is_active === false ? 'Unfreeze' : 'Freeze'}
+                      {member.is_active === false ? <Unlock className="w-4 h-4 mr-1" /> : <Lock className="w-4 h-4 mr-1" />}
+                      {member.is_active === false ? 'Unfreeze' : 'Freeze'}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={(e) => { 
                         e.stopPropagation(); 
-                        setSelectedWalker(walker);
-                        initPaySetup(walker);
+                        setSelectedStaff(member);
+                        initPaySetup(member);
                       }}
                       className="text-green-600 hover:bg-green-50"
                     >
