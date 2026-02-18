@@ -3190,7 +3190,11 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
             service_type=service_type,
             scheduled_date=scheduled_date,
             scheduled_time=scheduled_time,
-            notes=appt_data.get('notes', '')
+            notes=appt_data.get('notes', ''),
+            end_date=appt_data.get('end_date'),
+            duration_type=appt_data.get('duration_type', 'minutes'),
+            duration_value=appt_data.get('duration_value', 1),
+            status=appt_data.get('status', 'scheduled')
         )
         appt_dict = appointment.model_dump()
         appt_dict['created_at'] = appt_dict['created_at'].isoformat()
