@@ -1214,13 +1214,58 @@ const AdminBillingPage = () => {
                         value={newService.description} 
                         onChange={(e) => setNewService({...newService, description: e.target.value})} 
                         placeholder="Description" 
+                        className="col-span-2"
                       />
-                      <Input 
-                        type="number" 
-                        value={newService.duration} 
-                        onChange={(e) => setNewService({...newService, duration: e.target.value})} 
-                        placeholder="Duration (minutes)" 
-                      />
+                      <div className="col-span-2">
+                        <Label className="text-sm font-medium mb-2 block">Billing Type</Label>
+                        <div className="flex gap-2">
+                          <Button 
+                            type="button"
+                            size="sm"
+                            variant={newService.duration_type === 'minutes' ? 'default' : 'outline'}
+                            onClick={() => setNewService({...newService, duration_type: 'minutes', duration: ''})}
+                            className="rounded-full flex-1"
+                          >
+                            <Clock className="w-3 h-3 mr-1" />
+                            Per Visit (with time)
+                          </Button>
+                          <Button 
+                            type="button"
+                            size="sm"
+                            variant={newService.duration_type === 'days' ? 'default' : 'outline'}
+                            onClick={() => setNewService({...newService, duration_type: 'days', duration: ''})}
+                            className="rounded-full flex-1"
+                          >
+                            <Calendar className="w-3 h-3 mr-1" />
+                            Per Day
+                          </Button>
+                          <Button 
+                            type="button"
+                            size="sm"
+                            variant={newService.duration_type === 'nights' ? 'default' : 'outline'}
+                            onClick={() => setNewService({...newService, duration_type: 'nights', duration: ''})}
+                            className="rounded-full flex-1"
+                          >
+                            <Clock className="w-3 h-3 mr-1" />
+                            Per Night
+                          </Button>
+                        </div>
+                      </div>
+                      {newService.duration_type === 'minutes' && (
+                        <Input 
+                          type="number" 
+                          value={newService.duration} 
+                          onChange={(e) => setNewService({...newService, duration: e.target.value})} 
+                          placeholder="Duration (minutes)" 
+                          className="col-span-2"
+                        />
+                      )}
+                      {(newService.duration_type === 'days' || newService.duration_type === 'nights') && (
+                        <div className="col-span-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700">
+                          <p>This service will be billed per {newService.duration_type === 'days' ? 'day' : 'night'}.</p>
+                          <p className="text-xs mt-1">When scheduling, you'll specify the number of {newService.duration_type} with start and end dates.</p>
+                        </div>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={createNewService} className="rounded-full bg-orange-500 hover:bg-orange-600">
