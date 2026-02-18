@@ -9,8 +9,17 @@ import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../components/ui/dialog';
-import { PawPrint, Search, Mail, Phone, Plus, User, Calendar, CheckCircle, Lock, Unlock, Trash2, UserX, DollarSign, AlertCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Checkbox } from '../components/ui/checkbox';
+import { PawPrint, Search, Mail, Phone, Plus, User, Calendar, CheckCircle, Lock, Unlock, Trash2, UserX, DollarSign, AlertCircle, Shield, Moon } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Role configurations
+const ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin', description: 'Full system access', color: 'bg-purple-100 text-purple-800' },
+  { value: 'walker', label: 'Walker', description: 'Dog walking services', color: 'bg-orange-100 text-orange-800' },
+  { value: 'sitter', label: 'Sitter', description: 'Pet sitting/overnight', color: 'bg-blue-100 text-blue-800' },
+];
 
 // Default pay rates - all service types
 const DEFAULT_PAY_RATES = {
@@ -35,13 +44,14 @@ const DEFAULT_PAY_RATES = {
 
 const AdminWalkersPage = () => {
   const { api } = useAuth();
-  const [walkers, setWalkers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedWalker, setSelectedWalker] = useState(null);
-  const [walkerStats, setWalkerStats] = useState({});
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [staffStats, setStaffStats] = useState({});
   const [saving, setSaving] = useState(false);
+  const [roleFilter, setRoleFilter] = useState('all');
   
   // Edit mode state
   const [editMode, setEditMode] = useState(false);
@@ -52,6 +62,9 @@ const AdminWalkersPage = () => {
     full_name: '',
     phone: '',
     bio: '',
+    role: 'walker',
+    is_walker: false,
+    is_sitter: false,
   });
   
   // Pay setup state
@@ -63,27 +76,37 @@ const AdminWalkersPage = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   
-  // Form state for new walker
-  const [walkerForm, setWalkerForm] = useState({
+  // Form state for new staff
+  const [staffForm, setStaffForm] = useState({
     username: '',
     email: '',
     password: '',
     full_name: '',
     phone: '',
     bio: '',
+    role: 'walker',
+    is_walker: false,
+    is_sitter: false,
   });
 
   useEffect(() => {
-    fetchWalkers();
+    fetchStaff();
     fetchPendingPaySetup();
   }, []);
 
-  const fetchWalkers = async () => {
+  const fetchStaff = async () => {
     try {
-      const response = await api.get('/users/walkers?include_frozen=true');
-      setWalkers(response.data);
+      // Fetch all staff (walkers, sitters, admins)
+      const response = await api.get('/users/staff?include_frozen=true');
+      setStaff(response.data);
     } catch (error) {
-      toast.error('Failed to load walkers');
+      // Fallback to walkers endpoint if staff endpoint doesn't exist
+      try {
+        const response = await api.get('/users/walkers?include_frozen=true');
+        setStaff(response.data);
+      } catch (e) {
+        toast.error('Failed to load staff');
+      }
     } finally {
       setLoading(false);
     }
