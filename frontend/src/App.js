@@ -328,6 +328,22 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/overnights"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminOvernightsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/daycare"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDaycareCalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/invoices"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
