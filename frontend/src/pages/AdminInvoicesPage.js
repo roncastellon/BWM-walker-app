@@ -280,7 +280,9 @@ const AdminBillingPage = () => {
     setEditForm({
       name: service.name,
       price: service.price.toString(),
-      description: service.description,
+      description: service.description || '',
+      duration: service.duration_minutes ? service.duration_minutes.toString() : '',
+      duration_type: service.duration_type || 'minutes',
     });
   };
 
