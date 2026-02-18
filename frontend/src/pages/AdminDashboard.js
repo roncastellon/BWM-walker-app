@@ -362,6 +362,64 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* My Walks Section - For admins who also do walks */}
+        {(nextWalk || activeWalk) && (
+          <Card className="rounded-xl border-2 border-green-500 bg-green-50">
+            <CardContent className="p-4">
+              {activeWalk ? (
+                // Active walk in progress
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center animate-pulse">
+                      <PawPrint className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <Badge className="bg-orange-100 text-orange-800 rounded-full mb-1">Walk In Progress</Badge>
+                      <p className="font-bold text-lg">
+                        {activeWalk.pet_names?.length > 0 ? activeWalk.pet_names.join(' & ') : 'Walk'}
+                      </p>
+                      <p className="text-sm text-muted-foreground capitalize">{activeWalk.service_type?.replace('_', ' ')}</p>
+                      <p className="text-xs text-muted-foreground">{formatTime12Hour(activeWalk.scheduled_time)} • {activeWalk.client_name}</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => setCompletionDialogOpen(true)} 
+                    className="rounded-full bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <Square className="w-4 h-4 mr-2" />
+                    Complete Walk
+                  </Button>
+                </div>
+              ) : nextWalk ? (
+                // Next scheduled walk
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center">
+                      <PawPrint className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <Badge className="bg-green-100 text-green-800 rounded-full mb-1">Up Next</Badge>
+                      <p className="font-bold text-lg">
+                        {nextWalk.pet_names?.length > 0 ? nextWalk.pet_names.join(' & ') : 'Walk'}
+                      </p>
+                      <p className="text-sm text-muted-foreground capitalize">{nextWalk.service_type?.replace('_', ' ')}</p>
+                      <p className="text-xs text-muted-foreground">{formatTime12Hour(nextWalk.scheduled_time)} • {nextWalk.client_name}</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => startWalk(nextWalk.id)} 
+                    disabled={startingWalk}
+                    className="rounded-full bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Walk
+                  </Button>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Welcome Header */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-secondary p-6 text-primary-foreground">
           <div className="relative z-10">
