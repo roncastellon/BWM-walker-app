@@ -87,6 +87,68 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch admin's own walks (if admin is also a walker)
+  const fetchMyWalks = async () => {
+    try {
+      const res = await api.get('/appointments/my-walks');
+      const walks = res.data || [];
+      setMyWalks(walks);
+      
+      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      const todayWalks = walks.filter(w => w.scheduled_date === today);
+      
+      // Check for active walk
+      const active = todayWalks.find(w => w.status === 'in_progress');
+      if (active) {
+        setActiveWalk(active);
+        setNextWalk(null);
+      } else {
+        setActiveWalk(null);
+        // Find next scheduled walk
+        const nextScheduled = todayWalks
+          .filter(w => w.status === 'scheduled')
+          .sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time))
+          .find(w => w.scheduled_time >= currentTime) || 
+          todayWalks.find(w => w.status === 'scheduled');
+        setNextWalk(nextScheduled || null);
+      }
+    } catch (error) {
+      // Admin may not have is_walker enabled, that's ok
+      console.log('No walks assigned to admin');
+    }
+  };
+
+  // Start a walk
+  const startWalk = async (walkId) => {
+    setStartingWalk(true);
+    try {
+      await api.post(`/appointments/${walkId}/start`);
+      toast.success('Walk started!');
+      fetchMyWalks();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to start walk');
+    } finally {
+      setStartingWalk(false);
+    }
+  };
+
+  // Complete a walk
+  const completeWalk = async () => {
+    if (!activeWalk) return;
+    try {
+      await api.post(`/appointments/${activeWalk.id}/complete`, completionAnswers);
+      toast.success('Walk completed!');
+      setCompletionDialogOpen(false);
+      setCompletionAnswers({ did_pee: null, did_poop: null, checked_water: null, notes: '' });
+      fetchMyWalks();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to complete walk');
+    }
+  };
+
   const fetchNewClientNotifications = async () => {
     try {
       const res = await api.get('/admin/new-client-notifications');
