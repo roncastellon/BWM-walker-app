@@ -582,9 +582,12 @@ const AdminDashboard = () => {
                             <PawPrint className="w-5 h-5" style={{ color: appt.walker_color || 'rgb(var(--primary))' }} />
                           </div>
                           <div>
-                            <p className="font-medium text-sm capitalize">{appt.service_type?.replace('_', ' ')}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatTime12Hour(appt.scheduled_time)} • {appt.pet_names?.length > 0 ? appt.pet_names.join(', ') : appt.client_name}
+                            <p className="text-xs text-muted-foreground">{formatTime12Hour(appt.scheduled_time)}</p>
+                            <p className="font-bold text-base">
+                              {appt.pet_names?.length > 0 ? appt.pet_names.join(' & ') : 'No pet assigned'}
+                            </p>
+                            <p className="text-xs text-muted-foreground capitalize">
+                              {appt.service_type?.replace(/_/g, ' ')} • {appt.walker_name || 'Unassigned'}
                             </p>
                           </div>
                         </div>
