@@ -302,9 +302,30 @@ const AdminWalkersPage = () => {
     setDeleteConfirmOpen(true);
   };
 
-  const filteredStaff = staff.filter(walker =>
-    walker.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    walker.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Get role badges for display
+  const getRoleBadges = (member) => {
+    const badges = [];
+    const role = member.role;
+    
+    if (role === 'admin') {
+      badges.push({ label: 'Admin', color: 'bg-purple-100 text-purple-800', icon: Shield });
+      if (member.is_walker) badges.push({ label: 'Walker', color: 'bg-orange-100 text-orange-800', icon: PawPrint });
+      if (member.is_sitter) badges.push({ label: 'Sitter', color: 'bg-blue-100 text-blue-800', icon: Moon });
+    } else if (role === 'walker') {
+      badges.push({ label: 'Walker', color: 'bg-orange-100 text-orange-800', icon: PawPrint });
+      if (member.is_sitter) badges.push({ label: 'Sitter', color: 'bg-blue-100 text-blue-800', icon: Moon });
+    } else if (role === 'sitter') {
+      badges.push({ label: 'Sitter', color: 'bg-blue-100 text-blue-800', icon: Moon });
+      if (member.is_walker) badges.push({ label: 'Walker', color: 'bg-orange-100 text-orange-800', icon: PawPrint });
+    }
+    
+    return badges;
+  };
+
+  const filteredStaff = staff.filter(member =>
+    member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.role?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -329,7 +350,7 @@ const AdminWalkersPage = () => {
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-amber-800">
-                  {pendingPaySetup.length} Walker{pendingPaySetup.length > 1 ? 's' : ''} Need Pay Setup
+                  {pendingPaySetup.length} Staff Member{pendingPaySetup.length > 1 ? 's' : ''} Need Pay Setup
                 </p>
                 <p className="text-sm text-amber-600">
                   {pendingPaySetup.map(w => w.full_name || w.username).join(', ')}
@@ -338,9 +359,9 @@ const AdminWalkersPage = () => {
               <Button 
                 size="sm" 
                 onClick={() => {
-                  const firstPending = staff.find(w => !w.pay_setup_completed);
+                  const firstPending = staff.find(w => !w.pay_setup_completed && (w.role === 'walker' || w.role === 'sitter' || w.is_walker || w.is_sitter));
                   if (firstPending) {
-                    setSelectedWalker(firstPending);
+                    setSelectedStaff(firstPending);
                     initPaySetup(firstPending);
                   }
                 }}
