@@ -39,12 +39,23 @@ const AdminOvernightsPage = () => {
   const fetchOvernights = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/appointments');
-      // Filter overnight-type appointments
-      const overnightTypes = ['overnight', 'stay_overnight', 'petsit_our_location', 'petsit_your_location'];
-      const filtered = res.data.filter(a => overnightTypes.includes(a.service_type));
+      const res = await api.get('/appointments/calendar');
+      // Filter overnight-type appointments - include all overnight/boarding variations
+      const filtered = res.data.filter(a => {
+        const serviceType = (a.service_type || '').toLowerCase();
+        const dType = (a.duration_type || '').toLowerCase();
+        // Match by service type name or by duration_type being 'nights'
+        return (
+          serviceType.includes('overnight') ||
+          serviceType.includes('petsit') ||
+          serviceType.includes('boarding') ||
+          serviceType.includes('stay') ||
+          dType === 'nights'
+        );
+      });
       setOvernights(filtered);
     } catch (error) {
+      console.error('Failed to load overnights:', error);
       toast.error('Failed to load overnights');
     } finally {
       setLoading(false);
