@@ -653,7 +653,7 @@ const AdminWalkersPage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={(e) => { e.stopPropagation(); confirmDelete(walker); }}
+                      onClick={(e) => { e.stopPropagation(); confirmDelete(member); }}
                       className="text-red-600 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
@@ -666,11 +666,11 @@ const AdminWalkersPage = () => {
           </div>
         )}
 
-        {/* Walker Details Dialog */}
+        {/* Staff Details Dialog */}
         <Dialog open={!!selectedStaff} onOpenChange={() => { setSelectedStaff(null); setPaySetupMode(false); setEditMode(false); }}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editMode ? 'Edit Walker Info' : 'Walker Details'}</DialogTitle>
+              <DialogTitle>{editMode ? 'Edit Staff Info' : 'Staff Details'}</DialogTitle>
             </DialogHeader>
             {selectedStaff && (
               <div className="space-y-4">
