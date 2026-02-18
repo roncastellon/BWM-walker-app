@@ -723,6 +723,67 @@ const AdminWalkersPage = () => {
                         />
                       </div>
                     </div>
+                    
+                    {/* Role Selection */}
+                    <div className="space-y-2">
+                      <Label>Role</Label>
+                      <Select value={editForm.role} onValueChange={(val) => setEditForm({...editForm, role: val})}>
+                        <SelectTrigger className="rounded-full">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="walker">Walker</SelectItem>
+                          <SelectItem value="sitter">Sitter</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Additional Capabilities */}
+                    {editForm.role === 'admin' && (
+                      <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 space-y-2">
+                        <Label className="text-sm font-medium text-purple-800">Admin Capabilities</Label>
+                        <div className="flex items-center gap-2">
+                          <Checkbox 
+                            id="edit-admin-walker" 
+                            checked={editForm.is_walker}
+                            onCheckedChange={(checked) => setEditForm({...editForm, is_walker: checked})}
+                          />
+                          <Label htmlFor="edit-admin-walker" className="text-sm cursor-pointer">Can do walks (appears in walker list)</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Checkbox 
+                            id="edit-admin-sitter" 
+                            checked={editForm.is_sitter}
+                            onCheckedChange={(checked) => setEditForm({...editForm, is_sitter: checked})}
+                          />
+                          <Label htmlFor="edit-admin-sitter" className="text-sm cursor-pointer">Can do pet sitting/overnights</Label>
+                        </div>
+                      </div>
+                    )}
+
+                    {editForm.role === 'walker' && (
+                      <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <Checkbox 
+                          id="edit-walker-sitter" 
+                          checked={editForm.is_sitter}
+                          onCheckedChange={(checked) => setEditForm({...editForm, is_sitter: checked})}
+                        />
+                        <Label htmlFor="edit-walker-sitter" className="text-sm cursor-pointer">Also does pet sitting/overnights</Label>
+                      </div>
+                    )}
+                    
+                    {editForm.role === 'sitter' && (
+                      <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-50 border border-orange-200">
+                        <Checkbox 
+                          id="edit-sitter-walker" 
+                          checked={editForm.is_walker}
+                          onCheckedChange={(checked) => setEditForm({...editForm, is_walker: checked})}
+                        />
+                        <Label htmlFor="edit-sitter-walker" className="text-sm cursor-pointer">Also does dog walking</Label>
+                      </div>
+                    )}
+                    
                     <div className="space-y-2">
                       <Label>Bio</Label>
                       <Textarea
