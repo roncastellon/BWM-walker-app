@@ -250,23 +250,23 @@ const AdminWalkersPage = () => {
     }
   };
 
-  const viewStaffDetails = async (walker) => {
+  const viewStaffDetails = async (member) => {
     try {
-      // Fetch walker's appointment stats
+      // Fetch member's appointment stats
       const apptsRes = await api.get('/appointments/calendar');
-      const walkerAppts = apptsRes.data.filter(a => a.walker_id === walker.id);
-      const completedWalks = walkerAppts.filter(a => a.status === 'completed').length;
-      const scheduledWalks = walkerAppts.filter(a => a.status === 'scheduled').length;
+      const memberAppts = apptsRes.data.filter(a => a.walker_id === member.id);
+      const completedWalks = memberAppts.filter(a => a.status === 'completed').length;
+      const scheduledWalks = memberAppts.filter(a => a.status === 'scheduled').length;
       
-      setWalkerStats({
+      setStaffStats({
         completed: completedWalks,
         scheduled: scheduledWalks,
-        total: walkerAppts.length,
+        total: memberAppts.length,
       });
-      setSelectedStaff(walker);
+      setSelectedStaff(member);
     } catch (error) {
-      setWalkerStats({ completed: 0, scheduled: 0, total: 0 });
-      setSelectedStaff(walker);
+      setStaffStats({ completed: 0, scheduled: 0, total: 0 });
+      setSelectedStaff(member);
     }
   };
 
