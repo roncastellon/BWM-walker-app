@@ -148,15 +148,15 @@ const AdminWalkersPage = () => {
   };
 
   const savePayRates = async () => {
-    if (!selectedWalker) return;
+    if (!selectedStaff) return;
     setSaving(true);
     try {
-      await api.put(`/users/${selectedWalker.id}/pay-setup`, {
+      await api.put(`/users/${selectedStaff.id}/pay-setup`, {
         custom_pay_rates: payRates
       });
       toast.success('Pay rates saved successfully!');
       setPaySetupMode(false);
-      fetchWalkers();
+      fetchStaff();
       fetchPendingPaySetup();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to save pay rates');
@@ -185,7 +185,7 @@ const AdminWalkersPage = () => {
   };
 
   const saveUserInfo = async () => {
-    if (!selectedWalker) return;
+    if (!selectedStaff) return;
     setSaving(true);
     try {
       const updateData = {
@@ -196,7 +196,7 @@ const AdminWalkersPage = () => {
       };
       
       // Only include username if changed
-      if (editForm.username && editForm.username !== selectedWalker.username) {
+      if (editForm.username && editForm.username !== selectedStaff.username) {
         updateData.username = editForm.username;
       }
       
@@ -205,12 +205,12 @@ const AdminWalkersPage = () => {
         updateData.password = editForm.password;
       }
       
-      await api.put(`/users/${selectedWalker.id}`, updateData);
+      await api.put(`/users/${selectedStaff.id}`, updateData);
       toast.success('User info updated successfully!');
       setEditMode(false);
-      fetchWalkers();
+      fetchStaff();
       // Update selected walker
-      setSelectedWalker({...selectedWalker, ...updateData});
+      setSelectedWalker({...selectedStaff, ...updateData});
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to update user info');
     } finally {
@@ -234,20 +234,20 @@ const AdminWalkersPage = () => {
     
     try {
       await api.post('/auth/register', {
-        ...walkerForm,
+        ...staffForm,
         role: 'walker',
       });
       
-      toast.success(`Walker "${walkerForm.full_name}" created successfully!`);
+      toast.success(`Walker "${staffForm.full_name}" created successfully!`);
       setDialogOpen(false);
       resetForm();
-      fetchWalkers();
+      fetchStaff();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create walker');
     }
   };
 
-  const viewWalkerDetails = async (walker) => {
+  const viewStaffDetails = async (walker) => {
     try {
       // Fetch walker's appointment stats
       const apptsRes = await api.get('/appointments/calendar');
@@ -276,7 +276,7 @@ const AdminWalkersPage = () => {
       setDeleteConfirmOpen(false);
       setUserToDelete(null);
       setSelectedWalker(null);
-      fetchWalkers();
+      fetchStaff();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to delete user');
     } finally {
@@ -289,7 +289,7 @@ const AdminWalkersPage = () => {
     try {
       await api.put(`/users/${userId}/${freeze ? 'freeze' : 'unfreeze'}`);
       toast.success(`Account ${freeze ? 'frozen' : 'unfrozen'} successfully`);
-      fetchWalkers();
+      fetchStaff();
     } catch (error) {
       toast.error(error.response?.data?.detail || `Failed to ${freeze ? 'freeze' : 'unfreeze'} account`);
     } finally {
@@ -302,7 +302,7 @@ const AdminWalkersPage = () => {
     setDeleteConfirmOpen(true);
   };
 
-  const filteredWalkers = walkers.filter(walker =>
+  const filteredStaff = walkers.filter(walker =>
     walker.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     walker.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -535,7 +535,7 @@ const AdminWalkersPage = () => {
         </div>
 
         {/* Walkers Grid */}
-        {filteredWalkers.length === 0 ? (
+        {filteredStaff.length === 0 ? (
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-12 text-center">
               <PawPrint className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
@@ -548,12 +548,12 @@ const AdminWalkersPage = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredWalkers.map((walker) => (
+            {filteredStaff.map((walker) => (
               <Card 
                 key={walker.id} 
                 className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer ${!walker.is_active ? 'opacity-60 border-red-300' : ''}`}
                 data-testid={`walker-card-${walker.id}`}
-                onClick={() => viewWalkerDetails(walker)}
+                onClick={() => viewStaffDetails(walker)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
@@ -641,12 +641,12 @@ const AdminWalkersPage = () => {
         )}
 
         {/* Walker Details Dialog */}
-        <Dialog open={!!selectedWalker} onOpenChange={() => { setSelectedWalker(null); setPaySetupMode(false); setEditMode(false); }}>
+        <Dialog open={!!selectedStaff} onOpenChange={() => { setSelectedWalker(null); setPaySetupMode(false); setEditMode(false); }}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editMode ? 'Edit Walker Info' : 'Walker Details'}</DialogTitle>
             </DialogHeader>
-            {selectedWalker && (
+            {selectedStaff && (
               <div className="space-y-4">
                 {/* Edit Mode - User Info */}
                 {editMode ? (
@@ -720,18 +720,18 @@ const AdminWalkersPage = () => {
                     {/* View Mode - User Info */}
                     <div className="flex items-center gap-4">
                       <Avatar className="w-16 h-16">
-                        <AvatarImage src={selectedWalker.profile_image} />
+                        <AvatarImage src={selectedStaff.profile_image} />
                         <AvatarFallback className="bg-secondary/10 text-secondary text-2xl">
-                          {selectedWalker.full_name?.charAt(0)}
+                          {selectedStaff.full_name?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold">{selectedWalker.full_name}</h3>
-                        <p className="text-muted-foreground">{selectedWalker.email}</p>
-                        {selectedWalker.phone && <p className="text-sm text-muted-foreground">{selectedWalker.phone}</p>}
-                        <p className="text-xs text-muted-foreground mt-1">Username: {selectedWalker.username}</p>
+                        <h3 className="text-xl font-bold">{selectedStaff.full_name}</h3>
+                        <p className="text-muted-foreground">{selectedStaff.email}</p>
+                        {selectedStaff.phone && <p className="text-sm text-muted-foreground">{selectedStaff.phone}</p>}
+                        <p className="text-xs text-muted-foreground mt-1">Username: {selectedStaff.username}</p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => initEditMode(selectedWalker)}>
+                      <Button variant="outline" size="sm" onClick={() => initEditMode(selectedStaff)}>
                         <User className="w-4 h-4 mr-1" />
                         Edit Info
                       </Button>
@@ -742,7 +742,7 @@ const AdminWalkersPage = () => {
                         <PawPrint className="w-3 h-3 mr-1" />
                         Walker
                       </Badge>
-                      {selectedWalker.pay_setup_completed ? (
+                      {selectedStaff.pay_setup_completed ? (
                         <Badge className="bg-green-100 text-green-700 rounded-full">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           Pay Setup Complete
@@ -756,7 +756,7 @@ const AdminWalkersPage = () => {
                     </div>
 
                     {/* Pay Setup Required Banner */}
-                    {!selectedWalker.pay_setup_completed && !paySetupMode && (
+                    {!selectedStaff.pay_setup_completed && !paySetupMode && (
                       <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
@@ -766,7 +766,7 @@ const AdminWalkersPage = () => {
                               <p className="text-sm text-amber-600">Set pay rates for this walker</p>
                             </div>
                           </div>
-                          <Button size="sm" onClick={() => initPaySetup(selectedWalker)} className="bg-amber-500 hover:bg-amber-600">
+                          <Button size="sm" onClick={() => initPaySetup(selectedStaff)} className="bg-amber-500 hover:bg-amber-600">
                             <DollarSign className="w-4 h-4 mr-1" />
                             Set Pay
                           </Button>
@@ -952,14 +952,14 @@ const AdminWalkersPage = () => {
                 )}
 
                 {/* Show Current Pay Rates if setup complete and not in edit/pay mode */}
-                {selectedWalker.pay_setup_completed && !paySetupMode && !editMode && (
+                {selectedStaff.pay_setup_completed && !paySetupMode && !editMode && (
                   <div className="p-4 rounded-xl bg-muted/50">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium flex items-center gap-2">
                         <DollarSign className="w-4 h-4" />
                         Current Pay Rates
                       </h4>
-                      <Button variant="outline" size="sm" onClick={() => initPaySetup(selectedWalker)}>
+                      <Button variant="outline" size="sm" onClick={() => initPaySetup(selectedStaff)}>
                         Edit Pay
                       </Button>
                     </div>
@@ -968,54 +968,54 @@ const AdminWalkersPage = () => {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">30 min:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_30 || DEFAULT_PAY_RATES.walk_30}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.walk_30 || DEFAULT_PAY_RATES.walk_30}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">45 min:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_45 || DEFAULT_PAY_RATES.walk_45}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.walk_45 || DEFAULT_PAY_RATES.walk_45}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">60 min:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.walk_60 || DEFAULT_PAY_RATES.walk_60}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.walk_60 || DEFAULT_PAY_RATES.walk_60}</span>
                         </div>
                       </div>
                       <div className="font-medium text-xs text-muted-foreground pt-2">OVERNIGHT / PET SITTING</div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Overnight:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.overnight || DEFAULT_PAY_RATES.overnight}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.overnight || DEFAULT_PAY_RATES.overnight}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Our Loc:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_our_location || DEFAULT_PAY_RATES.petsit_our_location}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.petsit_our_location || DEFAULT_PAY_RATES.petsit_our_location}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Client Loc:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.petsit_your_location || DEFAULT_PAY_RATES.petsit_your_location}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.petsit_your_location || DEFAULT_PAY_RATES.petsit_your_location}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Day Care:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.doggy_day_care || DEFAULT_PAY_RATES.doggy_day_care}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.doggy_day_care || DEFAULT_PAY_RATES.doggy_day_care}</span>
                         </div>
                       </div>
                       <div className="font-medium text-xs text-muted-foreground pt-2">OTHER</div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Concierge:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.concierge || DEFAULT_PAY_RATES.concierge}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.concierge || DEFAULT_PAY_RATES.concierge}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Transport:</span>
-                          <span className="font-medium">${selectedWalker.custom_pay_rates?.transport || DEFAULT_PAY_RATES.transport}</span>
+                          <span className="font-medium">${selectedStaff.custom_pay_rates?.transport || DEFAULT_PAY_RATES.transport}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
                 
-                {selectedWalker.bio && !editMode && !paySetupMode && (
+                {selectedStaff.bio && !editMode && !paySetupMode && (
                   <div className="p-3 rounded-xl bg-muted/50">
-                    <p className="text-sm">{selectedWalker.bio}</p>
+                    <p className="text-sm">{selectedStaff.bio}</p>
                   </div>
                 )}
                 
@@ -1025,17 +1025,17 @@ const AdminWalkersPage = () => {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 rounded-xl bg-green-50">
                       <CheckCircle className="w-5 h-5 mx-auto text-green-600 mb-1" />
-                      <p className="text-2xl font-bold text-green-700">{walkerStats.completed}</p>
+                      <p className="text-2xl font-bold text-green-700">{staffStats.completed}</p>
                       <p className="text-xs text-green-600">Completed</p>
                     </div>
                     <div className="text-center p-3 rounded-xl bg-blue-50">
                       <Calendar className="w-5 h-5 mx-auto text-blue-600 mb-1" />
-                      <p className="text-2xl font-bold text-blue-700">{walkerStats.scheduled}</p>
+                      <p className="text-2xl font-bold text-blue-700">{staffStats.scheduled}</p>
                       <p className="text-xs text-blue-600">Scheduled</p>
                     </div>
                     <div className="text-center p-3 rounded-xl bg-purple-50">
                       <PawPrint className="w-5 h-5 mx-auto text-purple-600 mb-1" />
-                      <p className="text-2xl font-bold text-purple-700">{walkerStats.total}</p>
+                      <p className="text-2xl font-bold text-purple-700">{staffStats.total}</p>
                       <p className="text-xs text-purple-600">Total Walks</p>
                     </div>
                   </div>
