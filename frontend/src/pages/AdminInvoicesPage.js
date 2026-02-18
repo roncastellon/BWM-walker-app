@@ -90,7 +90,7 @@ const AdminBillingPage = () => {
 
   // New product/service state
   const [showNewServiceForm, setShowNewServiceForm] = useState(false);
-  const [newService, setNewService] = useState({ name: '', price: '', description: '', duration: '' });
+  const [newService, setNewService] = useState({ name: '', price: '', description: '', duration: '', duration_type: 'minutes' });
 
   // Custom billing plans state
   const [billingPlans, setBillingPlans] = useState([]);
