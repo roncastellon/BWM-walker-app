@@ -29,11 +29,18 @@ const AdminDaycareCalendarPage = () => {
   const fetchDaycare = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/appointments');
-      // Filter daycare appointments
-      const filtered = res.data.filter(a => a.service_type === 'doggy_day_care');
+      const res = await api.get('/appointments/calendar');
+      // Filter daycare appointments - match multiple daycare service types
+      const daycareTypes = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'day_visit'];
+      const filtered = res.data.filter(a => 
+        daycareTypes.some(type => 
+          a.service_type?.toLowerCase().includes(type.toLowerCase()) ||
+          type.toLowerCase().includes(a.service_type?.toLowerCase())
+        )
+      );
       setDaycareAppts(filtered);
     } catch (error) {
+      console.error('Failed to load daycare:', error);
       toast.error('Failed to load daycare appointments');
     } finally {
       setLoading(false);
