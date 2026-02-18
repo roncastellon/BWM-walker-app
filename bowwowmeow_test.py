@@ -12,7 +12,7 @@ import json
 from datetime import datetime, timedelta
 
 class BowWowMeowTester:
-    def __init__(self, base_url="https://petapp-enhance.preview.emergentagent.com"):
+    def __init__(self, base_url="https://walker-schedule-app.preview.emergentagent.com"):
         self.base_url = base_url
         self.tokens = {}
         self.users = {}
