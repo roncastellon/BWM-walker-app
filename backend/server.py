@@ -971,11 +971,11 @@ async def update_user(user_id: str, update_data: dict, current_user: dict = Depe
     
     # Admin can also update these fields
     if current_user['role'] == 'admin':
-        admin_fields = ['is_active', 'onboarding_completed', 'role', 'username']
+        admin_fields = ['is_active', 'onboarding_completed', 'role', 'username', 'is_walker', 'is_sitter']
         for field in admin_fields:
-            if field in update_data and update_data[field]:
+            if field in update_data:
                 # Check username is unique if being changed
-                if field == 'username':
+                if field == 'username' and update_data[field]:
                     existing = await db.users.find_one({"username": update_data['username'], "id": {"$ne": user_id}})
                     if existing:
                         raise HTTPException(status_code=400, detail="Username already taken")
@@ -984,6 +984,17 @@ async def update_user(user_id: str, update_data: dict, current_user: dict = Depe
         # Handle password change (admin only can change other users' passwords)
         if 'password' in update_data and update_data['password']:
             update_dict['password_hash'] = pwd_context.hash(update_data['password'])
+        
+        # If enabling walker/sitter capabilities, assign a color if not set
+        if update_data.get('is_walker') or update_data.get('is_sitter'):
+            user = await db.users.find_one({"id": user_id}, {"_id": 0})
+            if user and not user.get('walker_color'):
+                default_colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
+                existing_colors = await db.users.distinct("walker_color", {"walker_color": {"$exists": True}})
+                for color in default_colors:
+                    if color not in existing_colors:
+                        update_dict['walker_color'] = color
+                        break
     
     await db.users.update_one({"id": user_id}, {"$set": update_dict})
     
