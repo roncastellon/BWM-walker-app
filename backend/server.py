@@ -2925,6 +2925,73 @@ async def get_calendar_appointments(current_user: dict = Depends(get_current_use
         })
     return calendar_events
 
+# Get all appointments for admin management (not filtered by walker_id)
+@api_router.get("/appointments/all")
+async def get_all_appointments(current_user: dict = Depends(get_current_user)):
+    """Get all appointments - admin only endpoint for management views"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    appointments = await db.appointments.find({}, {"_id": 0}).to_list(500)
+    
+    # Enrich appointments with names
+    enriched = []
+    for appt in appointments:
+        enriched_appt = dict(appt)
+        
+        if appt.get('walker_id'):
+            walker = await db.users.find_one({"id": appt['walker_id']}, {"_id": 0, "full_name": 1})
+            enriched_appt['walker_name'] = walker.get('full_name') if walker else None
+        
+        if appt.get('client_id'):
+            client = await db.users.find_one({"id": appt['client_id']}, {"_id": 0, "full_name": 1})
+            enriched_appt['client_name'] = client.get('full_name') if client else "Unknown"
+        
+        pet_names = []
+        if appt.get('pet_ids'):
+            for pet_id in appt['pet_ids']:
+                pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+                if pet:
+                    pet_names.append(pet['name'])
+        enriched_appt['pet_names'] = pet_names
+        
+        enriched.append(enriched_appt)
+    
+    return enriched
+
+# Get admin's own walker assignments (walks assigned to them as a walker)
+@api_router.get("/appointments/my-walks")
+async def get_my_walks(current_user: dict = Depends(get_current_user)):
+    """Get walks assigned to the current user (for admins acting as walkers)"""
+    if current_user['role'] not in ['admin', 'walker']:
+        raise HTTPException(status_code=403, detail="Walker or Admin only")
+    
+    appointments = await db.appointments.find(
+        {"walker_id": current_user['id']}, 
+        {"_id": 0}
+    ).to_list(500)
+    
+    # Enrich appointments
+    enriched = []
+    for appt in appointments:
+        enriched_appt = dict(appt)
+        
+        if appt.get('client_id'):
+            client = await db.users.find_one({"id": appt['client_id']}, {"_id": 0, "full_name": 1})
+            enriched_appt['client_name'] = client.get('full_name') if client else "Unknown"
+        
+        pet_names = []
+        if appt.get('pet_ids'):
+            for pet_id in appt['pet_ids']:
+                pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+                if pet:
+                    pet_names.append(pet['name'])
+        enriched_appt['pet_names'] = pet_names
+        
+        enriched.append(enriched_appt)
+    
+    return enriched
+
 # Get available time slots for a date
 @api_router.get("/appointments/available-slots")
 async def get_available_slots(date: str, current_user: dict = Depends(get_current_user)):
