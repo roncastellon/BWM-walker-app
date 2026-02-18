@@ -402,6 +402,8 @@ class Appointment(BaseModel):
     is_one_time_exception: bool = False  # True if this is a one-time modification to a recurring schedule
     # Enriched fields (added dynamically)
     walker_name: Optional[str] = None
+    client_name: Optional[str] = None
+    pet_names: List[str] = Field(default_factory=list)
     pee_count: Optional[int] = None
     poop_count: Optional[int] = None
     water_given: Optional[bool] = None
