@@ -27,7 +27,7 @@ const AdminBillingPage = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingService, setEditingService] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', price: '', description: '' });
+  const [editForm, setEditForm] = useState({ name: '', price: '', description: '', duration: '', duration_type: 'minutes' });
   const [paymentSettings, setPaymentSettings] = useState({
     zelle: { enabled: true, email: '', phone: '', name: '' },
     venmo: { enabled: true, username: '' },
