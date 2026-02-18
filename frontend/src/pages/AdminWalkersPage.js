@@ -356,116 +356,176 @@ const AdminWalkersPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold">Walkers</h1>
-            <p className="text-muted-foreground">{walkers.length} registered walkers</p>
+            <h1 className="text-3xl font-heading font-bold">Staff</h1>
+            <p className="text-muted-foreground">{staff.length} registered staff members</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search walkers..."
+                placeholder="Search staff..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 rounded-full"
-                data-testid="search-walkers"
+                data-testid="search-staff"
               />
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="rounded-full" data-testid="add-walker-btn">
+                <Button className="rounded-full" data-testid="add-staff-btn">
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Walker
+                  Add Staff
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Add New Walker</DialogTitle>
-                  <DialogDescription>Create a new walker account</DialogDescription>
+                  <DialogTitle>Add New Staff Member</DialogTitle>
+                  <DialogDescription>Create a new staff account</DialogDescription>
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Role Selection */}
+                  <div className="space-y-2">
+                    <Label>Role *</Label>
+                    <Select value={staffForm.role} onValueChange={(val) => setStaffForm({...staffForm, role: val})}>
+                      <SelectTrigger className="rounded-full">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin - Full system access</SelectItem>
+                        <SelectItem value="walker">Walker - Dog walking services</SelectItem>
+                        <SelectItem value="sitter">Sitter - Pet sitting/overnight</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Additional capabilities for Admin role */}
+                  {staffForm.role === 'admin' && (
+                    <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 space-y-2">
+                      <Label className="text-sm font-medium text-purple-800">Additional Capabilities</Label>
+                      <div className="flex items-center gap-2">
+                        <Checkbox 
+                          id="admin-walker" 
+                          checked={staffForm.is_walker}
+                          onCheckedChange={(checked) => setStaffForm({...staffForm, is_walker: checked})}
+                        />
+                        <Label htmlFor="admin-walker" className="text-sm cursor-pointer">Can do walks</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox 
+                          id="admin-sitter" 
+                          checked={staffForm.is_sitter}
+                          onCheckedChange={(checked) => setStaffForm({...staffForm, is_sitter: checked})}
+                        />
+                        <Label htmlFor="admin-sitter" className="text-sm cursor-pointer">Can do pet sitting</Label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Walker+Sitter combo option */}
+                  {staffForm.role === 'walker' && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                      <Checkbox 
+                        id="walker-sitter" 
+                        checked={staffForm.is_sitter}
+                        onCheckedChange={(checked) => setStaffForm({...staffForm, is_sitter: checked})}
+                      />
+                      <Label htmlFor="walker-sitter" className="text-sm cursor-pointer">Also does pet sitting/overnights</Label>
+                    </div>
+                  )}
+                  
+                  {staffForm.role === 'sitter' && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-50 border border-orange-200">
+                      <Checkbox 
+                        id="sitter-walker" 
+                        checked={staffForm.is_walker}
+                        onCheckedChange={(checked) => setStaffForm({...staffForm, is_walker: checked})}
+                      />
+                      <Label htmlFor="sitter-walker" className="text-sm cursor-pointer">Also does dog walking</Label>
+                    </div>
+                  )}
+                  
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="walker-fullname">Full Name *</Label>
+                      <Label htmlFor="staff-fullname">Full Name *</Label>
                       <Input
-                        id="walker-fullname"
-                        value={walkerForm.full_name}
-                        onChange={(e) => setWalkerForm({ ...walkerForm, full_name: e.target.value })}
+                        id="staff-fullname"
+                        value={staffForm.full_name}
+                        onChange={(e) => setStaffForm({ ...staffForm, full_name: e.target.value })}
                         placeholder="Jane Smith"
                         required
-                        data-testid="walker-fullname"
+                        data-testid="staff-fullname"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="walker-username">Username *</Label>
+                      <Label htmlFor="staff-username">Username *</Label>
                       <Input
-                        id="walker-username"
-                        value={walkerForm.username}
-                        onChange={(e) => setWalkerForm({ ...walkerForm, username: e.target.value })}
+                        id="staff-username"
+                        value={staffForm.username}
+                        onChange={(e) => setStaffForm({ ...staffForm, username: e.target.value })}
                         placeholder="janesmith"
                         required
-                        data-testid="walker-username"
+                        data-testid="staff-username"
                       />
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="walker-email">Email *</Label>
+                      <Label htmlFor="staff-email">Email *</Label>
                       <Input
-                        id="walker-email"
+                        id="staff-email"
                         type="email"
-                        value={walkerForm.email}
-                        onChange={(e) => setWalkerForm({ ...walkerForm, email: e.target.value })}
+                        value={staffForm.email}
+                        onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
                         placeholder="jane@example.com"
                         required
-                        data-testid="walker-email"
+                        data-testid="staff-email"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="walker-phone">Phone</Label>
+                      <Label htmlFor="staff-phone">Phone</Label>
                       <Input
-                        id="walker-phone"
-                        value={walkerForm.phone}
-                        onChange={(e) => setWalkerForm({ ...walkerForm, phone: e.target.value })}
+                        id="staff-phone"
+                        value={staffForm.phone}
+                        onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
                         placeholder="(555) 123-4567"
-                        data-testid="walker-phone"
+                        data-testid="staff-phone"
                       />
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="walker-password">Password *</Label>
+                    <Label htmlFor="staff-password">Password *</Label>
                     <Input
-                      id="walker-password"
+                      id="staff-password"
                       type="password"
-                      value={walkerForm.password}
-                      onChange={(e) => setWalkerForm({ ...walkerForm, password: e.target.value })}
+                      value={staffForm.password}
+                      onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
                       placeholder="Create a password"
                       required
-                      data-testid="walker-password"
+                      data-testid="staff-password"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="walker-bio">Bio (Optional)</Label>
+                    <Label htmlFor="staff-bio">Bio (Optional)</Label>
                     <Textarea
-                      id="walker-bio"
-                      value={walkerForm.bio}
-                      onChange={(e) => setWalkerForm({ ...walkerForm, bio: e.target.value })}
+                      id="staff-bio"
+                      value={staffForm.bio}
+                      onChange={(e) => setStaffForm({ ...staffForm, bio: e.target.value })}
                       placeholder="Experience with pets, certifications, etc."
                       rows={3}
-                      data-testid="walker-bio"
+                      data-testid="staff-bio"
                     />
-                    <p className="text-xs text-muted-foreground">This will be visible to clients</p>
                   </div>
                   
                   <div className="flex justify-end gap-3 pt-4 border-t">
                     <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button type="submit" className="rounded-full" data-testid="submit-walker">
-                      Create Walker
+                    <Button type="submit" className="rounded-full" data-testid="submit-staff">
+                      Create Staff Member
                     </Button>
                   </div>
                 </form>
