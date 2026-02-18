@@ -2831,7 +2831,7 @@ async def get_appointments(current_user: dict = Depends(get_current_user)):
     
     appointments = await db.appointments.find(query, {"_id": 0}).to_list(500)
     
-    # Enrich appointments with walker name and formatted completion data
+    # Enrich appointments with walker name, pet names, client name and completion data
     enriched_appointments = []
     for appt in appointments:
         enriched = dict(appt)
@@ -2840,6 +2840,20 @@ async def get_appointments(current_user: dict = Depends(get_current_user)):
         if appt.get('walker_id'):
             walker = await db.users.find_one({"id": appt['walker_id']}, {"_id": 0, "full_name": 1})
             enriched['walker_name'] = walker.get('full_name') if walker else None
+        
+        # Add client name
+        if appt.get('client_id'):
+            client = await db.users.find_one({"id": appt['client_id']}, {"_id": 0, "full_name": 1})
+            enriched['client_name'] = client.get('full_name') if client else "Unknown"
+        
+        # Add pet names
+        pet_names = []
+        if appt.get('pet_ids'):
+            for pet_id in appt['pet_ids']:
+                pet = await db.pets.find_one({"id": pet_id}, {"_id": 0, "name": 1})
+                if pet:
+                    pet_names.append(pet['name'])
+        enriched['pet_names'] = pet_names
         
         # Format completion data for completed walks
         if appt.get('status') == 'completed' and appt.get('completion_data'):
