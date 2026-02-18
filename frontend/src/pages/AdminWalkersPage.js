@@ -121,9 +121,9 @@ const AdminWalkersPage = () => {
     }
   };
 
-  const initPaySetup = (walker) => {
+  const initPaySetup = (member) => {
     // Initialize with existing custom rates or defaults
-    const existingRates = walker.custom_pay_rates || {};
+    const existingRates = member.custom_pay_rates || {};
     setPayRates({
       // Walks
       walk_30: existingRates.walk_30 ?? DEFAULT_PAY_RATES.walk_30,
