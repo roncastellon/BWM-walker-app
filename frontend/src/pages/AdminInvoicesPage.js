@@ -146,18 +146,19 @@ const AdminBillingPage = () => {
 
   const updateServicePricing = async (serviceId) => {
     try {
-      await api.put(`/services/${serviceId}`, null, {
-        params: {
-          name: editForm.name || undefined,
-          price: editForm.price ? parseFloat(editForm.price) : undefined,
-          description: editForm.description || undefined,
-        }
+      await api.put(`/services/${serviceId}`, {
+        name: editForm.name || undefined,
+        price: editForm.price ? parseFloat(editForm.price) : undefined,
+        description: editForm.description || undefined,
+        duration_minutes: editForm.duration ? parseInt(editForm.duration) : undefined,
+        duration_type: editForm.duration_type || undefined,
       });
       toast.success('Service pricing updated');
       setEditingService(null);
       fetchAllData();
     } catch (error) {
-      toast.error('Failed to update pricing');
+      console.error('Update error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to update pricing');
     }
   };
 
