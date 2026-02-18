@@ -96,13 +96,13 @@ const AdminWalkersPage = () => {
 
   const fetchStaff = async () => {
     try {
-      // Fetch all staff (walkers, sitters, admins)
+      // Fetch all staff (staff, sitters, admins)
       const response = await api.get('/users/staff?include_frozen=true');
       setStaff(response.data);
     } catch (error) {
-      // Fallback to walkers endpoint if staff endpoint doesn't exist
+      // Fallback to staff endpoint if staff endpoint doesn't exist
       try {
-        const response = await api.get('/users/walkers?include_frozen=true');
+        const response = await api.get('/users/staff?include_frozen=true');
         setStaff(response.data);
       } catch (e) {
         toast.error('Failed to load staff');
@@ -302,7 +302,7 @@ const AdminWalkersPage = () => {
     setDeleteConfirmOpen(true);
   };
 
-  const filteredStaff = walkers.filter(walker =>
+  const filteredStaff = staff.filter(walker =>
     walker.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     walker.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -319,7 +319,7 @@ const AdminWalkersPage = () => {
 
   return (
     <Layout>
-      <div className="space-y-8" data-testid="admin-walkers-page">
+      <div className="space-y-8" data-testid="admin-staff-page">
         {/* Pay Setup Required Banner */}
         {pendingPaySetup.length > 0 && (
           <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
@@ -338,7 +338,7 @@ const AdminWalkersPage = () => {
               <Button 
                 size="sm" 
                 onClick={() => {
-                  const firstPending = walkers.find(w => !w.pay_setup_completed);
+                  const firstPending = staff.find(w => !w.pay_setup_completed);
                   if (firstPending) {
                     setSelectedWalker(firstPending);
                     initPaySetup(firstPending);
@@ -539,7 +539,7 @@ const AdminWalkersPage = () => {
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-12 text-center">
               <PawPrint className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-lg text-muted-foreground">No walkers found</p>
+              <p className="text-lg text-muted-foreground">No staff found</p>
               <Button onClick={() => setDialogOpen(true)} className="mt-4 rounded-full">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Your First Walker
