@@ -894,6 +894,33 @@ async def update_walker_color(user_id: str, color: str, current_user: dict = Dep
     await db.users.update_one({"id": user_id}, {"$set": {"walker_color": color}})
     return {"message": "Walker color updated"}
 
+@api_router.put("/users/{user_id}/toggle-walker")
+async def toggle_walker_status(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Toggle is_walker status for an admin user"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get('role') != 'admin':
+        raise HTTPException(status_code=400, detail="Can only toggle walker status for admin users")
+    
+    new_status = not user.get('is_walker', False)
+    await db.users.update_one({"id": user_id}, {"$set": {"is_walker": new_status}})
+    
+    # If enabling walker status, assign a walker color if not already set
+    if new_status and not user.get('walker_color'):
+        default_colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
+        existing_colors = await db.users.distinct("walker_color", {"walker_color": {"$exists": True}})
+        for color in default_colors:
+            if color not in existing_colors:
+                await db.users.update_one({"id": user_id}, {"$set": {"walker_color": color}})
+                break
+    
+    return {"message": f"Walker status {'enabled' if new_status else 'disabled'}", "is_walker": new_status}
+
 @api_router.get("/users/clients", response_model=List[UserResponse])
 async def get_clients(include_frozen: bool = False, current_user: dict = Depends(get_current_user)):
     if current_user['role'] not in ['admin', 'walker']:
