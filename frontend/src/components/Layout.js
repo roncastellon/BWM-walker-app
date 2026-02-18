@@ -86,6 +86,8 @@ const Layout = ({ children }) => {
       return [
         { path: '/admin', label: 'Dashboard', icon: Home },
         { path: '/admin/calendar', label: 'Calendar', icon: Calendar },
+        { path: '/admin/overnights', label: 'Overnights', icon: Moon },
+        { path: '/admin/daycare', label: 'Daycare', icon: Sun },
         { path: '/tracking', label: 'Live Tracking', icon: Navigation },
         { path: '/admin/clients', label: 'Clients', icon: Users },
         { path: '/admin/walkers', label: 'Walkers', icon: PawPrint },
