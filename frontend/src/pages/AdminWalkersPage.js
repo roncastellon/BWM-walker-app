@@ -196,6 +196,9 @@ const AdminWalkersPage = () => {
         email: editForm.email,
         phone: editForm.phone,
         bio: editForm.bio,
+        role: editForm.role,
+        is_walker: editForm.is_walker,
+        is_sitter: editForm.is_sitter,
       };
       
       // Only include username if changed
@@ -209,20 +212,20 @@ const AdminWalkersPage = () => {
       }
       
       await api.put(`/users/${selectedStaff.id}`, updateData);
-      toast.success('User info updated successfully!');
+      toast.success('Staff info updated successfully!');
       setEditMode(false);
       fetchStaff();
-      // Update selected walker
+      // Update selected staff with new data
       setSelectedStaff({...selectedStaff, ...updateData});
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update user info');
+      toast.error(error.response?.data?.detail || 'Failed to update staff info');
     } finally {
       setSaving(false);
     }
   };
 
   const resetForm = () => {
-    setWalkerForm({
+    setStaffForm({
       username: '',
       email: '',
       password: '',
