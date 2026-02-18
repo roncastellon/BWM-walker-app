@@ -44,6 +44,21 @@ const AdminDashboard = () => {
   const [recurringSchedules, setRecurringSchedules] = useState([]);
   const [expandedClients, setExpandedClients] = useState({}); // Track expanded client sections
   
+  // Admin's own walks (when admin is also a walker)
+  const [myWalks, setMyWalks] = useState([]);
+  const [nextWalk, setNextWalk] = useState(null);
+  const [activeWalk, setActiveWalk] = useState(null);
+  const [startingWalk, setStartingWalk] = useState(false);
+  
+  // Walk completion dialog
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [completionAnswers, setCompletionAnswers] = useState({
+    did_pee: null,
+    did_poop: null,
+    checked_water: null,
+    notes: ''
+  });
+  
   // Walker change dialog state
   const [walkerChangeDialog, setWalkerChangeDialog] = useState({
     open: false,
@@ -60,6 +75,7 @@ const AdminDashboard = () => {
     fetchData();
     fetchNewClientNotifications();
     fetchRecurringSchedules();
+    fetchMyWalks();
   }, []);
 
   const fetchRecurringSchedules = async () => {
