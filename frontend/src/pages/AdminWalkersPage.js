@@ -555,49 +555,51 @@ const AdminWalkersPage = () => {
           </div>
         </div>
 
-        {/* Walkers Grid */}
+        {/* Staff Grid */}
         {filteredStaff.length === 0 ? (
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="p-12 text-center">
-              <PawPrint className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <User className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
               <p className="text-lg text-muted-foreground">No staff found</p>
               <Button onClick={() => setDialogOpen(true)} className="mt-4 rounded-full">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Your First Walker
+                Add Your First Staff Member
               </Button>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStaff.map((walker) => (
+            {filteredStaff.map((member) => (
               <Card 
-                key={walker.id} 
-                className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer ${!walker.is_active ? 'opacity-60 border-red-300' : ''}`}
-                data-testid={`walker-card-${walker.id}`}
-                onClick={() => viewStaffDetails(walker)}
+                key={member.id} 
+                className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer ${!member.is_active ? 'opacity-60 border-red-300' : ''}`}
+                data-testid={`staff-card-${member.id}`}
+                onClick={() => viewStaffDetails(member)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <Avatar className="w-14 h-14">
-                      <AvatarImage src={walker.profile_image} />
-                      <AvatarFallback className="bg-secondary/10 text-secondary text-lg">
-                        {walker.full_name?.charAt(0) || 'W'}
+                      <AvatarImage src={member.profile_image} />
+                      <AvatarFallback className={`text-lg ${member.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-secondary/10 text-secondary'}`}>
+                        {member.full_name?.charAt(0) || 'S'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold truncate">{walker.full_name}</h3>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge className="bg-secondary/10 text-secondary rounded-full text-xs">
-                          <PawPrint className="w-3 h-3 mr-1" />
-                          Walker
-                        </Badge>
-                        {!walker.is_active && (
+                      <h3 className="font-bold truncate">{member.full_name}</h3>
+                      <div className="flex items-center gap-1 mt-1 flex-wrap">
+                        {getRoleBadges(member).map((badge, idx) => (
+                          <Badge key={idx} className={`${badge.color} rounded-full text-xs`}>
+                            <badge.icon className="w-3 h-3 mr-1" />
+                            {badge.label}
+                          </Badge>
+                        ))}
+                        {!member.is_active && (
                           <Badge className="bg-red-100 text-red-800 rounded-full text-xs">
                             <Lock className="w-3 h-3 mr-1" />
                             Frozen
                           </Badge>
                         )}
-                        {!walker.pay_setup_completed && (
+                        {(member.role !== 'admin' || member.is_walker || member.is_sitter) && !member.pay_setup_completed && (
                           <Badge className="bg-amber-100 text-amber-700 rounded-full text-xs">
                             <DollarSign className="w-3 h-3 mr-1" />
                             Needs Pay Setup
@@ -609,15 +611,15 @@ const AdminWalkersPage = () => {
                   <div className="mt-4 space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Mail className="w-4 h-4" />
-                      <span className="truncate">{walker.email}</span>
+                      <span className="truncate">{member.email}</span>
                     </div>
-                    {walker.phone && (
+                    {member.phone && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Phone className="w-4 h-4" />
-                        <span>{walker.phone}</span>
+                        <span>{member.phone}</span>
                       </div>
                     )}
-                    {walker.bio && (
+                    {member.bio && (
                       <p className="text-muted-foreground text-xs mt-2 line-clamp-2">{walker.bio}</p>
                     )}
                   </div>
