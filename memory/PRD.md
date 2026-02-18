@@ -116,11 +116,16 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - "Stays Ending Today" alert after 6 PM with extend/complete options
   - Extend stay by 1-7 nights
   - "Currently Staying" summary section
-- ✅ **Daycare Calendar (Feb 18, 2026)**: Dedicated calendar for daily daycare
+- ✅ **Daycare Calendar Bug Fix (Feb 18, 2026)**: Fixed daycare appointments not showing
+  - Changed API endpoint from `/appointments` to `/appointments/calendar`
+  - Broadened daycare filter to include all daycare service types
   - Summary: "Currently Here" and "Awaiting Check-in" counts
   - Quick Check-in/Pick-up buttons
   - Pickup notes for end-of-day handoff
   - Week view with status badges (Expected, Here, Done)
+- ✅ **Walker Dashboard Pet Names Fix (Feb 18, 2026)**: "Up Next" banner now shows pet names
+  - Updated `/appointments` endpoint to include `pet_names` and `client_name`
+  - Walker can now see which pet(s) they're walking at a glance
 
 ### Design
 - Theme: "Playful Trust" - Warm orange (#F97316) + Park green (#3D8B5D)
