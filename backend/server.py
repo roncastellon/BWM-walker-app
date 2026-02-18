@@ -5028,22 +5028,31 @@ async def update_client_billing_cycle(user_id: str, billing_cycle: str, current_
     return {"message": f"Billing cycle updated to {billing_cycle}"}
 
 @api_router.put("/services/{service_id}")
-async def update_service_pricing(service_id: str, name: Optional[str] = None, price: Optional[float] = None, description: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def update_service_pricing(service_id: str, update_data: ServiceUpdate, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
-    update_data = {}
-    if name is not None:
-        update_data['name'] = name
-    if price is not None:
-        update_data['price'] = price
-    if description is not None:
-        update_data['description'] = description
+    # Build update dict from non-None fields
+    update_dict = {}
+    if update_data.name is not None:
+        update_dict['name'] = update_data.name
+    if update_data.price is not None:
+        update_dict['price'] = update_data.price
+    if update_data.description is not None:
+        update_dict['description'] = update_data.description
+    if update_data.duration_minutes is not None:
+        update_dict['duration_minutes'] = update_data.duration_minutes
+    if update_data.duration_type is not None:
+        update_dict['duration_type'] = update_data.duration_type
     
-    if update_data:
-        await db.services.update_one({"id": service_id}, {"$set": update_data})
+    if update_dict:
+        result = await db.services.update_one({"id": service_id}, {"$set": update_dict})
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Service not found")
     
-    return {"message": "Service updated successfully"}
+    # Return the updated service
+    updated_service = await db.services.find_one({"id": service_id}, {"_id": 0})
+    return updated_service or {"message": "Service updated successfully"}
 
 @api_router.delete("/services/{service_id}")
 async def delete_service(service_id: str, current_user: dict = Depends(get_current_user)):
