@@ -368,6 +368,14 @@ class ServicePricing(BaseModel):
     duration_type: str = "minutes"  # "minutes", "days", or "nights"
     is_active: bool = True
 
+class ServiceUpdate(BaseModel):
+    """Model for updating service pricing"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    duration_minutes: Optional[int] = None
+    duration_type: Optional[str] = None  # "minutes", "days", or "nights"
+
 class GPSCoordinate(BaseModel):
     lat: float
     lng: float
