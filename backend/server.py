@@ -281,6 +281,7 @@ class UserResponse(BaseModel):
     bio: Optional[str] = None
     profile_image: Optional[str] = None
     is_active: bool
+    is_walker: bool = False  # True if user can be assigned walks (admins acting as walkers)
     billing_cycle: Optional[str] = "weekly"
     walker_color: Optional[str] = None
     # Payment methods for walkers/sitters
