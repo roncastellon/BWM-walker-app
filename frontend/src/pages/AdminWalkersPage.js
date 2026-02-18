@@ -171,14 +171,17 @@ const AdminWalkersPage = () => {
   };
 
   // Edit user info
-  const initEditMode = (walker) => {
+  const initEditMode = (member) => {
     setEditForm({
-      username: walker.username || '',
-      email: walker.email || '',
+      username: member.username || '',
+      email: member.email || '',
       password: '', // Don't show existing password
-      full_name: walker.full_name || '',
-      phone: walker.phone || '',
-      bio: walker.bio || '',
+      full_name: member.full_name || '',
+      phone: member.phone || '',
+      bio: member.bio || '',
+      role: member.role || 'walker',
+      is_walker: member.is_walker || false,
+      is_sitter: member.is_sitter || false,
     });
     setEditMode(true);
     setPaySetupMode(false);
