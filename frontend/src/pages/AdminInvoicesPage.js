@@ -1343,14 +1343,14 @@ const AdminBillingPage = () => {
                             </div>
                             <div className="flex-1">
                               <p className="font-medium text-sm">{service.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {service.description}
+                              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                <span>{service.description}</span>
                                 {service.duration_type && service.duration_type !== 'minutes' && (
-                                  <Badge className="ml-2 bg-blue-100 text-blue-700 text-[10px]">
+                                  <Badge className="bg-blue-100 text-blue-700 text-[10px]">
                                     per {service.duration_type === 'days' ? 'day' : 'night'}
                                   </Badge>
                                 )}
-                              </p>
+                              </div>
                             </div>
                             <p className="text-lg font-bold text-sky-600">
                               ${service.price.toFixed(2)}
