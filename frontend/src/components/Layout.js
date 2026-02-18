@@ -31,6 +31,8 @@ import {
   Bed,
   Trees,
   DollarSign,
+  Moon,
+  Sun,
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
