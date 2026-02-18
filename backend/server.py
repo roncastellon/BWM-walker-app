@@ -849,7 +849,13 @@ async def setup_first_admin(request: AdminSetupRequest):
 @api_router.get("/users/walkers", response_model=List[UserResponse])
 async def get_walkers(include_frozen: bool = False):
     # Include frozen users if requested (for admin management pages)
-    query = {"role": "walker"} if include_frozen else {"role": "walker", "is_active": True}
+    # Include walkers AND admins who are marked as walkers
+    query = {
+        "$or": [
+            {"role": "walker"} if include_frozen else {"role": "walker", "is_active": True},
+            {"role": "admin", "is_walker": True, "is_active": True}
+        ]
+    }
     walkers = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(100)
     
     # Auto-assign colors to walkers who don't have one
