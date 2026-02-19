@@ -288,24 +288,46 @@ const CalendarPage = () => {
       // For multi-day bookings, create separate appointments for each day
       const daysToCreate = isDayNight && formData.duration_value > 1 ? formData.duration_value : 1;
       
-      for (let i = 0; i < daysToCreate; i++) {
-        const appointmentDate = new Date(formData.scheduled_date);
-        appointmentDate.setDate(appointmentDate.getDate() + i);
-        const dateStr = appointmentDate.toISOString().split('T')[0];
-        
+      const isDayNight = isDayNightService(formData.service_type);
+      
+      if (isDayNight && formData.end_date) {
+        // For overnight/day services, create a single appointment with start and end dates
         await api.post('/appointments/admin', {
           ...formData,
-          scheduled_date: dateStr,
-          scheduled_time: isDayNight ? '' : formData.scheduled_time,
-          duration_value: 1,
+          scheduled_time: '',
           duration_type: getDurationTypeForService(formData.service_type)
         });
+        toast.success('Appointment created successfully');
+      } else if (isDayNight) {
+        // Fallback: Create multiple day appointments if no end_date
+        const daysToCreate = formData.duration_value || 1;
+        for (let i = 0; i < daysToCreate; i++) {
+          const appointmentDate = new Date(formData.scheduled_date);
+          appointmentDate.setDate(appointmentDate.getDate() + i);
+          const dateStr = appointmentDate.toISOString().split('T')[0];
+          
+          await api.post('/appointments/admin', {
+            ...formData,
+            scheduled_date: dateStr,
+            scheduled_time: '',
+            duration_value: 1,
+            duration_type: getDurationTypeForService(formData.service_type)
+          });
+        }
+        
+        const successMsg = daysToCreate > 1 
+          ? `${daysToCreate} ${getDurationTypeForService(formData.service_type) === 'days' ? 'day' : 'night'} appointments created successfully`
+          : 'Appointment created successfully';
+        toast.success(successMsg);
+      } else {
+        // Regular time-based appointment
+        await api.post('/appointments/admin', {
+          ...formData,
+          duration_type: 'minutes'
+        });
+        toast.success('Appointment created successfully');
       }
       
-      const successMsg = daysToCreate > 1 
-        ? `${daysToCreate} ${getDurationTypeForService(formData.service_type) === 'days' ? 'day' : 'night'} appointments created successfully`
-        : 'Appointment created successfully';
-      toast.success(successMsg);
       setAddDialogOpen(false);
       fetchData();
     } catch (error) {
