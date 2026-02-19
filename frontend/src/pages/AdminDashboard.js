@@ -590,12 +590,12 @@ const AdminDashboard = () => {
 
                   {/* WALKS Tab Content */}
                   <TabsContent value="walks" className="mt-0">
-                    {/* Status Filter */}
-                    <div className="flex gap-1 mb-3 flex-wrap">
+                    {/* Status Filter - Always in one row */}
+                    <div className="grid grid-cols-3 gap-1 mb-3">
                       <Button
                         size="sm"
                         variant={scheduleViewFilter === 'pending' ? 'default' : 'outline'}
-                        className="rounded-full text-xs h-7 px-3"
+                        className="rounded-full text-[10px] sm:text-xs h-7 px-2 sm:px-3"
                         onClick={() => setScheduleViewFilter('pending')}
                       >
                         Pending ({allTodayAppts.filter(a => isWalkService(a.service_type) && (a.status === 'scheduled' || a.status === 'in_progress')).length})
@@ -603,7 +603,7 @@ const AdminDashboard = () => {
                       <Button
                         size="sm"
                         variant={scheduleViewFilter === 'completed' ? 'default' : 'outline'}
-                        className="rounded-full text-xs h-7 px-3"
+                        className="rounded-full text-[10px] sm:text-xs h-7 px-2 sm:px-3"
                         onClick={() => setScheduleViewFilter('completed')}
                       >
                         Completed ({allTodayAppts.filter(a => isWalkService(a.service_type) && a.status === 'completed').length})
@@ -611,7 +611,7 @@ const AdminDashboard = () => {
                       <Button
                         size="sm"
                         variant={scheduleViewFilter === 'cancelled' ? 'default' : 'outline'}
-                        className="rounded-full text-xs h-7 px-3"
+                        className="rounded-full text-[10px] sm:text-xs h-7 px-2 sm:px-3"
                         onClick={() => setScheduleViewFilter('cancelled')}
                       >
                         Cancelled ({allTodayAppts.filter(a => isWalkService(a.service_type) && a.status === 'cancelled').length})
