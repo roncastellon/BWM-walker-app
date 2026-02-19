@@ -71,6 +71,25 @@ const AdminDashboard = () => {
   
   // Schedule view filter - default to pending
   const [scheduleViewFilter, setScheduleViewFilter] = useState('pending');
+  
+  // Service type tab - walks, overnights, daycare
+  const [serviceTypeTab, setServiceTypeTab] = useState('walks');
+
+  // Helper functions to categorize appointments
+  const isWalkService = (serviceType) => {
+    const st = (serviceType || '').toLowerCase();
+    return st.includes('walk') || st.includes('transport') || st.includes('concierge');
+  };
+
+  const isOvernightService = (serviceType) => {
+    const st = (serviceType || '').toLowerCase();
+    return st.includes('overnight') || st.includes('petsit') || st.includes('boarding') || st.includes('stay') || st.includes('sitting');
+  };
+
+  const isDaycareService = (serviceType) => {
+    const st = (serviceType || '').toLowerCase();
+    return st.includes('daycare') || st.includes('day_care') || st.includes('day_camp') || st.includes('day_visit');
+  };
 
   useEffect(() => {
     fetchData();
