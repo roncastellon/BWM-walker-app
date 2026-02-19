@@ -131,10 +131,39 @@ const AdminOvernightsPage = () => {
     const labels = {
       'overnight': 'Overnight Stay',
       'stay_overnight': 'Overnight Stay',
-      'petsit_our_location': 'Boarding (Our Location)',
-      'petsit_your_location': 'Pet Sitting (Client Home)',
+      'petsit_our_location': 'Our Location',
+      'petsit_your_location': "Client's Home",
     };
-    return labels[type] || type;
+    return labels[type] || type?.replace(/_/g, ' ');
+  };
+
+  // Open edit modal
+  const openEditModal = (stay) => {
+    setSelectedStay(stay);
+    setEditForm({
+      scheduled_date: stay.scheduled_date || '',
+      end_date: stay.end_date || stay.scheduled_date || '',
+      status: stay.status || 'scheduled'
+    });
+    setEditModalOpen(true);
+  };
+
+  // Save edited stay
+  const handleSaveEdit = async () => {
+    if (!selectedStay) return;
+    try {
+      await api.put(`/appointments/${selectedStay.id}`, {
+        scheduled_date: editForm.scheduled_date,
+        end_date: editForm.end_date,
+        status: editForm.status
+      });
+      toast.success('Stay updated successfully!');
+      fetchOvernights();
+      setEditModalOpen(false);
+      setActionModalOpen(false);
+    } catch (error) {
+      toast.error('Failed to update stay');
+    }
   };
 
   // Check-in a stay
