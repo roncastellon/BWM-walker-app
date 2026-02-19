@@ -1052,7 +1052,7 @@ const CalendarPage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Date *</Label>
+                  <Label>{isDayNightService(formData.service_type) ? 'Start Date *' : 'Date *'}</Label>
                   <Input 
                     type="date" 
                     value={formData.scheduled_date}
@@ -1061,28 +1061,23 @@ const CalendarPage = () => {
                 </div>
                 {isDayNightService(formData.service_type) ? (
                   <div className="space-y-2">
-                    <Label>
-                      {getDurationTypeForService(formData.service_type) === 'days' 
-                        ? 'Number of Days *' 
-                        : 'Number of Nights *'}
-                    </Label>
-                    <Select 
-                      value={formData.duration_value?.toString() || '1'} 
-                      onValueChange={(value) => setFormData({ ...formData, duration_value: parseInt(value) })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 14, 21, 30].map((num) => (
-                          <SelectItem key={num} value={num.toString()}>
-                            {num} {getDurationTypeForService(formData.service_type) === 'days' 
-                              ? (num === 1 ? 'Day' : 'Days') 
-                              : (num === 1 ? 'Night' : 'Nights')}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>End Date *</Label>
+                    <Input 
+                      type="date" 
+                      value={formData.end_date || formData.scheduled_date}
+                      min={formData.scheduled_date}
+                      onChange={(e) => {
+                        const startDate = new Date(formData.scheduled_date);
+                        const endDate = new Date(e.target.value);
+                        const diffTime = endDate - startDate;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        setFormData({ 
+                          ...formData, 
+                          end_date: e.target.value,
+                          duration_value: Math.max(1, diffDays)
+                        });
+                      }}
+                    />
                   </div>
                 ) : (
                   <div className="space-y-2">
