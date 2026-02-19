@@ -3289,9 +3289,10 @@ class WalkCompletionData(BaseModel):
     did_poop: Optional[bool] = None
     checked_water: Optional[bool] = None
     completion_notes: Optional[str] = None
+    notes: Optional[str] = None  # Alternative field name
 
 @api_router.post("/appointments/{appt_id}/complete")
-async def complete_walk(appt_id: str, completion_data: WalkCompletionData = None, current_user: dict = Depends(get_current_user)):
+async def complete_walk(appt_id: str, completion_data: WalkCompletionData = Body(default=None), current_user: dict = Depends(get_current_user)):
     """Complete a walk with optional completion questionnaire data"""
     appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
     if not appt:
@@ -3302,16 +3303,19 @@ async def complete_walk(appt_id: str, completion_data: WalkCompletionData = None
     
     update_data = {
         "status": "completed",
-        "end_time": datetime.now(timezone.utc).isoformat()
+        "end_time": datetime.now(timezone.utc).isoformat(),
+        "is_tracking": False
     }
     
     # Add completion questionnaire data if provided
     if completion_data:
+        # Handle both 'notes' and 'completion_notes' field names
+        notes_text = completion_data.completion_notes or completion_data.notes or ''
         update_data["completion_data"] = {
             "did_pee": completion_data.did_pee,
             "did_poop": completion_data.did_poop,
             "checked_water": completion_data.checked_water,
-            "notes": completion_data.completion_notes,
+            "notes": notes_text,
             "completed_at": datetime.now(timezone.utc).isoformat()
         }
     
