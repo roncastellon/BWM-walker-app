@@ -59,27 +59,35 @@ const AdminOvernightsPage = () => {
                      s.name?.toLowerCase().includes('boarding'))
         .map(s => s.service_type);
       
+      console.log('Overnight service types:', overnightServiceTypes);
+      
       const res = await api.get('/appointments/calendar');
       // Filter overnight-type appointments - include all overnight/boarding variations
       const filtered = res.data.filter(a => {
         const serviceType = (a.service_type || '').toLowerCase();
         const dType = (a.duration_type || '').toLowerCase();
-        const serviceName = (a.service_name || '').toLowerCase();
         
         // Match by service type name, duration_type, or if it's in our services list
-        return (
+        const matches = (
           serviceType.includes('overnight') ||
           serviceType.includes('petsit') ||
           serviceType.includes('boarding') ||
           serviceType.includes('stay') ||
-          serviceName.includes('overnight') ||
-          serviceName.includes('boarding') ||
           dType === 'nights' ||
           overnightServiceTypes.includes(a.service_type)
         );
+        
+        return matches;
       });
+      
+      console.log('Overnight appointments found:', filtered.length, filtered.map(a => ({
+        service_type: a.service_type,
+        duration_type: a.duration_type,
+        scheduled_date: a.scheduled_date,
+        pet_names: a.pet_names
+      })));
+      
       setOvernights(filtered);
-      console.log('Overnight appointments found:', filtered.length, filtered);
     } catch (error) {
       console.error('Failed to load overnights:', error);
       toast.error('Failed to load overnights');
