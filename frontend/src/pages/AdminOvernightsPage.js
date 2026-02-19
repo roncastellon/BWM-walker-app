@@ -488,6 +488,15 @@ const AdminOvernightsPage = () => {
                     <p className="text-sm text-green-600">Ready for billing</p>
                   </div>
                 )}
+                {/* Edit button - always available */}
+                <Button 
+                  onClick={() => { setActionModalOpen(false); openEditModal(selectedStay); }} 
+                  variant="outline" 
+                  className="rounded-full"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Edit Dates
+                </Button>
               </div>
             </div>
           )}
