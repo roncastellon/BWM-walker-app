@@ -272,9 +272,6 @@ const CalendarPage = () => {
     
     const isDayNight = isDayNightService(formData.service_type);
     
-    // For day/night services, time is optional
-    const isDayNight = isDayNightService(formData.service_type);
-    
     if (!formData.client_id || !formData.service_type || !formData.scheduled_date) {
       toast.error('Please fill in all required fields');
       return;
