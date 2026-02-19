@@ -83,15 +83,16 @@ const HomeRedirect = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Don't use replace here so back button works properly
   switch (user?.role) {
     case 'admin':
-      return <Navigate to="/admin" replace />;
+      return <Navigate to="/admin" />;
     case 'walker':
-      return <Navigate to="/walker" replace />;
+      return <Navigate to="/walker" />;
     case 'sitter':
-      return <Navigate to="/sitter" replace />;
+      return <Navigate to="/sitter" />;
     default:
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/dashboard" />;
   }
 };
 
