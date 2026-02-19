@@ -53,14 +53,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    // Redirect to appropriate dashboard based on role
+    // Redirect to appropriate dashboard based on role (without replace to preserve history)
     switch (user?.role) {
       case 'admin':
-        return <Navigate to="/admin" replace />;
+        return <Navigate to="/admin" />;
       case 'walker':
-        return <Navigate to="/walker" replace />;
+        return <Navigate to="/walker" />;
       default:
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to="/dashboard" />;
     }
   }
 
