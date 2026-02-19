@@ -2980,12 +2980,24 @@ async def get_calendar_appointments(current_user: dict = Depends(get_current_use
                 if pet:
                     pet_names.append(pet['name'])
         
-        calendar_events.append({
+        # Build event with completion data enrichment
+        event = {
             **appt,
             "client_name": client.get('full_name') if client else "Unknown",
             "walker_name": walker.get('full_name') if walker else "Unassigned",
             "pet_names": pet_names
-        })
+        }
+        
+        # Enrich completion data for completed walks
+        if appt.get('status') == 'completed' and appt.get('completion_data'):
+            cd = appt['completion_data']
+            event['pee_count'] = 1 if cd.get('did_pee') else 0
+            event['poop_count'] = 1 if cd.get('did_poop') else 0
+            event['water_given'] = cd.get('checked_water', False)
+            event['walker_notes'] = cd.get('notes', '')
+            event['completed_at'] = cd.get('completed_at')
+        
+        calendar_events.append(event)
     return calendar_events
 
 # Get all appointments for admin management (not filtered by walker_id)
