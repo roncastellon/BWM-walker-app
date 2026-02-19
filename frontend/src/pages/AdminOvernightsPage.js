@@ -24,6 +24,14 @@ const AdminOvernightsPage = () => {
   const [extendModalOpen, setExtendModalOpen] = useState(false);
   const [extendDays, setExtendDays] = useState(1);
   const [endingTodayPrompt, setEndingTodayPrompt] = useState([]);
+  
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    scheduled_date: '',
+    end_date: '',
+    status: 'scheduled'
+  });
 
   useEffect(() => {
     fetchOvernights();
