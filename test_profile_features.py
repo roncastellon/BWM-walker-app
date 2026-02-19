@@ -9,7 +9,7 @@ import io
 from datetime import datetime
 
 class ProfileFeatureTester:
-    def __init__(self, base_url="https://walker-schedule-app.preview.emergentagent.com"):
+    def __init__(self, base_url="https://walk-dash-redesign.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
