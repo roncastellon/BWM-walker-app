@@ -49,44 +49,51 @@ const AdminOvernightsPage = () => {
     try {
       // Fetch services to get overnight service types
       const servicesRes = await api.get('/services');
-      const overnightServiceTypes = servicesRes.data
-        .filter(s => s.duration_type === 'nights' || 
-                     s.service_type?.toLowerCase().includes('overnight') ||
-                     s.service_type?.toLowerCase().includes('petsit') ||
-                     s.service_type?.toLowerCase().includes('boarding') ||
-                     s.service_type?.toLowerCase().includes('stay') ||
-                     s.name?.toLowerCase().includes('overnight') ||
-                     s.name?.toLowerCase().includes('boarding'))
-        .map(s => s.service_type);
       
+      // Get all services that are overnight-type (by duration_type or name)
+      const overnightServices = servicesRes.data.filter(s => 
+        s.duration_type === 'nights' || 
+        s.service_type?.toLowerCase().includes('overnight') ||
+        s.service_type?.toLowerCase().includes('petsit') ||
+        s.service_type?.toLowerCase().includes('boarding') ||
+        s.service_type?.toLowerCase().includes('stay') ||
+        s.name?.toLowerCase().includes('overnight') ||
+        s.name?.toLowerCase().includes('boarding') ||
+        s.name?.toLowerCase().includes('pet sitting')
+      );
+      
+      const overnightServiceTypes = overnightServices.map(s => s.service_type);
+      console.log('Overnight services found:', overnightServices.map(s => ({ name: s.name, service_type: s.service_type, duration_type: s.duration_type })));
       console.log('Overnight service types:', overnightServiceTypes);
       
       const res = await api.get('/appointments/calendar');
-      // Filter overnight-type appointments - include all overnight/boarding variations
+      console.log('All appointments:', res.data.length);
+      
+      // Filter overnight-type appointments
       const filtered = res.data.filter(a => {
         const serviceType = (a.service_type || '').toLowerCase();
         const dType = (a.duration_type || '').toLowerCase();
         
-        // Match by service type name, duration_type, or if it's in our services list
+        // Match by service type containing keywords, duration_type, or being in overnight services list
         const matches = (
           serviceType.includes('overnight') ||
           serviceType.includes('petsit') ||
           serviceType.includes('boarding') ||
           serviceType.includes('stay') ||
+          serviceType.includes('pet_sitting') ||
+          serviceType.includes('sitting') ||
           dType === 'nights' ||
           overnightServiceTypes.includes(a.service_type)
         );
         
+        if (matches) {
+          console.log('Matched overnight:', a.service_type, a.scheduled_date, a.pet_names);
+        }
+        
         return matches;
       });
       
-      console.log('Overnight appointments found:', filtered.length, filtered.map(a => ({
-        service_type: a.service_type,
-        duration_type: a.duration_type,
-        scheduled_date: a.scheduled_date,
-        pet_names: a.pet_names
-      })));
-      
+      console.log('Overnight appointments found:', filtered.length);
       setOvernights(filtered);
     } catch (error) {
       console.error('Failed to load overnights:', error);
