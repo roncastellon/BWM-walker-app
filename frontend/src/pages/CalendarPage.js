@@ -1182,26 +1182,48 @@ const CalendarPage = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Date</Label>
+                      <Label>{isDayNightService(formData.service_type) ? 'Start Date' : 'Date'}</Label>
                       <Input 
                         type="date" 
                         value={formData.scheduled_date}
                         onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Time</Label>
-                      <Select value={formData.scheduled_time} onValueChange={(value) => setFormData({ ...formData, scheduled_time: value })}>
-                        <SelectTrigger>
-                          <SelectValue>{formData.scheduled_time ? formatTime12Hour(formData.scheduled_time) : "Select time"}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {timeSlots.map((slot) => (
-                            <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {isDayNightService(formData.service_type) ? (
+                      <div className="space-y-2">
+                        <Label>End Date</Label>
+                        <Input 
+                          type="date" 
+                          value={formData.end_date || formData.scheduled_date}
+                          min={formData.scheduled_date}
+                          onChange={(e) => {
+                            const startDate = new Date(formData.scheduled_date);
+                            const endDate = new Date(e.target.value);
+                            const diffTime = endDate - startDate;
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            setFormData({ 
+                              ...formData, 
+                              end_date: e.target.value,
+                              duration_value: Math.max(1, diffDays)
+                            });
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label>Time</Label>
+                        <Select value={formData.scheduled_time} onValueChange={(value) => setFormData({ ...formData, scheduled_time: value })}>
+                          <SelectTrigger>
+                            <SelectValue>{formData.scheduled_time ? formatTime12Hour(formData.scheduled_time) : "Select time"}</SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {timeSlots.map((slot) => (
+                              <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
