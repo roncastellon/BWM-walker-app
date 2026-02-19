@@ -378,6 +378,7 @@ const CalendarPage = () => {
       pet_ids: appt.pet_ids || [],
       service_type: appt.service_type || '',
       scheduled_date: appt.scheduled_date || '',
+      end_date: appt.end_date || '',
       scheduled_time: appt.scheduled_time || '',
       notes: appt.notes || '',
       status: appt.status || 'scheduled',
@@ -397,6 +398,14 @@ const CalendarPage = () => {
   const getWalkerName = (walkerId) => {
     const walker = walkers.find(w => w.id === walkerId);
     return walker?.full_name || 'Unassigned';
+  };
+
+  // Get location label for overnight services
+  const getLocationLabel = (serviceType) => {
+    if (serviceType === 'petsit_our_location') return 'Our Location';
+    if (serviceType === 'petsit_your_location') return "Client's Home";
+    return null;
+  };
   };
 
   const getAppointmentStyles = (appt) => {
