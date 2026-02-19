@@ -422,7 +422,6 @@ const CalendarPage = () => {
     if (serviceType === 'petsit_your_location') return "Client's Home";
     return null;
   };
-  };
 
   const getAppointmentStyles = (appt) => {
     const color = appt.walker_id ? getWalkerColor(appt.walker_id) : '#9CA3AF';
