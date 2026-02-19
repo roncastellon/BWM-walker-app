@@ -47,21 +47,39 @@ const AdminOvernightsPage = () => {
   const fetchOvernights = async () => {
     setLoading(true);
     try {
+      // Fetch services to get overnight service types
+      const servicesRes = await api.get('/services');
+      const overnightServiceTypes = servicesRes.data
+        .filter(s => s.duration_type === 'nights' || 
+                     s.service_type?.toLowerCase().includes('overnight') ||
+                     s.service_type?.toLowerCase().includes('petsit') ||
+                     s.service_type?.toLowerCase().includes('boarding') ||
+                     s.service_type?.toLowerCase().includes('stay') ||
+                     s.name?.toLowerCase().includes('overnight') ||
+                     s.name?.toLowerCase().includes('boarding'))
+        .map(s => s.service_type);
+      
       const res = await api.get('/appointments/calendar');
       // Filter overnight-type appointments - include all overnight/boarding variations
       const filtered = res.data.filter(a => {
         const serviceType = (a.service_type || '').toLowerCase();
         const dType = (a.duration_type || '').toLowerCase();
-        // Match by service type name or by duration_type being 'nights'
+        const serviceName = (a.service_name || '').toLowerCase();
+        
+        // Match by service type name, duration_type, or if it's in our services list
         return (
           serviceType.includes('overnight') ||
           serviceType.includes('petsit') ||
           serviceType.includes('boarding') ||
           serviceType.includes('stay') ||
-          dType === 'nights'
+          serviceName.includes('overnight') ||
+          serviceName.includes('boarding') ||
+          dType === 'nights' ||
+          overnightServiceTypes.includes(a.service_type)
         );
       });
       setOvernights(filtered);
+      console.log('Overnight appointments found:', filtered.length, filtered);
     } catch (error) {
       console.error('Failed to load overnights:', error);
       toast.error('Failed to load overnights');
