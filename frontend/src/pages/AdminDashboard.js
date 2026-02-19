@@ -543,7 +543,7 @@ const AdminDashboard = () => {
               </Link>
             </div>
 
-            {/* Today's Appointments */}
+            {/* Service Type Tabs - Walks, Overnights, Daycare */}
             <Card className="rounded-xl">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -551,79 +551,287 @@ const AdminDashboard = () => {
                   Today&apos;s Schedule
                   <Badge variant="secondary" className="rounded-full ml-2">{allTodayAppts.length}</Badge>
                 </CardTitle>
-                {/* Filter Tabs */}
-                <div className="flex gap-1 mt-2">
-                  <Button
-                    size="sm"
-                    variant={scheduleViewFilter === 'pending' ? 'default' : 'outline'}
-                    className="rounded-full text-xs h-7 px-3"
-                    onClick={() => setScheduleViewFilter('pending')}
-                  >
-                    Pending ({pendingCount})
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={scheduleViewFilter === 'completed' ? 'default' : 'outline'}
-                    className="rounded-full text-xs h-7 px-3"
-                    onClick={() => setScheduleViewFilter('completed')}
-                  >
-                    Completed ({completedCount})
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={scheduleViewFilter === 'cancelled' ? 'default' : 'outline'}
-                    className="rounded-full text-xs h-7 px-3"
-                    onClick={() => setScheduleViewFilter('cancelled')}
-                  >
-                    Cancelled ({cancelledCount})
-                  </Button>
-                </div>
               </CardHeader>
-              <CardContent>
-                {todayAppts.length === 0 ? (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No {scheduleViewFilter} appointments today</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {todayAppts.slice(0, 5).map((appt) => (
-                      <div
-                        key={appt.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-                        onClick={() => navigate(`/admin/calendar?highlight=${appt.id}`)}
+              <CardContent className="pt-0">
+                {/* Service Type Sub-Tabs */}
+                <Tabs value={serviceTypeTab} onValueChange={setServiceTypeTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-4">
+                    <TabsTrigger 
+                      value="walks" 
+                      className="text-xs data-[state=active]:bg-sky-500 data-[state=active]:text-white"
+                      data-testid="walks-tab"
+                    >
+                      Walks
+                      <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0 h-4">
+                        {allTodayAppts.filter(a => isWalkService(a.service_type)).length}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="overnights" 
+                      className="text-xs data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                      data-testid="overnights-tab"
+                    >
+                      Overnights
+                      <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0 h-4">
+                        {allTodayAppts.filter(a => isOvernightService(a.service_type)).length}
+                      </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="daycare" 
+                      className="text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                      data-testid="daycare-tab"
+                    >
+                      Daycare
+                      <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0 h-4">
+                        {allTodayAppts.filter(a => isDaycareService(a.service_type)).length}
+                      </Badge>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* WALKS Tab Content */}
+                  <TabsContent value="walks" className="mt-0">
+                    {/* Status Filter */}
+                    <div className="flex gap-1 mb-3 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant={scheduleViewFilter === 'pending' ? 'default' : 'outline'}
+                        className="rounded-full text-xs h-7 px-3"
+                        onClick={() => setScheduleViewFilter('pending')}
                       >
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-10 h-10 rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: appt.walker_color ? `${appt.walker_color}20` : 'rgb(var(--primary) / 0.1)' }}
-                          >
-                            <PawPrint className="w-5 h-5" style={{ color: appt.walker_color || 'rgb(var(--primary))' }} />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">{formatTime12Hour(appt.scheduled_time)}</p>
-                            <p className="font-bold text-base">
-                              {appt.pet_names?.length > 0 ? appt.pet_names.join(' & ') : 'No pet assigned'}
-                            </p>
-                            <p className="text-xs text-muted-foreground capitalize">
-                              {appt.service_type?.replace(/_/g, ' ')} • {appt.walker_name || 'Unassigned'}
-                            </p>
-                          </div>
+                        Pending ({allTodayAppts.filter(a => isWalkService(a.service_type) && (a.status === 'scheduled' || a.status === 'in_progress')).length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={scheduleViewFilter === 'completed' ? 'default' : 'outline'}
+                        className="rounded-full text-xs h-7 px-3"
+                        onClick={() => setScheduleViewFilter('completed')}
+                      >
+                        Completed ({allTodayAppts.filter(a => isWalkService(a.service_type) && a.status === 'completed').length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={scheduleViewFilter === 'cancelled' ? 'default' : 'outline'}
+                        className="rounded-full text-xs h-7 px-3"
+                        onClick={() => setScheduleViewFilter('cancelled')}
+                      >
+                        Cancelled ({allTodayAppts.filter(a => isWalkService(a.service_type) && a.status === 'cancelled').length})
+                      </Button>
+                    </div>
+                    {(() => {
+                      const walksAppts = allTodayAppts.filter(a => isWalkService(a.service_type)).filter(a => {
+                        if (scheduleViewFilter === 'pending') return a.status === 'scheduled' || a.status === 'in_progress';
+                        if (scheduleViewFilter === 'completed') return a.status === 'completed';
+                        if (scheduleViewFilter === 'cancelled') return a.status === 'cancelled';
+                        return true;
+                      });
+                      return walksAppts.length === 0 ? (
+                        <div className="text-center py-6 text-muted-foreground">
+                          <PawPrint className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No {scheduleViewFilter} walks today</p>
                         </div>
-                        <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
-                          {appt.status}
-                        </Badge>
-                      </div>
-                    ))}
-                    {todayAppts.length > 5 && (
-                      <Link to="/admin/calendar">
-                        <Button variant="ghost" size="sm" className="w-full rounded-full">
-                          View all {todayAppts.length} {scheduleViewFilter} appointments
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                )}
+                      ) : (
+                        <div className="space-y-3">
+                          {walksAppts.slice(0, 5).map((appt) => (
+                            <div
+                              key={appt.id}
+                              className="flex items-center justify-between p-3 rounded-lg bg-sky-50/50 cursor-pointer hover:bg-sky-100/50 transition-colors border border-sky-100"
+                              onClick={() => navigate(`/admin/calendar?highlight=${appt.id}`)}
+                              data-testid={`walk-item-${appt.id}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div 
+                                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                  style={{ backgroundColor: appt.walker_color ? `${appt.walker_color}20` : 'rgb(14 165 233 / 0.1)' }}
+                                >
+                                  <PawPrint className="w-5 h-5" style={{ color: appt.walker_color || '#0ea5e9' }} />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">{formatTime12Hour(appt.scheduled_time)}</p>
+                                  <p className="font-bold text-base">
+                                    {appt.pet_names?.length > 0 ? appt.pet_names.join(' & ') : 'No pet assigned'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground capitalize">
+                                    {appt.service_type?.replace(/_/g, ' ')} • {appt.walker_name || 'Unassigned'}
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge className={`${getStatusColor(appt.status)} rounded-full text-xs`}>
+                                {appt.status}
+                              </Badge>
+                            </div>
+                          ))}
+                          {walksAppts.length > 5 && (
+                            <Link to="/admin/calendar">
+                              <Button variant="ghost" size="sm" className="w-full rounded-full text-sky-600">
+                                View all {walksAppts.length} walks
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </TabsContent>
+
+                  {/* OVERNIGHTS Tab Content */}
+                  <TabsContent value="overnights" className="mt-0">
+                    {(() => {
+                      const overnightAppts = allTodayAppts.filter(a => isOvernightService(a.service_type));
+                      const checkingIn = overnightAppts.filter(a => a.status === 'scheduled');
+                      const staying = overnightAppts.filter(a => a.status === 'in_progress');
+                      const checkingOut = overnightAppts.filter(a => a.status === 'completed');
+                      
+                      return overnightAppts.length === 0 ? (
+                        <div className="text-center py-6 text-muted-foreground">
+                          <Building2 className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No overnight stays today</p>
+                          <Link to="/admin/overnights">
+                            <Button variant="link" size="sm" className="mt-2 text-purple-600">
+                              View Overnights Calendar
+                            </Button>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {/* Summary Cards */}
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="bg-purple-50 rounded-lg p-2 text-center border border-purple-100">
+                              <p className="text-lg font-bold text-purple-600">{checkingIn.length}</p>
+                              <p className="text-[10px] text-purple-600">Check In</p>
+                            </div>
+                            <div className="bg-orange-50 rounded-lg p-2 text-center border border-orange-100">
+                              <p className="text-lg font-bold text-orange-600">{staying.length}</p>
+                              <p className="text-[10px] text-orange-600">Staying</p>
+                            </div>
+                            <div className="bg-green-50 rounded-lg p-2 text-center border border-green-100">
+                              <p className="text-lg font-bold text-green-600">{checkingOut.length}</p>
+                              <p className="text-[10px] text-green-600">Check Out</p>
+                            </div>
+                          </div>
+                          
+                          {/* Overnight Appointments List */}
+                          <div className="space-y-3">
+                            {overnightAppts.slice(0, 5).map((appt) => (
+                              <div
+                                key={appt.id}
+                                className="flex items-center justify-between p-3 rounded-lg bg-purple-50/50 cursor-pointer hover:bg-purple-100/50 transition-colors border border-purple-100"
+                                onClick={() => navigate(`/admin/overnights`)}
+                                data-testid={`overnight-item-${appt.id}`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                                    <Building2 className="w-5 h-5 text-purple-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-base">
+                                      {appt.pet_names?.length > 0 ? appt.pet_names.join(' & ') : 'No pet assigned'}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {appt.client_name} • {appt.service_type?.replace(/_/g, ' ')}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge className={`rounded-full text-xs ${
+                                  appt.status === 'scheduled' ? 'bg-purple-100 text-purple-800' :
+                                  appt.status === 'in_progress' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-green-100 text-green-800'
+                                }`}>
+                                  {appt.status === 'scheduled' ? 'Check In' : 
+                                   appt.status === 'in_progress' ? 'Staying' : 'Check Out'}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <Link to="/admin/overnights">
+                            <Button variant="ghost" size="sm" className="w-full rounded-full text-purple-600">
+                              View Overnights Calendar
+                            </Button>
+                          </Link>
+                        </div>
+                      );
+                    })()}
+                  </TabsContent>
+
+                  {/* DAYCARE Tab Content */}
+                  <TabsContent value="daycare" className="mt-0">
+                    {(() => {
+                      const daycareAppts = allTodayAppts.filter(a => isDaycareService(a.service_type));
+                      const awaitingCheckin = daycareAppts.filter(a => a.status === 'scheduled');
+                      const currentlyHere = daycareAppts.filter(a => a.status === 'in_progress');
+                      const pickedUp = daycareAppts.filter(a => a.status === 'completed');
+                      
+                      return daycareAppts.length === 0 ? (
+                        <div className="text-center py-6 text-muted-foreground">
+                          <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No daycare pets today</p>
+                          <Link to="/admin/daycare">
+                            <Button variant="link" size="sm" className="mt-2 text-orange-600">
+                              View Daycare Calendar
+                            </Button>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {/* Summary Cards */}
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="bg-amber-50 rounded-lg p-2 text-center border border-amber-100">
+                              <p className="text-lg font-bold text-amber-600">{awaitingCheckin.length}</p>
+                              <p className="text-[10px] text-amber-600">Expected</p>
+                            </div>
+                            <div className="bg-green-50 rounded-lg p-2 text-center border border-green-100">
+                              <p className="text-lg font-bold text-green-600">{currentlyHere.length}</p>
+                              <p className="text-[10px] text-green-600">Here Now</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-200">
+                              <p className="text-lg font-bold text-gray-600">{pickedUp.length}</p>
+                              <p className="text-[10px] text-gray-600">Picked Up</p>
+                            </div>
+                          </div>
+                          
+                          {/* Daycare Appointments List */}
+                          <div className="space-y-3">
+                            {daycareAppts.slice(0, 5).map((appt) => (
+                              <div
+                                key={appt.id}
+                                className="flex items-center justify-between p-3 rounded-lg bg-orange-50/50 cursor-pointer hover:bg-orange-100/50 transition-colors border border-orange-100"
+                                onClick={() => navigate(`/admin/daycare`)}
+                                data-testid={`daycare-item-${appt.id}`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                                    <Users className="w-5 h-5 text-orange-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-base">
+                                      {appt.pet_names?.length > 0 ? appt.pet_names.join(' & ') : 'No pet assigned'}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {appt.client_name} • {formatTime12Hour(appt.scheduled_time)}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge className={`rounded-full text-xs ${
+                                  appt.status === 'scheduled' ? 'bg-amber-100 text-amber-800' :
+                                  appt.status === 'in_progress' ? 'bg-green-100 text-green-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {appt.status === 'scheduled' ? 'Expected' : 
+                                   appt.status === 'in_progress' ? 'Here' : 'Done'}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <Link to="/admin/daycare">
+                            <Button variant="ghost" size="sm" className="w-full rounded-full text-orange-600">
+                              View Daycare Calendar
+                            </Button>
+                          </Link>
+                        </div>
+                      );
+                    })()}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
 
