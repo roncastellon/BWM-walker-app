@@ -112,6 +112,7 @@ const CalendarPage = () => {
     pet_ids: [],
     service_type: '',
     scheduled_date: '',
+    end_date: '',
     scheduled_time: '',
     notes: '',
     status: 'scheduled',
