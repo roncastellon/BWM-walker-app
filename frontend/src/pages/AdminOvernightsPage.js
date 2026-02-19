@@ -546,6 +546,69 @@ const AdminOvernightsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Stay Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              Edit Stay Dates
+            </DialogTitle>
+            <DialogDescription>
+              Edit the dates for {selectedStay?.pet_names?.join(', ') || 'this pet'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="p-3 rounded-lg bg-purple-50">
+              <p className="text-sm font-medium">{selectedStay?.pet_names?.join(', ') || 'Pet'}</p>
+              <p className="text-xs text-muted-foreground">{selectedStay?.client_name} • {getServiceLabel(selectedStay?.service_type)}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Start Date (Check-in)</Label>
+                <Input
+                  type="date"
+                  value={editForm.scheduled_date}
+                  onChange={(e) => setEditForm({...editForm, scheduled_date: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>End Date (Check-out)</Label>
+                <Input
+                  type="date"
+                  value={editForm.end_date}
+                  onChange={(e) => setEditForm({...editForm, end_date: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={editForm.status} onValueChange={(v) => setEditForm({...editForm, status: v})}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scheduled">Scheduled (Not checked in)</SelectItem>
+                  <SelectItem value="in_progress">In Progress (Checked in)</SelectItem>
+                  <SelectItem value="completed">Completed (Checked out)</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)} className="rounded-full">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} className="rounded-full">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
