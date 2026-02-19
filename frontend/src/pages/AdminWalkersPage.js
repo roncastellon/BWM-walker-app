@@ -827,33 +827,38 @@ const AdminWalkersPage = () => {
                       </Button>
                     </div>
                     
-                    <div className="flex gap-2">
-                      <Badge className="bg-secondary/10 text-secondary rounded-full">
-                        <PawPrint className="w-3 h-3 mr-1" />
-                        Walker
-                      </Badge>
-                      {selectedStaff.pay_setup_completed ? (
-                        <Badge className="bg-green-100 text-green-700 rounded-full">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Pay Setup Complete
+                    {/* Role Badges */}
+                    <div className="flex gap-2 flex-wrap">
+                      {getRoleBadges(selectedStaff).map((badge, idx) => (
+                        <Badge key={idx} className={`${badge.color} rounded-full`}>
+                          <badge.icon className="w-3 h-3 mr-1" />
+                          {badge.label}
                         </Badge>
-                      ) : (
-                        <Badge className="bg-amber-100 text-amber-700 rounded-full">
-                          <AlertCircle className="w-3 h-3 mr-1" />
-                          Needs Pay Setup
-                        </Badge>
+                      ))}
+                      {(selectedStaff.role !== 'admin' || selectedStaff.is_walker || selectedStaff.is_sitter) && (
+                        selectedStaff.pay_setup_completed ? (
+                          <Badge className="bg-green-100 text-green-700 rounded-full">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Pay Setup Complete
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-amber-100 text-amber-700 rounded-full">
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            Needs Pay Setup
+                          </Badge>
+                        )
                       )}
                     </div>
 
                     {/* Pay Setup Required Banner */}
-                    {!selectedStaff.pay_setup_completed && !paySetupMode && (
+                    {(selectedStaff.role !== 'admin' || selectedStaff.is_walker || selectedStaff.is_sitter) && !selectedStaff.pay_setup_completed && !paySetupMode && (
                       <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <AlertCircle className="w-5 h-5 text-amber-600" />
                             <div>
                               <p className="font-semibold text-amber-800">Pay Setup Required</p>
-                              <p className="text-sm text-amber-600">Set pay rates for this walker</p>
+                              <p className="text-sm text-amber-600">Set pay rates for this staff member</p>
                             </div>
                           </div>
                           <Button size="sm" onClick={() => initPaySetup(selectedStaff)} className="bg-amber-500 hover:bg-amber-600">
