@@ -1,0 +1,76 @@
+{
+  "summary": "Frontend testing completed for Admin Dashboard redesign with Walks/Overnights/Daycare tabs and Overnight Calendar status labels. All requested features verified working correctly.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Admin Dashboard: Walks tab present with data-testid='walks-tab'",
+    "Admin Dashboard: Walks tab shows Pending/Completed/Cancelled filter buttons",
+    "Admin Dashboard: Overnights tab present with data-testid='overnights-tab'",
+    "Admin Dashboard: Overnights tab shows Check In/Staying/Check Out summary cards with counts",
+    "Admin Dashboard: Overnights tab shows overnight stay items with 'Check In' action button",
+    "Admin Dashboard: Daycare tab present with data-testid='daycare-tab'",
+    "Admin Dashboard: Daycare tab shows Expected/Here Now/Picked Up summary cards",
+    "Admin Dashboard: Daycare tab shows 'View Daycare Calendar' link when no data",
+    "Admin Dashboard: Tab switching works correctly between Walks/Overnights/Daycare",
+    "Overnight Calendar: Page loads with data-testid='admin-overnights-page'",
+    "Overnight Calendar: Week navigation (prev/next buttons) present",
+    "Overnight Calendar: 'Today' button present for quick navigation",
+    "Overnight Calendar: 'Check in to start' status label shown on start dates for scheduled stays",
+    "Overnight Calendar: 'Awaiting check-in' status label shown on intermediate dates for scheduled stays",
+    "Overnight Calendar: 'Currently Staying' section present",
+    "Overnight Calendar: Stay details modal opens when clicking a stay",
+    "Overnight Calendar: Modal shows pet name, client, service type, status, dates, and action buttons"
+  ],
+
+  "feature_verification": {
+    "admin_dashboard_tabs": {
+      "walks_tab": "Present with badge showing count, includes Pending/Completed/Cancelled filters",
+      "overnights_tab": "Present with badge showing count, includes Check In/Staying/Check Out summary cards",
+      "daycare_tab": "Present with badge showing count, includes Expected/Here Now/Picked Up summary cards"
+    },
+    "overnight_calendar_status_labels": {
+      "check_in_to_start": "Shown on start date for scheduled stays (amber background)",
+      "awaiting_checkin": "Shown on intermediate dates for scheduled stays (lighter amber)",
+      "checked_in": "Configured for in-progress stays (blue background) - no in-progress stays in test data",
+      "check_out_to_end": "Configured for end date of in-progress stays - no in-progress stays in test data",
+      "completed": "Configured for completed stays (green background) - no completed stays in test data"
+    }
+  },
+
+  "test_report_links": [
+    "/app/frontend/src/pages/AdminDashboard.js",
+    "/app/frontend/src/pages/AdminOvernightsPage.js"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [],
+
+  "updated_files": [],
+
+  "success_rate": {
+    "backend": "N/A - frontend only testing",
+    "frontend": "100% (17/17 UI checks passed)"
+  },
+
+  "test_credentials": {
+    "admin": {"username": "demo_admin", "password": "demo123"}
+  },
+
+  "seed_data_creation": "Existing overnight stay data used (Rover - scheduled for Feb 18-20, 2026)",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Admin Dashboard now has three sub-tabs within Schedule tab: Walks, Overnights, and Daycare. Each tab shows appropriate content with service-specific filtering. Overnight Calendar at /admin/overnights shows contextual status labels based on stay status (scheduled/in_progress/completed) and date position (start/intermediate/end). Test data includes overnight stay for 'Rover' pet with scheduled status. Location modal appears on first load - dismiss with 'Maybe Later' button using force=True."
+}
