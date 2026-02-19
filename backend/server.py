@@ -3176,7 +3176,7 @@ async def update_appointment(appt_id: str, update_data: dict, current_user: dict
         if not availability["available"]:
             raise HTTPException(status_code=400, detail=availability["message"])
     
-    allowed_fields = ['scheduled_date', 'scheduled_time', 'walker_id', 'status', 'notes', 'service_type', 'pet_ids']
+    allowed_fields = ['scheduled_date', 'scheduled_time', 'walker_id', 'status', 'notes', 'service_type', 'pet_ids', 'end_date', 'duration_value', 'duration_type']
     update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
     
     await db.appointments.update_one({"id": appt_id}, {"$set": update_dict})
