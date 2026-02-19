@@ -64,6 +64,20 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Admin Walkers Page
 - ✅ Admin Invoices Page
 
+### Recent Updates (February 2026)
+- ✅ **Admin Dashboard Tabbed Redesign (Feb 19, 2026)**: Schedule section now has 3 sub-tabs
+  - **Walks tab**: Shows walk, transport, and concierge appointments with Pending/Completed/Cancelled filters
+  - **Overnights tab**: Shows overnight stays with Check In/Staying/Check Out summary cards
+  - **Daycare tab**: Shows daycare appointments with Expected/Here Now/Picked Up summary cards
+  - Each tab shows count badge with total appointments for that service type
+  - Empty states with links to respective calendar pages
+- ✅ **Overnight Calendar UX Enhancement (Feb 19, 2026)**: Improved status labels
+  - "Check in to start" on start date for scheduled stays (amber)
+  - "Awaiting check-in" on intermediate dates for scheduled stays
+  - "Checked In" on all dates for in-progress stays (blue)
+  - "Check out to end" on end date for in-progress stays (orange)
+  - "Completed" for completed stays (green)
+
 ### Recent Updates (January 2026)
 - ✅ Admin Client Details: Added "Schedule" button to header
 - ✅ Mobile-responsive tabs (stack vertically on mobile)
