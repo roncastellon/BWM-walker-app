@@ -3594,7 +3594,21 @@ async def create_invoice(request: CreateInvoiceRequest, current_user: dict = Dep
         if appt:
             service = await db.services.find_one({"service_type": appt['service_type']}, {"_id": 0})
             if service:
-                total += service['price']
+                price = service.get('price', 0)
+                
+                # For multi-day appointments (overnight/daycare), calculate days inclusively
+                # If stay is from 18th to 20th, that's 3 days (18, 19, 20)
+                if appt.get('end_date') and appt.get('scheduled_date'):
+                    try:
+                        start = datetime.strptime(appt['scheduled_date'], '%Y-%m-%d')
+                        end = datetime.strptime(appt['end_date'], '%Y-%m-%d')
+                        # Calculate inclusive days (add 1 to include both start and end)
+                        days = (end - start).days + 1
+                        total += price * max(1, days)
+                    except:
+                        total += price
+                else:
+                    total += price
     
     due_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
     invoice = Invoice(
