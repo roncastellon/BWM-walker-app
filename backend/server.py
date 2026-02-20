@@ -283,6 +283,7 @@ class UserResponse(BaseModel):
     is_active: bool
     is_walker: bool = False  # True if user can be assigned walks (admins acting as walkers)
     is_sitter: bool = False  # True if user can be assigned pet sitting/overnights
+    can_schedule_walks: bool = False  # Permission for walkers to schedule/create walks
     billing_cycle: Optional[str] = "weekly"
     walker_color: Optional[str] = None
     # Payment methods for walkers/sitters
