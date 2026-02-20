@@ -257,6 +257,7 @@ const CalendarPage = () => {
       pet_ids: appointmentDetail.pet_ids || [],
       service_type: appointmentDetail.service_type || '',
       scheduled_date: appointmentDetail.scheduled_date || '',
+      end_date: appointmentDetail.end_date || appointmentDetail.scheduled_date || '',
       scheduled_time: appointmentDetail.scheduled_time || '',
       notes: appointmentDetail.notes || '',
       status: appointmentDetail.status || 'scheduled',
@@ -265,6 +266,28 @@ const CalendarPage = () => {
     });
     fetchClientPets(appointmentDetail.client_id);
     setEditMode(true);
+  };
+
+  // End stay early - set end_date to today and mark as completed
+  const handleEndStayEarly = async () => {
+    if (!appointmentDetail) return;
+    
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const confirmMsg = `End this stay early? The stay will be marked as completed with an end date of ${today}. Any remaining days will be cancelled.`;
+    
+    if (!window.confirm(confirmMsg)) return;
+    
+    try {
+      await api.put(`/appointments/${appointmentDetail.id}`, { 
+        end_date: today,
+        status: 'completed'
+      });
+      toast.success('Stay ended early and marked as completed');
+      closeAppointmentDetail();
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to end stay early');
+    }
   };
 
   const handleCreateAppointment = async (e) => {
