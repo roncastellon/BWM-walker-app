@@ -25,6 +25,7 @@ const AdminOvernightsPage = () => {
   const [extendModalOpen, setExtendModalOpen] = useState(false);
   const [extendDays, setExtendDays] = useState(1);
   const [endingTodayPrompt, setEndingTodayPrompt] = useState([]);
+  const [invoices, setInvoices] = useState([]); // Track invoices for appointments
   
   // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -36,6 +37,7 @@ const AdminOvernightsPage = () => {
 
   useEffect(() => {
     fetchOvernights();
+    fetchInvoices();
   }, [currentDate]);
 
   useEffect(() => {
@@ -44,6 +46,20 @@ const AdminOvernightsPage = () => {
     const interval = setInterval(checkEndingToday, 60000); // Check every minute
     return () => clearInterval(interval);
   }, [overnights]);
+
+  const fetchInvoices = async () => {
+    try {
+      const res = await api.get('/invoices');
+      setInvoices(res.data || []);
+    } catch (error) {
+      console.error('Failed to fetch invoices:', error);
+    }
+  };
+
+  // Get invoice for a specific appointment
+  const getInvoiceForAppointment = (appointmentId) => {
+    return invoices.find(inv => inv.appointment_ids?.includes(appointmentId));
+  };
 
   const fetchOvernights = async () => {
     setLoading(true);
