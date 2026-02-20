@@ -252,7 +252,7 @@ const WalkerDashboard = () => {
     }
   };
 
-  // Reschedule appointment (same day, later time only)
+  // Reschedule appointment - can reschedule to any time not in the past
   const openRescheduleModal = (appt) => {
     setSelectedApptForReschedule(appt);
     setNewScheduledTime(appt.scheduled_time || '');
@@ -265,10 +265,18 @@ const WalkerDashboard = () => {
       return;
     }
     
-    // Validate that new time is later than current time
-    const currentTime = selectedApptForReschedule.scheduled_time;
-    if (newScheduledTime <= currentTime) {
-      toast.error('New time must be later than the current scheduled time');
+    // Validate that new time is not in the past (based on current actual time)
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTimeStr = `${currentHours.toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
+    
+    // Check if the appointment is for today
+    const apptDate = selectedApptForReschedule.scheduled_date;
+    const today = now.toISOString().split('T')[0];
+    
+    if (apptDate === today && newScheduledTime < currentTimeStr) {
+      toast.error('Cannot reschedule to a time that has already passed');
       return;
     }
     
@@ -287,25 +295,39 @@ const WalkerDashboard = () => {
     }
   };
 
-  // Generate available time slots (only times later than current)
+  // Generate available time slots - all times not in the past
   const getAvailableTimeSlots = () => {
     if (!selectedApptForReschedule) return [];
-    const currentTime = selectedApptForReschedule.scheduled_time;
+    
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    
+    // Check if the appointment is for today
+    const apptDate = selectedApptForReschedule.scheduled_date;
+    const today = now.toISOString().split('T')[0];
+    const isToday = apptDate === today;
+    
     const slots = [];
     
-    // Generate 30-minute slots from current time to 8 PM
+    // Generate 30-minute slots from 6 AM to 8 PM
     for (let hour = 6; hour <= 20; hour++) {
       for (let min = 0; min < 60; min += 30) {
         const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
-        // Only include times later than current scheduled time
-        if (timeStr > currentTime) {
-          const hour12 = hour % 12 || 12;
-          const ampm = hour >= 12 ? 'PM' : 'AM';
-          slots.push({
-            value: timeStr,
-            label: `${hour12}:${min.toString().padStart(2, '0')} ${ampm}`
-          });
+        
+        // If today, only include times that haven't passed yet
+        if (isToday) {
+          const slotTime = hour * 60 + min;
+          const currentTime = currentHours * 60 + currentMinutes;
+          if (slotTime <= currentTime) continue; // Skip past times
         }
+        
+        const hour12 = hour % 12 || 12;
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        slots.push({
+          value: timeStr,
+          label: `${hour12}:${min.toString().padStart(2, '0')} ${ampm}`
+        });
       }
     }
     return slots;
