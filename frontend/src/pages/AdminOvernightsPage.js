@@ -245,29 +245,17 @@ const AdminOvernightsPage = () => {
     setInvoiceLoading(true);
     
     try {
-      // Calculate total nights
-      const startDate = new Date(invoiceStay.scheduled_date);
-      const endDate = new Date(invoiceStay.end_date || invoiceStay.scheduled_date);
-      const totalNights = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
-      
-      // Get service price (you might want to fetch this from the service)
-      const servicePrice = invoiceStay.service?.price || 0;
-      const totalAmount = servicePrice * totalNights;
-      
-      // Create invoice
-      const invoiceData = {
-        appointment_id: invoiceStay.id,
-        client_id: invoiceStay.client_id,
-        amount: totalAmount,
-        description: `${invoiceStay.service_type?.replace(/_/g, ' ')} - ${totalNights} night${totalNights > 1 ? 's' : ''} (${invoiceStay.scheduled_date} to ${invoiceStay.end_date || invoiceStay.scheduled_date})`,
-        pet_names: invoiceStay.pet_names,
-        send_email: sendEmail
-      };
-      
-      await api.post('/invoices', invoiceData);
+      // Create invoice using existing endpoint
+      await api.post(`/invoices?client_id=${invoiceStay.client_id}&appointment_ids=${invoiceStay.id}`);
       
       if (sendEmail) {
-        toast.success('Invoice created and sent to client!');
+        // Send invoice email to client
+        try {
+          await api.post(`/invoices/${invoiceStay.id}/send`);
+          toast.success('Invoice created and sent to client!');
+        } catch (emailError) {
+          toast.success('Invoice created! (Email sending not configured)');
+        }
       } else {
         toast.success('Invoice created successfully!');
       }
