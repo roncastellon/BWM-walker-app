@@ -430,8 +430,8 @@ const AdminOvernightsPage = () => {
                                   <p className="text-[10px] text-green-700">Checked In</p>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <LogOut className="w-3 h-3 text-blue-600" />
-                                  <p className="text-[10px] text-blue-700">Checked Out</p>
+                                  <CheckCircle className="w-3 h-3 text-green-600" />
+                                  <p className="text-[10px] text-green-700 font-medium">Checked Out</p>
                                 </div>
                               </>
                             ) : (
