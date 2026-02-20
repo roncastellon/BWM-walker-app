@@ -258,13 +258,18 @@ const AdminOvernightsPage = () => {
     setInvoiceLoading(true);
     
     try {
-      // Create invoice using existing endpoint
-      await api.post(`/invoices?client_id=${invoiceStay.client_id}&appointment_ids=${invoiceStay.id}`);
+      // Create invoice using request body
+      const invoiceRes = await api.post('/invoices', {
+        client_id: invoiceStay.client_id,
+        appointment_ids: [invoiceStay.id]
+      });
       
-      if (sendEmail) {
+      const newInvoiceId = invoiceRes.data?.id;
+      
+      if (sendEmail && newInvoiceId) {
         // Send invoice email to client
         try {
-          await api.post(`/invoices/${invoiceStay.id}/send`);
+          await api.post(`/invoices/${newInvoiceId}/send-email`);
           toast.success('Invoice created and sent to client!');
         } catch (emailError) {
           toast.success('Invoice created! (Email sending not configured)');
