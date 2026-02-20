@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { 
   Moon, Calendar, Clock, PawPrint, CheckCircle, AlertTriangle,
-  ChevronLeft, ChevronRight, LogIn, LogOut, Plus, RefreshCw, User
+  ChevronLeft, ChevronRight, LogIn, LogOut, Plus, RefreshCw, User,
+  DollarSign, Mail
 } from 'lucide-react';
 import { toast } from 'sonner';
 
