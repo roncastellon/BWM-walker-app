@@ -221,11 +221,63 @@ const AdminOvernightsPage = () => {
         status: 'completed',
         end_time: new Date().toISOString()
       });
-      toast.success(`${stay.pet_names?.join(', ') || 'Pet'} checked out! Ready for billing.`);
+      toast.success(`${stay.pet_names?.join(', ') || 'Pet'} checked out!`);
       fetchOvernights();
       setActionModalOpen(false);
+      
+      // Show invoice prompt after checkout
+      setInvoiceStay(stay);
+      setInvoiceModalOpen(true);
     } catch (error) {
       toast.error('Failed to check out');
+    }
+  };
+
+  // Invoice modal state
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [invoiceStay, setInvoiceStay] = useState(null);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+
+  // Generate and send invoice
+  const handleGenerateInvoice = async (sendEmail = false) => {
+    if (!invoiceStay) return;
+    setInvoiceLoading(true);
+    
+    try {
+      // Calculate total nights
+      const startDate = new Date(invoiceStay.scheduled_date);
+      const endDate = new Date(invoiceStay.end_date || invoiceStay.scheduled_date);
+      const totalNights = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+      
+      // Get service price (you might want to fetch this from the service)
+      const servicePrice = invoiceStay.service?.price || 0;
+      const totalAmount = servicePrice * totalNights;
+      
+      // Create invoice
+      const invoiceData = {
+        appointment_id: invoiceStay.id,
+        client_id: invoiceStay.client_id,
+        amount: totalAmount,
+        description: `${invoiceStay.service_type?.replace(/_/g, ' ')} - ${totalNights} night${totalNights > 1 ? 's' : ''} (${invoiceStay.scheduled_date} to ${invoiceStay.end_date || invoiceStay.scheduled_date})`,
+        pet_names: invoiceStay.pet_names,
+        send_email: sendEmail
+      };
+      
+      await api.post('/invoices', invoiceData);
+      
+      if (sendEmail) {
+        toast.success('Invoice created and sent to client!');
+      } else {
+        toast.success('Invoice created successfully!');
+      }
+      
+      setInvoiceModalOpen(false);
+      setInvoiceStay(null);
+    } catch (error) {
+      console.error('Invoice error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to create invoice');
+    } finally {
+      setInvoiceLoading(false);
     }
   };
 
