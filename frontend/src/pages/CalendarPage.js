@@ -1402,6 +1402,30 @@ const CalendarPage = () => {
                     </div>
                   </div>
 
+                  {/* Date Range Info - for multi-day appointments */}
+                  {isDayNightService(appointmentDetail.service_type) && (
+                    <div className="p-3 rounded-lg bg-purple-50 border border-purple-100">
+                      <h4 className="font-medium flex items-center gap-2 text-purple-800 mb-2">
+                        <CalendarRange className="w-4 h-4" /> Stay Dates
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-purple-600">Check-in</p>
+                          <p className="font-medium">{appointmentDetail.scheduled_date}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-purple-600">Check-out</p>
+                          <p className="font-medium">{appointmentDetail.end_date || appointmentDetail.scheduled_date}</p>
+                        </div>
+                      </div>
+                      {appointmentDetail.end_date && appointmentDetail.end_date !== appointmentDetail.scheduled_date && (
+                        <p className="text-xs text-purple-600 mt-2">
+                          {Math.ceil((new Date(appointmentDetail.end_date) - new Date(appointmentDetail.scheduled_date)) / (1000 * 60 * 60 * 24))} nights
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Client Info */}
                   {appointmentDetail.client && (
                     <div className="space-y-2">
