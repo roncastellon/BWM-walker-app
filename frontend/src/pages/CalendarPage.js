@@ -610,7 +610,7 @@ const CalendarPage = () => {
                     <Badge className="text-[9px] rounded-full bg-green-100 text-green-700 py-0">
                       Checked In
                     </Badge>
-                    <Badge className="text-[9px] rounded-full bg-blue-100 text-blue-700 py-0">
+                    <Badge className="text-[9px] rounded-full bg-green-500 text-white py-0">
                       Checked Out
                     </Badge>
                   </>
