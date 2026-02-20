@@ -226,6 +226,18 @@ const AdminOvernightsPage = () => {
       fetchOvernights();
       setActionModalOpen(false);
       
+      // Fetch service price for invoice
+      try {
+        const servicesRes = await api.get('/services');
+        const service = servicesRes.data.find(s => 
+          s.service_type === stay.service_type || 
+          s.name?.toLowerCase().includes(stay.service_type?.toLowerCase().replace(/_/g, ' '))
+        );
+        setInvoiceServicePrice(service?.price || 0);
+      } catch (e) {
+        setInvoiceServicePrice(0);
+      }
+      
       // Show invoice prompt after checkout
       setInvoiceStay(stay);
       setInvoiceModalOpen(true);
@@ -238,6 +250,7 @@ const AdminOvernightsPage = () => {
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [invoiceStay, setInvoiceStay] = useState(null);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [invoiceServicePrice, setInvoiceServicePrice] = useState(0);
 
   // Generate and send invoice
   const handleGenerateInvoice = async (sendEmail = false) => {
