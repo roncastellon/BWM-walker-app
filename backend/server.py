@@ -3200,8 +3200,12 @@ async def update_appointment(appt_id: str, update_data: dict, current_user: dict
 # Admin endpoint to create appointments for any client
 @api_router.post("/appointments/admin", response_model=Appointment)
 async def admin_create_appointment(appt_data: dict, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'admin':
-        raise HTTPException(status_code=403, detail="Admin only")
+    # Allow admins or walkers with can_schedule_walks permission
+    is_admin = current_user['role'] == 'admin'
+    can_schedule = current_user.get('can_schedule_walks', False)
+    
+    if not is_admin and not can_schedule:
+        raise HTTPException(status_code=403, detail="Not authorized to schedule appointments")
     
     try:
         scheduled_date = appt_data.get('scheduled_date')
@@ -3209,6 +3213,10 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         walker_id = appt_data.get('walker_id')
         service_type = appt_data.get('service_type', 'walk_30')
         client_id = appt_data.get('client_id')
+        
+        # If walker is creating, they can only assign to themselves or leave unassigned
+        if not is_admin and walker_id and walker_id != current_user['id']:
+            raise HTTPException(status_code=403, detail="Walkers can only assign walks to themselves")
         
         # Validate client exists
         if client_id:
