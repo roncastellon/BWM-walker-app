@@ -508,6 +508,18 @@ const AdminOvernightsPage = () => {
                                   <CheckCircle className="w-3 h-3 text-green-600" />
                                   <p className="text-[10px] text-green-700 font-medium">Checked Out</p>
                                 </div>
+                                {/* Invoice badge */}
+                                {getInvoiceForAppointment(stay.id) ? (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <DollarSign className="w-3 h-3 text-blue-600" />
+                                    <p className="text-[10px] text-blue-600 font-medium">Invoiced</p>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <AlertTriangle className="w-3 h-3 text-amber-500" />
+                                    <p className="text-[10px] text-amber-600">Not billed</p>
+                                  </div>
+                                )}
                               </>
                             ) : (
                               <p className="text-[10px] text-gray-600">{stay.status}</p>
