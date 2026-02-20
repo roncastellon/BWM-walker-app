@@ -1193,6 +1193,40 @@ const CalendarPage = () => {
                 </div>
               )}
 
+              {/* Number of walks - only for walk services (new appointments only) */}
+              {isWalkService(formData.service_type) && !editMode && (
+                <div className="space-y-2">
+                  <Label>Number of Walks</Label>
+                  <p className="text-xs text-muted-foreground">Create multiple walks for this day</p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData({ ...formData, walk_count: Math.max(1, (formData.walk_count || 1) - 1) })}
+                      disabled={formData.walk_count <= 1}
+                    >
+                      -
+                    </Button>
+                    <span className="w-12 text-center font-medium text-lg">{formData.walk_count || 1}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData({ ...formData, walk_count: Math.min(5, (formData.walk_count || 1) + 1) })}
+                      disabled={formData.walk_count >= 5}
+                    >
+                      +
+                    </Button>
+                  </div>
+                  {formData.walk_count > 1 && (
+                    <p className="text-xs text-primary font-medium">
+                      Will create {formData.walk_count} separate walk appointments
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Sitter selection - only for overnight services */}
               {isOvernightService(formData.service_type) && (
                 <div className="space-y-2">
