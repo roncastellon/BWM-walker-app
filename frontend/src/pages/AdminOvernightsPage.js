@@ -738,6 +738,94 @@ const AdminOvernightsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Invoice Modal - shown after checkout */}
+      <Dialog open={invoiceModalOpen} onOpenChange={setInvoiceModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              Generate Invoice
+            </DialogTitle>
+            <DialogDescription>
+              Create an invoice for this completed stay
+            </DialogDescription>
+          </DialogHeader>
+          
+          {invoiceStay && (
+            <div className="space-y-4 py-4">
+              {/* Stay Summary */}
+              <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center">
+                    <PawPrint className="w-5 h-5 text-green-700" />
+                  </div>
+                  <div>
+                    <p className="font-bold">{invoiceStay.pet_names?.join(' & ') || 'Pet'}</p>
+                    <p className="text-sm text-muted-foreground">{invoiceStay.client_name}</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Check-in</p>
+                    <p className="font-medium">{invoiceStay.scheduled_date}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Check-out</p>
+                    <p className="font-medium">{invoiceStay.end_date || invoiceStay.scheduled_date}</p>
+                  </div>
+                </div>
+                
+                {(() => {
+                  const startDate = new Date(invoiceStay.scheduled_date);
+                  const endDate = new Date(invoiceStay.end_date || invoiceStay.scheduled_date);
+                  const totalNights = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+                  const servicePrice = invoiceStay.service?.price || 0;
+                  const totalAmount = servicePrice * totalNights;
+                  
+                  return (
+                    <div className="mt-3 pt-3 border-t border-green-200">
+                      <div className="flex justify-between text-sm">
+                        <span>{totalNights} night{totalNights > 1 ? 's' : ''} × ${servicePrice.toFixed(2)}</span>
+                        <span className="font-bold text-lg text-green-700">${totalAmount.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="space-y-2">
+                <Button 
+                  onClick={() => handleGenerateInvoice(true)} 
+                  className="w-full rounded-full bg-green-600 hover:bg-green-700"
+                  disabled={invoiceLoading}
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  {invoiceLoading ? 'Sending...' : 'Create & Send Invoice'}
+                </Button>
+                <Button 
+                  onClick={() => handleGenerateInvoice(false)} 
+                  variant="outline"
+                  className="w-full rounded-full"
+                  disabled={invoiceLoading}
+                >
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  {invoiceLoading ? 'Creating...' : 'Create Invoice Only'}
+                </Button>
+                <Button 
+                  onClick={() => { setInvoiceModalOpen(false); setInvoiceStay(null); }} 
+                  variant="ghost"
+                  className="w-full rounded-full text-muted-foreground"
+                >
+                  Skip for Now
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
