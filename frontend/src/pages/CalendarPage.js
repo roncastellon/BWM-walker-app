@@ -579,9 +579,14 @@ const CalendarPage = () => {
   const timeSlots = generateTimeSlots();
 
   const renderAppointmentCard = (appt, compact = false) => {
+    const isDayNight = isDayNightService(appt.service_type);
+    const isCheckInDay = isDayNight && appt.status === 'scheduled' && appt.scheduled_date === format(new Date(), 'yyyy-MM-dd');
+    
     const appointmentContent = (
       <div
-        className={`p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity ${compact ? 'text-xs' : ''}`}
+        className={`p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity ${compact ? 'text-xs' : ''} ${
+          isCheckInDay ? 'border-2 border-red-400' : ''
+        }`}
         style={getAppointmentStyles(appt)}
         data-testid={`calendar-appt-${appt.id}`}
         onClick={() => openAppointmentDetail(appt)}
@@ -589,9 +594,37 @@ const CalendarPage = () => {
         <div className="flex items-center justify-between gap-1">
           <span className="font-medium">{appt.scheduled_time ? formatTime12Hour(appt.scheduled_time) : 'All Day'}</span>
           {!compact && (
-            <Badge className={`${getStatusBadgeColor(appt.status)} text-xs rounded-full`}>
-              {appt.status}
-            </Badge>
+            isDayNight ? (
+              // Special status display for overnight/daycare
+              <div className="flex flex-col items-end gap-0.5">
+                {appt.status === 'scheduled' ? (
+                  <Badge className="text-[10px] rounded-full bg-red-500 text-white font-bold">
+                    CHECK IN
+                  </Badge>
+                ) : appt.status === 'in_progress' ? (
+                  <Badge className="text-[10px] rounded-full bg-green-100 text-green-800">
+                    Checked In
+                  </Badge>
+                ) : appt.status === 'completed' ? (
+                  <>
+                    <Badge className="text-[9px] rounded-full bg-green-100 text-green-700 py-0">
+                      Checked In
+                    </Badge>
+                    <Badge className="text-[9px] rounded-full bg-blue-100 text-blue-700 py-0">
+                      Checked Out
+                    </Badge>
+                  </>
+                ) : (
+                  <Badge className={`${getStatusBadgeColor(appt.status)} text-xs rounded-full`}>
+                    {appt.status}
+                  </Badge>
+                )}
+              </div>
+            ) : (
+              <Badge className={`${getStatusBadgeColor(appt.status)} text-xs rounded-full`}>
+                {appt.status}
+              </Badge>
+            )
           )}
         </div>
         <p className={`${compact ? 'truncate' : ''}`}>
