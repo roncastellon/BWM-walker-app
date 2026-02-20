@@ -3578,14 +3578,18 @@ async def get_completed_walks(current_user: dict = Depends(get_current_user), li
     return enriched
 
 # Invoice Routes
+class CreateInvoiceRequest(BaseModel):
+    client_id: str
+    appointment_ids: List[str]
+
 @api_router.post("/invoices", response_model=Invoice)
-async def create_invoice(client_id: str, appointment_ids: List[str], current_user: dict = Depends(get_current_user)):
+async def create_invoice(request: CreateInvoiceRequest, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin only")
     
     # Calculate total from appointments
     total = 0.0
-    for appt_id in appointment_ids:
+    for appt_id in request.appointment_ids:
         appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
         if appt:
             service = await db.services.find_one({"service_type": appt['service_type']}, {"_id": 0})
@@ -3594,8 +3598,8 @@ async def create_invoice(client_id: str, appointment_ids: List[str], current_use
     
     due_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
     invoice = Invoice(
-        client_id=client_id,
-        appointment_ids=appointment_ids,
+        client_id=request.client_id,
+        appointment_ids=request.appointment_ids,
         amount=total,
         due_date=due_date
     )
