@@ -823,14 +823,27 @@ const AdminDashboard = () => {
                                     </p>
                                   </div>
                                 </div>
-                                <Badge className={`rounded-full text-xs ${
-                                  appt.status === 'scheduled' ? 'bg-amber-100 text-amber-800' :
-                                  appt.status === 'in_progress' ? 'bg-green-100 text-green-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {appt.status === 'scheduled' ? 'Expected' : 
-                                   appt.status === 'in_progress' ? 'Here' : 'Done'}
-                                </Badge>
+                                {/* Status badges - show check in/out history */}
+                                <div className="flex flex-col items-end gap-1">
+                                  {appt.status === 'scheduled' ? (
+                                    <Badge className="rounded-full text-xs bg-red-500 text-white font-bold animate-pulse">
+                                      CHECK IN
+                                    </Badge>
+                                  ) : appt.status === 'in_progress' ? (
+                                    <Badge className="rounded-full text-xs bg-green-100 text-green-800">
+                                      Checked In
+                                    </Badge>
+                                  ) : (
+                                    <>
+                                      <Badge className="rounded-full text-[10px] bg-green-100 text-green-700">
+                                        Checked In
+                                      </Badge>
+                                      <Badge className="rounded-full text-[10px] bg-blue-100 text-blue-700">
+                                        Picked Up
+                                      </Badge>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
