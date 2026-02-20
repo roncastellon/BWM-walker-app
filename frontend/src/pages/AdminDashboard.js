@@ -838,7 +838,7 @@ const AdminDashboard = () => {
                                       <Badge className="rounded-full text-[10px] bg-green-100 text-green-700">
                                         Checked In
                                       </Badge>
-                                      <Badge className="rounded-full text-[10px] bg-blue-100 text-blue-700">
+                                      <Badge className="rounded-full text-[10px] bg-green-500 text-white">
                                         Picked Up
                                       </Badge>
                                     </>
