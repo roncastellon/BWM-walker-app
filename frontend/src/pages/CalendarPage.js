@@ -340,12 +340,26 @@ const CalendarPage = () => {
           : 'Appointment created successfully';
         toast.success(successMsg);
       } else {
-        // Regular time-based appointment
-        await api.post('/appointments/admin', {
-          ...formData,
-          duration_type: 'minutes'
-        });
-        toast.success('Appointment created successfully');
+        // Regular time-based appointment - check if we need multiple walks
+        const walkCount = isWalkService(formData.service_type) ? (formData.walk_count || 1) : 1;
+        
+        if (walkCount > 1) {
+          // Create multiple walks at the same time
+          for (let i = 0; i < walkCount; i++) {
+            await api.post('/appointments/admin', {
+              ...formData,
+              duration_type: 'minutes',
+              notes: formData.notes ? `${formData.notes} (Walk ${i + 1} of ${walkCount})` : `Walk ${i + 1} of ${walkCount}`
+            });
+          }
+          toast.success(`${walkCount} walks created successfully`);
+        } else {
+          await api.post('/appointments/admin', {
+            ...formData,
+            duration_type: 'minutes'
+          });
+          toast.success('Appointment created successfully');
+        }
       }
       
       setAddDialogOpen(false);
