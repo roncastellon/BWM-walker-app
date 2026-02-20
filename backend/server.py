@@ -972,7 +972,7 @@ async def update_user(user_id: str, update_data: dict, current_user: dict = Depe
     
     # Admin can also update these fields
     if current_user['role'] == 'admin':
-        admin_fields = ['is_active', 'onboarding_completed', 'role', 'username', 'is_walker', 'is_sitter']
+        admin_fields = ['is_active', 'onboarding_completed', 'role', 'username', 'is_walker', 'is_sitter', 'can_schedule_walks']
         for field in admin_fields:
             if field in update_data:
                 # Check username is unique if being changed
