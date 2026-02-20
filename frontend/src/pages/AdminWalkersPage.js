@@ -480,6 +480,21 @@ const AdminWalkersPage = () => {
                       <Label htmlFor="sitter-walker" className="text-sm cursor-pointer">Also does dog walking</Label>
                     </div>
                   )}
+
+                  {/* Can Schedule Walks permission - for walkers */}
+                  {(staffForm.role === 'walker' || staffForm.is_walker) && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-green-50 border border-green-200">
+                      <Checkbox 
+                        id="can-schedule" 
+                        checked={staffForm.can_schedule_walks}
+                        onCheckedChange={(checked) => setStaffForm({...staffForm, can_schedule_walks: checked})}
+                      />
+                      <div>
+                        <Label htmlFor="can-schedule" className="text-sm cursor-pointer font-medium">Can schedule walks</Label>
+                        <p className="text-xs text-muted-foreground">Allow this walker to create/schedule appointments</p>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
