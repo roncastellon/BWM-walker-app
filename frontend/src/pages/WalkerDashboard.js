@@ -750,6 +750,32 @@ const WalkerDashboard = () => {
           </div>
         </div>
 
+        {/* Schedule Walk Button - Only for walkers with permission */}
+        {user?.can_schedule_walks && (
+          <Card className="rounded-xl border-2 border-green-200 bg-green-50/50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-800">Schedule Walks</p>
+                    <p className="text-xs text-green-600">You have permission to create appointments</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => navigate('/walker/schedule')}
+                  className="rounded-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Schedule Walk
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Active Walk Banner */}
         {activeWalk && (
           <Card className="rounded-xl border-2 border-primary bg-primary/5">
