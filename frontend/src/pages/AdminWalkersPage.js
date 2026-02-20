@@ -329,6 +329,11 @@ const AdminWalkersPage = () => {
       if (member.is_walker) badges.push({ label: 'Walker', color: 'bg-orange-100 text-orange-800', icon: PawPrint });
     }
     
+    // Add scheduling permission badge for walkers
+    if (member.can_schedule_walks && (role === 'walker' || member.is_walker)) {
+      badges.push({ label: 'Can Schedule', color: 'bg-green-100 text-green-800', icon: Calendar });
+    }
+    
     return badges;
   };
 
