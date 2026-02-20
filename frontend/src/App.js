@@ -222,6 +222,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/walker/schedule"
+        element={
+          <ProtectedRoute allowedRoles={['walker']}>
+            <WalkerSchedulePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/walker/profile"
         element={
           <ProtectedRoute allowedRoles={['walker']}>
