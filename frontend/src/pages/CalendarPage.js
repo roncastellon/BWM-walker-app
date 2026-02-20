@@ -119,7 +119,8 @@ const CalendarPage = () => {
     notes: '',
     status: 'scheduled',
     duration_value: 1,
-    duration_type: 'minutes'
+    duration_type: 'minutes',
+    walk_count: 1  // Number of walks to create on the same day
   });
 
   useEffect(() => {
