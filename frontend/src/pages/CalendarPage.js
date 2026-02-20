@@ -74,11 +74,13 @@ const CalendarPage = () => {
   // Helper functions for day/night services
   const getDurationTypeForService = (serviceType) => {
     if (!serviceType) return 'minutes';
-    const dayServices = ['doggy_day_care', 'doggy_day_camp', 'day_care', 'day_camp', 'stay_day', 'day_visit'];
-    const nightServices = ['overnight', 'stay_overnight', 'stay_extended', 'petsit_our_location', 'petsit_your_location'];
+    const st = serviceType.toLowerCase().replace(/[_\-\s]+/g, ''); // Normalize: remove underscores, dashes, spaces
     
-    if (dayServices.some(s => serviceType.toLowerCase().includes(s))) return 'days';
-    if (nightServices.some(s => serviceType.toLowerCase().includes(s))) return 'nights';
+    const dayPatterns = ['daycare', 'daycamp', 'dayvisit', 'doggyda'];
+    const nightPatterns = ['overnight', 'petsit', 'boarding', 'stay', 'sitting'];
+    
+    if (dayPatterns.some(p => st.includes(p))) return 'days';
+    if (nightPatterns.some(p => st.includes(p))) return 'nights';
     return 'minutes';
   };
   
