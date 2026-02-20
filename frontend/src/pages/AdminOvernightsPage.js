@@ -646,11 +646,82 @@ const AdminOvernightsPage = () => {
                   </>
                 )}
                 {selectedStay.status === 'completed' && (
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <p className="font-medium text-green-800">Stay Completed</p>
-                    <p className="text-sm text-green-600">Ready for billing</p>
-                  </div>
+                  <>
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                      <p className="font-medium text-green-800">Stay Completed</p>
+                    </div>
+                    
+                    {/* Invoice Status */}
+                    {(() => {
+                      const invoice = getInvoiceForAppointment(selectedStay.id);
+                      if (invoice) {
+                        return (
+                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="w-5 h-5 text-blue-600" />
+                                <span className="font-medium text-blue-800">Invoice Created</span>
+                              </div>
+                              <Badge className={`rounded-full ${
+                                invoice.status === 'paid' ? 'bg-green-500 text-white' :
+                                invoice.status === 'overdue' ? 'bg-red-500 text-white' :
+                                'bg-amber-100 text-amber-800'
+                              }`}>
+                                {invoice.status}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <p className="text-blue-600 text-xs">Amount</p>
+                                <p className="font-bold text-blue-800">${invoice.amount?.toFixed(2)}</p>
+                              </div>
+                              <div>
+                                <p className="text-blue-600 text-xs">Due Date</p>
+                                <p className="font-medium">{invoice.due_date}</p>
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={() => navigate(`/admin/billing?invoice=${invoice.id}`)}
+                              variant="outline"
+                              size="sm"
+                              className="w-full mt-3 rounded-full text-blue-600 border-blue-300"
+                            >
+                              View Invoice Details
+                            </Button>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <AlertTriangle className="w-5 h-5 text-amber-600" />
+                              <span className="font-medium text-amber-800">Not Yet Billed</span>
+                            </div>
+                            <Button 
+                              onClick={() => {
+                                setActionModalOpen(false);
+                                setInvoiceStay(selectedStay);
+                                // Fetch service price
+                                api.get('/services').then(res => {
+                                  const service = res.data.find(s => 
+                                    s.service_type === selectedStay.service_type || 
+                                    s.name?.toLowerCase().includes(selectedStay.service_type?.toLowerCase().replace(/_/g, ' '))
+                                  );
+                                  setInvoiceServicePrice(service?.price || 0);
+                                  setInvoiceModalOpen(true);
+                                });
+                              }}
+                              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Create Invoice
+                            </Button>
+                          </div>
+                        );
+                      }
+                    })()}
+                  </>
                 )}
                 {/* Edit button - always available */}
                 <Button 
