@@ -1353,11 +1353,24 @@ const CalendarPage = () => {
                 <div className="space-y-6">
                   {/* Admin Actions */}
                   {isAdmin && appointmentDetail.status !== 'cancelled' && (
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button variant="outline" size="sm" onClick={openEditDialog}>
                         <Edit className="w-4 h-4 mr-1" />
                         Edit
                       </Button>
+                      {/* End Stay Early button for overnight/daycare services that are in progress */}
+                      {isDayNightService(appointmentDetail.service_type) && 
+                       appointmentDetail.status === 'in_progress' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleEndStayEarly}
+                          className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          End Stay Early
+                        </Button>
+                      )}
                       <Button variant="destructive" size="sm" onClick={handleDeleteAppointment}>
                         <X className="w-4 h-4 mr-1" />
                         Cancel
