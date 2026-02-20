@@ -1224,7 +1224,13 @@ const CalendarPage = () => {
                 Appointment Details
               </DialogTitle>
               <DialogDescription>
-                {selectedAppointment?.scheduled_date} at {formatTime12Hour(selectedAppointment?.scheduled_time)}
+                {selectedAppointment?.end_date && selectedAppointment?.end_date !== selectedAppointment?.scheduled_date ? (
+                  // Multi-day appointment - show date range
+                  <span>{selectedAppointment?.scheduled_date} → {selectedAppointment?.end_date}</span>
+                ) : (
+                  // Single day appointment
+                  <span>{selectedAppointment?.scheduled_date} at {formatTime12Hour(selectedAppointment?.scheduled_time)}</span>
+                )}
               </DialogDescription>
             </DialogHeader>
             
