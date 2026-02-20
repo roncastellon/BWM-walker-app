@@ -794,7 +794,7 @@ const AdminDashboard = () => {
                               <div
                                 key={appt.id}
                                 className="flex items-center justify-between p-3 rounded-lg bg-orange-50/50 cursor-pointer hover:bg-orange-100/50 transition-colors border border-orange-100"
-                                onClick={() => navigate(`/admin/daycare`)}
+                                onClick={() => navigate(`/admin/calendar?highlight=${appt.id}`)}
                                 data-testid={`daycare-item-${appt.id}`}
                               >
                                 <div className="flex items-center gap-3">
