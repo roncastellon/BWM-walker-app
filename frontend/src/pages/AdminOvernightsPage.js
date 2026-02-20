@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -16,6 +17,7 @@ import {
 import { toast } from 'sonner';
 
 const AdminOvernightsPage = () => {
+  const navigate = useNavigate();
   const { api } = useAuth();
   const [overnights, setOvernights] = useState([]);
   const [loading, setLoading] = useState(true);
