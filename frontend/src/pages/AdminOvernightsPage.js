@@ -382,45 +382,63 @@ const AdminOvernightsPage = () => {
                       const isEnd = (stay.end_date || stay.scheduled_date) === dateStr;
                       const isMiddle = !isStart && !isEnd;
                       
-                      // Determine display status label based on position in stay and status
-                      const getStatusLabel = () => {
-                        if (stay.status === 'scheduled') {
-                          // Not checked in yet
-                          if (isStart) return { text: 'Check in to start', color: 'text-amber-700', bgColor: 'bg-amber-50', icon: LogIn };
-                          return { text: 'Awaiting check-in', color: 'text-amber-600', bgColor: 'bg-amber-50/50', icon: Clock };
-                        }
-                        if (stay.status === 'in_progress') {
-                          // Currently staying
-                          if (isEnd) return { text: 'Check out to end', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: LogOut };
-                          if (isStart) return { text: 'Checked In', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: CheckCircle };
-                          return { text: 'Checked In', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: CheckCircle };
-                        }
-                        if (stay.status === 'completed') {
-                          return { text: 'Completed', color: 'text-green-700', bgColor: 'bg-green-100', icon: CheckCircle };
-                        }
-                        if (stay.status === 'cancelled') {
-                          return { text: 'Cancelled', color: 'text-red-700', bgColor: 'bg-red-100', icon: null };
-                        }
-                        return { text: stay.status, color: 'text-gray-600', bgColor: 'bg-gray-100', icon: null };
-                      };
-                      
-                      const statusInfo = getStatusLabel();
-                      const StatusIcon = statusInfo.icon;
+                      // Determine display based on status
+                      const isCheckInDay = stay.status === 'scheduled' && isStart;
+                      const isCheckedIn = stay.status === 'in_progress';
+                      const isCompleted = stay.status === 'completed';
                       
                       return (
                         <div
                           key={stay.id}
                           onClick={() => openStayDetails(stay)}
-                          className={`p-2 rounded-lg cursor-pointer text-xs transition-colors ${statusInfo.bgColor} hover:opacity-80`}
+                          className={`p-2 rounded-lg cursor-pointer text-xs transition-colors hover:opacity-80 ${
+                            isCheckInDay ? 'bg-red-50 border-2 border-red-400' :
+                            isCheckedIn ? 'bg-green-50 border border-green-200' :
+                            isCompleted ? 'bg-blue-50 border border-blue-200' :
+                            'bg-amber-50'
+                          }`}
                           data-testid={`overnight-stay-${stay.id}-${dateStr}`}
                         >
                           <div className="flex items-center gap-1 mb-1">
-                            {StatusIcon && <StatusIcon className={`w-3 h-3 ${statusInfo.color}`} />}
                             <span className="font-medium truncate">{stay.pet_names?.[0] || 'Pet'}</span>
                           </div>
-                          <p className={`text-[10px] ${statusInfo.color} font-medium truncate`}>
-                            {statusInfo.text}
-                          </p>
+                          
+                          {/* Status badges */}
+                          <div className="space-y-0.5">
+                            {isCheckInDay ? (
+                              <p className="text-[11px] text-red-600 font-bold uppercase tracking-wide">
+                                CHECK IN
+                              </p>
+                            ) : stay.status === 'scheduled' ? (
+                              <p className="text-[10px] text-amber-600">
+                                Awaiting check-in
+                              </p>
+                            ) : isCheckedIn ? (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <CheckCircle className="w-3 h-3 text-green-600" />
+                                  <p className="text-[10px] text-green-700 font-medium">Checked In</p>
+                                </div>
+                                {isEnd && (
+                                  <p className="text-[10px] text-orange-600 font-medium">Check out today</p>
+                                )}
+                              </>
+                            ) : isCompleted ? (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <CheckCircle className="w-3 h-3 text-green-600" />
+                                  <p className="text-[10px] text-green-700">Checked In</p>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <LogOut className="w-3 h-3 text-blue-600" />
+                                  <p className="text-[10px] text-blue-700">Checked Out</p>
+                                </div>
+                              </>
+                            ) : (
+                              <p className="text-[10px] text-gray-600">{stay.status}</p>
+                            )}
+                          </div>
+                          
                           <p className="text-[9px] text-muted-foreground truncate mt-0.5">
                             {stay.client_name?.split(' ')[0]}
                           </p>
