@@ -783,7 +783,7 @@ const AdminOvernightsPage = () => {
                   const startDate = new Date(invoiceStay.scheduled_date);
                   const endDate = new Date(invoiceStay.end_date || invoiceStay.scheduled_date);
                   const totalNights = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
-                  const servicePrice = invoiceStay.service?.price || 0;
+                  const servicePrice = invoiceServicePrice || 0;
                   const totalAmount = servicePrice * totalNights;
                   
                   return (
