@@ -184,6 +184,7 @@ const AdminWalkersPage = () => {
       role: member.role || 'walker',
       is_walker: member.is_walker || false,
       is_sitter: member.is_sitter || false,
+      can_schedule_walks: member.can_schedule_walks || false,
     });
     setEditMode(true);
     setPaySetupMode(false);
@@ -201,6 +202,7 @@ const AdminWalkersPage = () => {
         role: editForm.role,
         is_walker: editForm.is_walker,
         is_sitter: editForm.is_sitter,
+        can_schedule_walks: editForm.can_schedule_walks,
       };
       
       // Only include username if changed
