@@ -1406,25 +1406,69 @@ const CalendarPage = () => {
 
                   {/* Date Range Info - for multi-day appointments */}
                   {isDayNightService(appointmentDetail.service_type) && (
-                    <div className="p-3 rounded-lg bg-purple-50 border border-purple-100">
-                      <h4 className="font-medium flex items-center gap-2 text-purple-800 mb-2">
-                        <CalendarRange className="w-4 h-4" /> Stay Dates
+                    <div className="p-4 rounded-lg bg-purple-50 border border-purple-100">
+                      <h4 className="font-medium flex items-center gap-2 text-purple-800 mb-3">
+                        <CalendarRange className="w-4 h-4" /> Stay Details
                       </h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-purple-600">Check-in</p>
-                          <p className="font-medium">{appointmentDetail.scheduled_date}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-purple-600">Check-out</p>
-                          <p className="font-medium">{appointmentDetail.end_date || appointmentDetail.scheduled_date}</p>
-                        </div>
-                      </div>
-                      {appointmentDetail.end_date && appointmentDetail.end_date !== appointmentDetail.scheduled_date && (
-                        <p className="text-xs text-purple-600 mt-2">
-                          {Math.ceil((new Date(appointmentDetail.end_date) - new Date(appointmentDetail.scheduled_date)) / (1000 * 60 * 60 * 24))} nights
-                        </p>
-                      )}
+                      {(() => {
+                        const startDate = new Date(appointmentDetail.scheduled_date);
+                        const endDate = appointmentDetail.end_date ? new Date(appointmentDetail.end_date) : startDate;
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        const totalNights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                        const daysElapsed = Math.max(0, Math.ceil((today - startDate) / (1000 * 60 * 60 * 24)));
+                        const daysRemaining = Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)));
+                        
+                        return (
+                          <>
+                            {/* Total Stay Duration - Prominent */}
+                            <div className="bg-purple-100 rounded-lg p-3 mb-3 text-center">
+                              <p className="text-2xl font-bold text-purple-800">{totalNights || 1}</p>
+                              <p className="text-xs text-purple-600 uppercase tracking-wide">
+                                {totalNights === 1 ? 'Night' : 'Nights'} Total
+                              </p>
+                            </div>
+                            
+                            {/* Date Grid */}
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div className="bg-white rounded-lg p-2 border border-purple-200">
+                                <p className="text-[10px] text-purple-600 uppercase">Start Date</p>
+                                <p className="font-semibold text-sm">{appointmentDetail.scheduled_date}</p>
+                              </div>
+                              <div className="bg-white rounded-lg p-2 border border-purple-200">
+                                <p className="text-[10px] text-purple-600 uppercase">End Date</p>
+                                <p className="font-semibold text-sm">{appointmentDetail.end_date || appointmentDetail.scheduled_date}</p>
+                              </div>
+                            </div>
+                            
+                            {/* Days Progress - only show if stay has started */}
+                            {appointmentDetail.status === 'in_progress' && totalNights > 0 && (
+                              <div className="bg-white rounded-lg p-3 border border-purple-200">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-xs text-purple-600">Stay Progress</span>
+                                  <span className="text-xs font-medium text-purple-800">
+                                    Day {Math.min(daysElapsed + 1, totalNights)} of {totalNights}
+                                  </span>
+                                </div>
+                                <div className="h-2 bg-purple-100 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-purple-500 rounded-full transition-all"
+                                    style={{ width: `${Math.min(100, ((daysElapsed + 1) / totalNights) * 100)}%` }}
+                                  />
+                                </div>
+                                <p className="text-center mt-2 text-sm font-medium text-purple-700">
+                                  {daysRemaining > 0 ? (
+                                    <>{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} remaining</>
+                                  ) : (
+                                    <>Check-out today</>
+                                  )}
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
 
