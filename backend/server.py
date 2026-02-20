@@ -6069,7 +6069,7 @@ async def walker_reschedule_appointment(
     request: WalkerRescheduleRequest,
     current_user: dict = Depends(get_current_user)
 ):
-    """Walker reschedules their appointment to a later time on the same day"""
+    """Walker reschedules their appointment to any time not in the past"""
     if current_user["role"] not in ["walker", "sitter"]:
         raise HTTPException(status_code=403, detail="Only walkers can reschedule appointments")
     
@@ -6083,13 +6083,23 @@ async def walker_reschedule_appointment(
     if appt["status"] != "scheduled":
         raise HTTPException(status_code=400, detail="Can only reschedule scheduled appointments")
     
-    # Validate new time is later than current time
-    current_time = appt.get("scheduled_time", "00:00")
-    if request.new_time <= current_time:
-        raise HTTPException(status_code=400, detail="New time must be later than current scheduled time")
+    # Validate new time is not in the past (for today's appointments)
+    now = datetime.now(timezone.utc)
+    appt_date = appt.get("scheduled_date")
+    today = now.strftime("%Y-%m-%d")
+    
+    if appt_date == today:
+        current_hour = now.hour
+        current_minute = now.minute
+        new_parts = request.new_time.split(':')
+        new_hour = int(new_parts[0])
+        new_minute = int(new_parts[1])
+        
+        if (new_hour < current_hour) or (new_hour == current_hour and new_minute <= current_minute):
+            raise HTTPException(status_code=400, detail="Cannot reschedule to a time that has already passed")
     
     # Update the appointment time
-    old_time = current_time
+    old_time = appt.get("scheduled_time", "00:00")
     await db.appointments.update_one(
         {"id": appt_id},
         {"$set": {
