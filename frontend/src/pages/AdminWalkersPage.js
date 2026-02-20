@@ -65,6 +65,7 @@ const AdminWalkersPage = () => {
     role: 'walker',
     is_walker: false,
     is_sitter: false,
+    can_schedule_walks: false,
   });
   
   // Pay setup state
@@ -87,6 +88,7 @@ const AdminWalkersPage = () => {
     role: 'walker',
     is_walker: false,
     is_sitter: false,
+    can_schedule_walks: false,
   });
 
   useEffect(() => {
