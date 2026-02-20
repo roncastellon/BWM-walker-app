@@ -787,14 +787,15 @@ const AdminOvernightsPage = () => {
                 {(() => {
                   const startDate = new Date(invoiceStay.scheduled_date);
                   const endDate = new Date(invoiceStay.end_date || invoiceStay.scheduled_date);
-                  const totalNights = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+                  // Count calendar days inclusively (18th to 20th = 3 days)
+                  const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
                   const servicePrice = invoiceServicePrice || 0;
-                  const totalAmount = servicePrice * totalNights;
+                  const totalAmount = servicePrice * totalDays;
                   
                   return (
                     <div className="mt-3 pt-3 border-t border-green-200">
                       <div className="flex justify-between text-sm">
-                        <span>{totalNights} night{totalNights > 1 ? 's' : ''} × ${servicePrice.toFixed(2)}</span>
+                        <span>{totalDays} day{totalDays > 1 ? 's' : ''} × ${servicePrice.toFixed(2)}</span>
                         <span className="font-bold text-lg text-green-700">${totalAmount.toFixed(2)}</span>
                       </div>
                     </div>
