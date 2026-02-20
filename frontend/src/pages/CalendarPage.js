@@ -446,7 +446,16 @@ const CalendarPage = () => {
   const filterAppointments = (date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return appointments.filter(appt => {
-      const dateMatch = appt.scheduled_date === dateStr;
+      // For multi-day appointments (overnights/daycare), check if date falls within range
+      let dateMatch = false;
+      if (appt.end_date && appt.end_date !== appt.scheduled_date) {
+        // Multi-day appointment: check if date is within start and end
+        dateMatch = dateStr >= appt.scheduled_date && dateStr <= appt.end_date;
+      } else {
+        // Single day appointment: exact match
+        dateMatch = appt.scheduled_date === dateStr;
+      }
+      
       const walkerMatch = selectedWalker === 'all' || 
                           appt.walker_id === selectedWalker || 
                           (!appt.walker_id && selectedWalker === 'unassigned');
