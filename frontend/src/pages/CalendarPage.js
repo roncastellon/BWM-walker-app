@@ -759,11 +759,18 @@ const CalendarPage = () => {
       let serviceMatch = true;
       if (selectedServiceCategory !== 'all') {
         const category = SERVICE_CATEGORIES.find(c => c.value === selectedServiceCategory);
-        if (category && category.match) {
-          serviceMatch = category.match.some(type => 
-            appt.service_type?.toLowerCase().includes(type.toLowerCase()) ||
-            type.toLowerCase().includes(appt.service_type?.toLowerCase())
-          );
+        if (category) {
+          // Pattern-based matching (e.g., 'walk' matches 'walk_30', 'standard_walk', etc.)
+          if (category.pattern) {
+            serviceMatch = appt.service_type?.toLowerCase().includes(category.pattern.toLowerCase());
+          }
+          // List-based matching (exact or partial match against a list)
+          else if (category.match) {
+            serviceMatch = category.match.some(type => 
+              appt.service_type?.toLowerCase().includes(type.toLowerCase()) ||
+              type.toLowerCase().includes(appt.service_type?.toLowerCase())
+            );
+          }
         }
       }
       
