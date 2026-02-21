@@ -3197,6 +3197,26 @@ async def update_appointment(appt_id: str, update_data: dict, current_user: dict
     updated_appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
     return updated_appt
 
+# Admin endpoint to delete an appointment (e.g., remove overnight stay)
+@api_router.delete("/appointments/{appt_id}")
+async def delete_appointment(appt_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an appointment. Only admins can delete appointments."""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Only admins can delete appointments")
+    
+    # Check if appointment exists
+    existing = await db.appointments.find_one({"id": appt_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Delete the appointment
+    result = await db.appointments.delete_one({"id": appt_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to delete appointment")
+    
+    return {"message": "Appointment deleted successfully", "appointment_id": appt_id}
+
 # Admin endpoint to create appointments for any client
 @api_router.post("/appointments/admin", response_model=Appointment)
 async def admin_create_appointment(appt_data: dict, current_user: dict = Depends(get_current_user)):
