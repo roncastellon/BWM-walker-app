@@ -564,7 +564,7 @@ const AdminDashboard = () => {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" />
-                  Today&apos;s Schedule
+                  {new Date().getHours() >= 22 ? "Tomorrow's Schedule" : "Today's Schedule"}
                   <Badge variant="secondary" className="rounded-full ml-2">{allTodayAppts.length}</Badge>
                 </CardTitle>
               </CardHeader>
