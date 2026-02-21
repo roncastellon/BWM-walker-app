@@ -399,6 +399,86 @@ const CalendarPage = () => {
     }
   };
 
+  // Load recurring walks assigned to this walker for the scheduled day
+  const loadRecurringWalks = async () => {
+    try {
+      // Get day of week for scheduled date (0 = Sunday, 1 = Monday, etc.)
+      const scheduledDate = new Date(formData.scheduled_date);
+      const dayOfWeek = scheduledDate.getDay();
+      
+      // Fetch recurring schedules
+      const response = await api.get('/recurring-schedules');
+      const recurringSchedules = response.data.filter(s => 
+        s.status === 'active' &&
+        s.day_of_week === dayOfWeek &&
+        (s.walker_id === batchWalkerId || !s.walker_id) // Assigned to this walker OR unassigned
+      );
+      
+      if (recurringSchedules.length === 0) {
+        toast.info(`No recurring walks scheduled for ${format(scheduledDate, 'EEEE')}s`);
+        return;
+      }
+      
+      // Check which ones are already scheduled (to avoid duplicates)
+      const existingAppts = await api.get('/appointments/calendar');
+      const existingForDate = existingAppts.data.filter(a => 
+        a.scheduled_date === formData.scheduled_date &&
+        a.status !== 'cancelled'
+      );
+      
+      // Filter out recurring schedules that already have an appointment for this date
+      const newSchedules = recurringSchedules.filter(sched => {
+        // Check if an appointment already exists for this recurring schedule
+        return !existingForDate.some(appt => 
+          appt.recurring_schedule_id === sched.id ||
+          (
+            appt.client_id === sched.client_id &&
+            appt.scheduled_time === sched.scheduled_time &&
+            JSON.stringify(appt.pet_ids?.sort()) === JSON.stringify(sched.pet_ids?.sort())
+          )
+        );
+      });
+      
+      if (newSchedules.length === 0) {
+        toast.info('All recurring walks are already scheduled for this day');
+        return;
+      }
+      
+      // Convert recurring schedules to batch walk format
+      const recurringWalks = newSchedules.map((sched, index) => {
+        // Get pet names from allPets
+        const petNames = sched.pet_ids?.map(pid => {
+          const pet = allPets.find(p => p.id === pid);
+          return pet?.name || 'Unknown';
+        }) || [];
+        
+        // Get client name
+        const client = clients.find(c => c.id === sched.client_id);
+        
+        return {
+          client_id: sched.client_id,
+          pet_ids: sched.pet_ids || [],
+          service_type: sched.service_type,
+          scheduled_date: formData.scheduled_date,
+          scheduled_time: sched.scheduled_time,
+          walker_id: batchWalkerId,
+          notes: sched.notes || '',
+          recurring_schedule_id: sched.id,
+          id: `recurring-${sched.id}-${index}`,
+          pet_names: petNames,
+          client_name: client?.full_name || 'Unknown',
+          is_recurring: true
+        };
+      });
+      
+      setBatchWalks(prev => [...prev, ...recurringWalks]);
+      toast.success(`Loaded ${recurringWalks.length} recurring walk${recurringWalks.length > 1 ? 's' : ''} for ${format(scheduledDate, 'EEEE')}`);
+    } catch (error) {
+      console.error('Failed to load recurring walks:', error);
+      toast.error('Failed to load recurring walks');
+    }
+  };
+
   // Add walks to batch (adds multiple walks based on numWalks and walkTimes)
   const addToBatch = () => {
     if (!formData.client_id || !formData.service_type) {
