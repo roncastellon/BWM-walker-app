@@ -334,6 +334,21 @@ const AdminOvernightsPage = () => {
     setActionModalOpen(true);
   };
 
+  // Remove/delete a stay
+  const handleRemoveStay = async () => {
+    if (!selectedStay) return;
+    try {
+      await api.delete(`/appointments/${selectedStay.id}`);
+      toast.success('Overnight stay removed successfully');
+      setRemoveConfirmOpen(false);
+      setActionModalOpen(false);
+      setSelectedStay(null);
+      fetchOvernights();
+    } catch (error) {
+      toast.error('Failed to remove stay: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Calculate days remaining for a stay
   const getDaysRemaining = (stay, dateStr) => {
     if (!stay.end_date || stay.status === 'completed') return null;
