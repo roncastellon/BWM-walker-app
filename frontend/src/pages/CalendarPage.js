@@ -73,9 +73,10 @@ const CalendarPage = () => {
   const [walkTimes, setWalkTimes] = useState(['']); // Time for each walk
   
   // Service categories for filtering
+  // Service categories for filtering - 'walks' uses pattern matching for any walk-related service
   const SERVICE_CATEGORIES = [
     { value: 'all', label: 'All Services' },
-    { value: 'walks', label: 'Walks', match: ['walk_30', 'walk_45', 'walk_60'] },
+    { value: 'walks', label: 'Walks', pattern: 'walk' }, // Matches any service_type containing 'walk'
     { value: 'daycare', label: 'Day Care', match: ['doggy_day_care', 'doggy_day_camp', 'day_visit', 'concierge'] },
     { value: 'overnight', label: 'Overnights', match: ['overnight', 'stay_overnight', 'petsit_our_location', 'petsit_your_location'] },
     { value: 'transport', label: 'Transport', match: ['transport'] },
