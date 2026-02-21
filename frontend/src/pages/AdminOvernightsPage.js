@@ -486,9 +486,21 @@ const AdminOvernightsPage = () => {
                           }`}
                           data-testid={`overnight-stay-${stay.id}-${dateStr}`}
                         >
+                          {/* Pet names - show all */}
                           <div className="flex items-center gap-1 mb-1">
-                            <span className="font-medium truncate">{stay.pet_names?.[0] || 'Pet'}</span>
+                            <span className="font-medium truncate">
+                              {stay.pet_names?.length > 0 
+                                ? stay.pet_names.join(', ') 
+                                : 'Pet'}
+                            </span>
                           </div>
+                          
+                          {/* Days remaining - show for active stays */}
+                          {isCheckedIn && !isEnd && getDaysRemaining(stay, dateStr) !== null && (
+                            <p className="text-[10px] text-purple-600 font-medium mb-1">
+                              {getDaysRemaining(stay, dateStr)} day{getDaysRemaining(stay, dateStr) !== 1 ? 's' : ''} left
+                            </p>
+                          )}
                           
                           {/* Status badges */}
                           <div className="space-y-0.5">
