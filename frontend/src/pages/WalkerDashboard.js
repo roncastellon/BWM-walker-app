@@ -74,6 +74,12 @@ const WalkerDashboard = () => {
   const [lateCancelReason, setLateCancelReason] = useState('');
   const [lateRescheduleTime, setLateRescheduleTime] = useState('');
   
+  // Early Start Modal State
+  const [earlyStartModalOpen, setEarlyStartModalOpen] = useState(false);
+  const [earlyStartAppt, setEarlyStartAppt] = useState(null);
+  const [earlyStartMinutes, setEarlyStartMinutes] = useState(0);
+  const [earlyRescheduleTime, setEarlyRescheduleTime] = useState('');
+  
   // Walk Completion Dialog State
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [completionAnswers, setCompletionAnswers] = useState({
