@@ -1414,6 +1414,19 @@ const CalendarPage = () => {
                   </DialogDescription>
                 </DialogHeader>
 
+                {/* Copy Yesterday Button - show when no walks added yet */}
+                {batchWalks.length === 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-dashed"
+                    onClick={copyYesterdaySchedule}
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Copy Yesterday's Schedule
+                  </Button>
+                )}
+
                 {/* Walks added so far */}
                 {batchWalks.length > 0 && (
                   <div className="bg-gray-50 rounded-lg p-3 space-y-2 max-h-32 overflow-y-auto">
