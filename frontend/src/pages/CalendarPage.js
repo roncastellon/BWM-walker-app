@@ -234,13 +234,15 @@ const CalendarPage = () => {
   };
 
   const openAddDialog = (date = null) => {
+    const initialDate = date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
     setFormData({
       client_id: '',
       walker_id: '',
       sitter_id: '',
       pet_ids: [],
       service_type: '',
-      scheduled_date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+      scheduled_date: initialDate,
+      end_date: initialDate, // Default end_date to same as start for overnight services
       scheduled_time: '',
       notes: '',
       status: 'scheduled',
