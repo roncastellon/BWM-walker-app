@@ -269,6 +269,7 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - POST `/api/appointments/{id}/end` - End walk timer
 - PUT `/api/appointments/{id}/assign` - Assign walker
 - POST `/api/appointments/{id}/admin-complete` - Admin force-complete walk (admin only)
+- DELETE `/api/appointments/{id}` - Delete appointment (admin only) - used for removing overnight stays
 
 ### Scheduling (Admin)
 - POST `/api/users/{user_id}/walking-schedule` - Create schedule (supports both recurring and one-time)
