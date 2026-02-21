@@ -356,6 +356,48 @@ const AdminOvernightsPage = () => {
     }
   };
 
+  // Open duplicate stay modal
+  const openDuplicateModal = (stay) => {
+    setSelectedStay(stay);
+    // Set default dates to next week (same day of week)
+    const startDate = new Date(stay.scheduled_date);
+    startDate.setDate(startDate.getDate() + 7); // Default to 1 week later
+    
+    const endDate = stay.end_date ? new Date(stay.end_date) : new Date(stay.scheduled_date);
+    const stayDuration = Math.ceil((endDate - new Date(stay.scheduled_date)) / (1000 * 60 * 60 * 24));
+    const newEndDate = new Date(startDate);
+    newEndDate.setDate(newEndDate.getDate() + stayDuration);
+    
+    setDuplicateForm({
+      scheduled_date: startDate.toISOString().split('T')[0],
+      end_date: newEndDate.toISOString().split('T')[0]
+    });
+    setActionModalOpen(false);
+    setDuplicateModalOpen(true);
+  };
+
+  // Duplicate a stay
+  const handleDuplicateStay = async () => {
+    if (!selectedStay) return;
+    try {
+      await api.post('/appointments/admin', {
+        client_id: selectedStay.client_id,
+        pet_ids: selectedStay.pet_ids,
+        service_type: selectedStay.service_type,
+        scheduled_date: duplicateForm.scheduled_date,
+        end_date: duplicateForm.end_date,
+        scheduled_time: selectedStay.scheduled_time || '09:00',
+        notes: selectedStay.notes || ''
+      });
+      toast.success('Overnight stay duplicated successfully');
+      setDuplicateModalOpen(false);
+      setSelectedStay(null);
+      fetchOvernights();
+    } catch (error) {
+      toast.error('Failed to duplicate stay: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Calculate days remaining for a stay
   const getDaysRemaining = (stay, dateStr) => {
     if (!stay.end_date || stay.status === 'completed') return null;
