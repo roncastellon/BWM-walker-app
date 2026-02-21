@@ -835,6 +835,16 @@ const AdminOvernightsPage = () => {
                   Edit Dates
                 </Button>
                 
+                {/* Duplicate Stay button - always available */}
+                <Button 
+                  onClick={() => openDuplicateModal(selectedStay)} 
+                  variant="outline" 
+                  className="rounded-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Duplicate Stay
+                </Button>
+                
                 {/* Remove Stay button - always available */}
                 <Button 
                   onClick={() => setRemoveConfirmOpen(true)} 
