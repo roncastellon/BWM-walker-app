@@ -65,6 +65,15 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Admin Invoices Page
 
 ### Recent Updates (February 2026)
+- ✅ **Calendar 'Walks' Filter Fix (Feb 21, 2026)**: Fixed bug where selecting 'Walks' filter showed 0 appointments
+  - Changed from exact list matching (`['walk_30', 'walk_45', 'walk_60']`) to pattern-based matching
+  - Now matches any service_type containing 'walk' (e.g., walk_30, standard_walk, morning_walk, etc.)
+  - Other filters (Day Care, Overnights, Transport) still use list-based matching
+- ✅ **Remove Stay Button (Feb 21, 2026)**: Added ability to delete overnight stays from AdminOvernightsPage
+  - New "Remove Stay" button in overnight stay details modal (red styling with trash icon)
+  - Confirmation dialog with pet details before deletion
+  - New DELETE `/api/appointments/{appt_id}` endpoint (admin only)
+  - Removes the appointment completely from the database
 - ✅ **Pet Name Search (Feb 21, 2026)**: Scheduling now searches by pet name instead of client
   - Type pet name to search - shows matching pets with breed and owner name
   - Selecting a pet auto-sets the client and loads all their pets
