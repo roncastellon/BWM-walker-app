@@ -65,6 +65,18 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Admin Invoices Page
 
 ### Recent Updates (February 2026)
+- ✅ **Admin Force-Complete Walk (Feb 21, 2026)**: Admins can mark missed/unclosed walks as completed
+  - New "Mark as Complete" button in appointment detail modal (CalendarPage.js)
+  - Button only appears for walk services (walk_30, walk_45, walk_60) when status is scheduled/in_progress
+  - Not shown for overnight/daycare services (which use "End Stay Early" instead)
+  - Calls POST `/appointments/{appt_id}/admin-complete` endpoint
+  - Sets status to "completed", records admin completion metadata
+  - Useful for resolving missed walks without proper completion by walker
+- ✅ **10 PM Schedule Rollover (Feb 21, 2026)**: Daily schedule shows today until 10 PM, then shows tomorrow
+  - AdminDashboard.js: `getEffectiveScheduleDate()` helper determines which day to show
+  - WalkerDashboard.js: Same logic applied to walker's "Today's Walks" section
+  - Title dynamically changes from "Today's Schedule" to "Tomorrow's Schedule" after 10 PM
+  - Provides better end-of-day experience for late-night workers
 - ✅ **Admin Dashboard Tabbed Redesign (Feb 19, 2026)**: Schedule section now has 3 sub-tabs
   - **Walks tab**: Shows walk, transport, and concierge appointments with Pending/Completed/Cancelled filters
   - **Overnights tab**: Shows overnight stays with Check In/Staying/Check Out summary cards
