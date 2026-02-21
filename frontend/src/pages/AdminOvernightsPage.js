@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { 
   Moon, Calendar, Clock, PawPrint, CheckCircle, AlertTriangle,
   ChevronLeft, ChevronRight, LogIn, LogOut, Plus, RefreshCw, User,
-  DollarSign, Mail, Trash2
+  DollarSign, Mail, Trash2, Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
 
