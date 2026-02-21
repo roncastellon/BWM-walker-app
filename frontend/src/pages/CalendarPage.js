@@ -327,36 +327,27 @@ const CalendarPage = () => {
       return;
     }
     
+    // For overnight/daycare services, end_date is required
+    if (isDayNight && !formData.end_date) {
+      toast.error('Please select an end date for overnight/daycare services');
+      return;
+    }
+    
     try {
-      if (isDayNight && formData.end_date) {
-        // For overnight/day services, create a single appointment with start and end dates
+      if (isDayNight) {
+        // For overnight/day services, create a SINGLE appointment with start and end dates
+        // This creates ONE stay, not multiple daily appointments
         await api.post('/appointments/admin', {
           ...formData,
           scheduled_time: '',
           duration_type: getDurationTypeForService(formData.service_type)
         });
-        toast.success('Appointment created successfully');
-      } else if (isDayNight) {
-        // Fallback: Create multiple day appointments if no end_date
-        const daysToCreate = formData.duration_value || 1;
-        for (let i = 0; i < daysToCreate; i++) {
-          const appointmentDate = new Date(formData.scheduled_date);
-          appointmentDate.setDate(appointmentDate.getDate() + i);
-          const dateStr = appointmentDate.toISOString().split('T')[0];
-          
-          await api.post('/appointments/admin', {
-            ...formData,
-            scheduled_date: dateStr,
-            scheduled_time: '',
-            duration_value: 1,
-            duration_type: getDurationTypeForService(formData.service_type)
-          });
-        }
         
-        const successMsg = daysToCreate > 1 
-          ? `${daysToCreate} ${getDurationTypeForService(formData.service_type) === 'days' ? 'day' : 'night'} appointments created successfully`
-          : 'Appointment created successfully';
-        toast.success(successMsg);
+        const startDate = new Date(formData.scheduled_date);
+        const endDate = new Date(formData.end_date);
+        const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        const durationLabel = getDurationTypeForService(formData.service_type) === 'days' ? 'day' : 'night';
+        toast.success(`${nights} ${durationLabel}${nights > 1 ? 's' : ''} stay created successfully`);
       } else {
         // Regular time-based appointment - check if we need multiple walks
         const walkCount = isWalkService(formData.service_type) ? (formData.walk_count || 1) : 1;
