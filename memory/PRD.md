@@ -84,6 +84,11 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - If walker tries to start walk >7 minutes before scheduled time, shows warning modal
   - Options: "Wait for Scheduled Time" or "Reschedule to Now"
   - "Start Now" updates the scheduled time and begins the walk
+- ✅ **Countdown Timer (Feb 21, 2026)**: Real-time countdown on walker dashboard
+  - Shows time remaining until next scheduled walk (hours, minutes, seconds)
+  - Updates every second
+  - Shows "Time to walk!" when countdown reaches zero
+  - Displayed in "Up Next" card next to Start Walk button
 - ✅ **Pet Name Search (Feb 21, 2026)**: Scheduling now searches by pet name instead of client
   - Type pet name to search - shows matching pets with breed and owner name
   - Selecting a pet auto-sets the client and loads all their pets
