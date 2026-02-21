@@ -967,14 +967,43 @@ const WalkerDashboard = () => {
                     <p className="text-xs text-muted-foreground">{formatTime12Hour(nextWalk.scheduled_time)} • {nextWalk.client_name}</p>
                   </div>
                 </div>
-                <Button 
-                  onClick={() => startWalk(nextWalk.id)} 
-                  disabled={startingWalk}
-                  className="rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Start Walk
-                </Button>
+                <div className="flex items-center gap-4">
+                  {/* Countdown Timer */}
+                  {countdown && (
+                    <div className="text-center px-4 py-2 rounded-lg bg-white/80 border">
+                      {countdown.isNow ? (
+                        <div className="flex items-center gap-2 text-green-600">
+                          <Clock className="w-4 h-4 animate-pulse" />
+                          <span className="font-bold">Time to walk!</span>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-xs text-muted-foreground mb-1">Starts in</p>
+                          <div className="flex items-center gap-1 font-mono font-bold text-lg">
+                            {countdown.hours > 0 && (
+                              <>
+                                <span className="text-primary">{countdown.hours}</span>
+                                <span className="text-muted-foreground text-sm">h</span>
+                              </>
+                            )}
+                            <span className="text-primary">{countdown.minutes.toString().padStart(2, '0')}</span>
+                            <span className="text-muted-foreground text-sm">m</span>
+                            <span className="text-primary">{countdown.seconds.toString().padStart(2, '0')}</span>
+                            <span className="text-muted-foreground text-sm">s</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <Button 
+                    onClick={() => startWalk(nextWalk.id)} 
+                    disabled={startingWalk}
+                    className="rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Walk
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
