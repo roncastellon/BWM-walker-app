@@ -1123,34 +1123,52 @@ const CalendarPage = () => {
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Appointment</DialogTitle>
-              <DialogDescription>Schedule a walk or service for a client</DialogDescription>
+              <DialogDescription>Search by pet name to schedule a service</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateAppointment} className="space-y-4">
+              {/* Pet Search */}
               <div className="space-y-2">
-                <Label>Client *</Label>
-                <Select 
-                  value={formData.client_id} 
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, client_id: value, pet_ids: [] });
-                    fetchClientPets(value);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Search Pet *</Label>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Type pet name to search..."
+                    value={petSearchQuery}
+                    onChange={(e) => setPetSearchQuery(e.target.value)}
+                    className="w-full"
+                    data-testid="pet-search-input"
+                  />
+                  {/* Search Results Dropdown */}
+                  {filteredPets.length > 0 && petSearchQuery.length >= 1 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredPets.slice(0, 10).map((pet) => {
+                        const owner = clients.find(c => c.id === pet.owner_id);
+                        return (
+                          <div
+                            key={pet.id}
+                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
+                            onClick={() => handlePetSelect(pet)}
+                            data-testid={`pet-option-${pet.id}`}
+                          >
+                            <div>
+                              <span className="font-medium">{pet.name}</span>
+                              <span className="text-sm text-muted-foreground ml-2">({pet.breed || pet.species})</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {owner?.full_name || 'Unknown owner'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* Selected Pet(s) - Show after pet is selected */}
               {selectedClientPets.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Pet(s)</Label>
+                  <Label>Pet(s) for {clients.find(c => c.id === formData.client_id)?.full_name || 'Client'}</Label>
                   <div className="flex flex-wrap gap-2">
                     {selectedClientPets.map((pet) => (
                       <Button
