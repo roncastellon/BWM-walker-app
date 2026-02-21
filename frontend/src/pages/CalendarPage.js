@@ -363,6 +363,41 @@ const CalendarPage = () => {
     }
   };
 
+  // Copy yesterday's schedule for this walker
+  const copyYesterdaySchedule = async () => {
+    try {
+      const yesterday = new Date(formData.scheduled_date);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+      
+      const response = await api.get('/appointments/calendar');
+      const yesterdayWalks = response.data.filter(a => 
+        a.walker_id === batchWalkerId && 
+        a.scheduled_date === yesterdayStr &&
+        isWalkService(a.service_type)
+      );
+      
+      if (yesterdayWalks.length === 0) {
+        toast.error('No walks found for yesterday');
+        return;
+      }
+      
+      // Convert yesterday's walks to batch format with today's date
+      const copiedWalks = yesterdayWalks.map((walk, index) => ({
+        ...walk,
+        scheduled_date: formData.scheduled_date, // Use today's date
+        id: `temp-${Date.now()}-${index}`,
+        pet_names: walk.pet_names || [],
+        client_name: walk.client_name || 'Unknown'
+      }));
+      
+      setBatchWalks(prev => [...prev, ...copiedWalks]);
+      toast.success(`Copied ${copiedWalks.length} walk${copiedWalks.length > 1 ? 's' : ''} from yesterday`);
+    } catch (error) {
+      toast.error('Failed to copy yesterday\'s schedule');
+    }
+  };
+
   // Add walks to batch (adds multiple walks based on numWalks and walkTimes)
   const addToBatch = () => {
     if (!formData.client_id || !formData.service_type) {
