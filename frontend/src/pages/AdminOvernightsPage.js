@@ -32,6 +32,13 @@ const AdminOvernightsPage = () => {
   // Remove stay confirmation state
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   
+  // Duplicate stay modal state
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [duplicateForm, setDuplicateForm] = useState({
+    scheduled_date: '',
+    end_date: ''
+  });
+  
   // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
