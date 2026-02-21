@@ -1217,8 +1217,247 @@ const CalendarPage = () => {
         </Card>
 
         {/* Add Appointment Dialog (Admin) */}
-        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <Dialog open={addDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            setScheduleMode(null);
+            setBatchWalkerId('');
+            setBatchWalks([]);
+          }
+          setAddDialogOpen(open);
+        }}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            {/* Mode Selection */}
+            {scheduleMode === null && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Schedule Appointments</DialogTitle>
+                  <DialogDescription>Choose how you want to schedule</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-20 flex flex-col items-center justify-center gap-2"
+                    onClick={() => setScheduleMode('single')}
+                    data-testid="single-mode-btn"
+                  >
+                    <Plus className="w-6 h-6" />
+                    <span>Add Single Appointment</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-20 flex flex-col items-center justify-center gap-2 border-primary"
+                    onClick={() => setScheduleMode('batch')}
+                    data-testid="batch-mode-btn"
+                  >
+                    <Users className="w-6 h-6" />
+                    <span>Build Walker's Daily Schedule</span>
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Batch Mode - Walker Selection */}
+            {scheduleMode === 'batch' && !batchWalkerId && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Select Walker</DialogTitle>
+                  <DialogDescription>Choose which walker's schedule to build</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-2 py-4">
+                  {walkers.map((walker) => (
+                    <Button
+                      key={walker.id}
+                      type="button"
+                      variant="outline"
+                      className="justify-start gap-3 h-14"
+                      onClick={() => startBatchScheduling(walker.id)}
+                      data-testid={`select-walker-${walker.id}`}
+                    >
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: walker.walker_color || '#3B82F6' }}
+                      />
+                      <span>{walker.full_name}</span>
+                    </Button>
+                  ))}
+                </div>
+                <Button variant="ghost" onClick={() => setScheduleMode(null)}>
+                  ← Back
+                </Button>
+              </>
+            )}
+
+            {/* Batch Mode - Adding Walks */}
+            {scheduleMode === 'batch' && batchWalkerId && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: walkers.find(w => w.id === batchWalkerId)?.walker_color || '#3B82F6' }}
+                    />
+                    {walkers.find(w => w.id === batchWalkerId)?.full_name}'s Schedule
+                  </DialogTitle>
+                  <DialogDescription>
+                    {format(new Date(formData.scheduled_date), 'EEEE, MMMM d, yyyy')} • {batchWalks.length} walk{batchWalks.length !== 1 ? 's' : ''} added
+                  </DialogDescription>
+                </DialogHeader>
+
+                {/* Walks added so far */}
+                {batchWalks.length > 0 && (
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2 max-h-32 overflow-y-auto">
+                    {batchWalks.map((walk) => (
+                      <div key={walk.id} className="flex items-center justify-between text-sm bg-white p-2 rounded">
+                        <div>
+                          <span className="font-medium">{formatTime12Hour(walk.scheduled_time)}</span>
+                          <span className="mx-2">•</span>
+                          <span>{walk.pet_names?.join(', ')}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFromBatch(walk.id)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add walk form */}
+                <div className="space-y-4">
+                  {/* Pet Search */}
+                  <div className="space-y-2">
+                    <Label>Search Pet *</Label>
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        placeholder="Type pet name..."
+                        value={petSearchQuery}
+                        onChange={(e) => setPetSearchQuery(e.target.value)}
+                        className="w-full"
+                      />
+                      {filteredPets.length > 0 && petSearchQuery.length >= 1 && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {filteredPets.slice(0, 10).map((pet) => {
+                            const owner = clients.find(c => c.id === pet.owner_id);
+                            const allPetNames = getOwnerPetNames(pet.owner_id);
+                            return (
+                              <div
+                                key={pet.id}
+                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
+                                onClick={() => handlePetSelect(pet)}
+                              >
+                                <span className="font-medium">{allPetNames}</span>
+                                <span className="text-xs text-muted-foreground">{owner?.full_name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Selected Pets */}
+                  {selectedClientPets.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedClientPets.map((pet) => (
+                        <Button
+                          key={pet.id}
+                          type="button"
+                          variant={formData.pet_ids.includes(pet.id) ? 'default' : 'outline'}
+                          size="sm"
+                          className="rounded-full"
+                          onClick={() => {
+                            const ids = formData.pet_ids.includes(pet.id)
+                              ? formData.pet_ids.filter(id => id !== pet.id)
+                              : [...formData.pet_ids, pet.id];
+                            setFormData({ ...formData, pet_ids: ids });
+                          }}
+                        >
+                          {pet.name}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Service & Time in row */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Service</Label>
+                      <Select value={formData.service_type} onValueChange={(value) => setFormData({ ...formData, service_type: value })}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {services.filter(s => isWalkService(s.service_type)).map((service) => (
+                            <SelectItem key={service.id} value={service.service_type}>
+                              {service.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Time</Label>
+                      <Select value={formData.scheduled_time} onValueChange={(value) => setFormData({ ...formData, scheduled_time: value })}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeSlots.map((slot) => (
+                            <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Add to schedule button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={addToBatch}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Walk to Schedule
+                  </Button>
+                </div>
+
+                {/* Footer actions */}
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setBatchWalkerId('');
+                      setBatchWalks([]);
+                    }}
+                  >
+                    ← Back
+                  </Button>
+                  <Button
+                    type="button"
+                    className="flex-1"
+                    onClick={saveBatchSchedule}
+                    disabled={batchWalks.length === 0}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    {walkers.find(w => w.id === batchWalkerId)?.full_name}'s Schedule is Ready
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Single Mode - Original Form */}
+            {scheduleMode === 'single' && (
+              <>
             <DialogHeader>
               <DialogTitle>Add New Appointment</DialogTitle>
               <DialogDescription>Search by pet name to schedule a service</DialogDescription>
