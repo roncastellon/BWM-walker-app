@@ -299,10 +299,26 @@ const AdminDashboard = () => {
     }
   };
 
-  // Get today's appointments
+  // Helper: Get the effective schedule date (shows today until 10PM, then tomorrow)
+  const getEffectiveScheduleDate = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    // If it's 10 PM (22:00) or later, show tomorrow's schedule
+    if (hour >= 22) {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString().split('T')[0];
+    }
+    
+    // Otherwise, show today's schedule
+    return now.toISOString().split('T')[0];
+  };
+
+  // Get today's appointments (respects 10 PM cutoff)
+  const scheduleDate = getEffectiveScheduleDate();
   const allTodayAppts = appointments.filter(a => {
-    const today = new Date().toISOString().split('T')[0];
-    return a.scheduled_date === today;
+    return a.scheduled_date === scheduleDate;
   });
   
   // Filter by status view
