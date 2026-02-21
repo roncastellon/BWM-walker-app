@@ -66,24 +66,24 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 
 ### Recent Updates (February 2026)
 - ✅ **Calendar 'Walks' Filter Fix (Feb 21, 2026)**: Fixed bug where selecting 'Walks' filter showed 0 appointments
-  - Changed from exact list matching (`['walk_30', 'walk_45', 'walk_60']`) to pattern-based matching
-  - Now matches any service_type containing 'walk' (e.g., walk_30, standard_walk, morning_walk, etc.)
-  - Other filters (Day Care, Overnights, Transport) still use list-based matching
-- ✅ **Remove Stay Button (Feb 21, 2026)**: Added ability to delete overnight stays from AdminOvernightsPage
-  - New "Remove Stay" button in overnight stay details modal (red styling with trash icon)
-  - Confirmation dialog with pet details before deletion
-  - New DELETE `/api/appointments/{appt_id}` endpoint (admin only)
-  - Removes the appointment completely from the database
+  - Changed from exact list matching to pattern-based matching
+  - Now matches any service_type containing 'walk'
+- ✅ **Remove Stay Button (Feb 21, 2026)**: Added ability to delete overnight stays
+  - New "Remove Stay" button in overnight stay details modal
+  - Confirmation dialog before deletion
+  - New DELETE `/api/appointments/{appt_id}` endpoint
 - ✅ **Duplicate Stay Button (Feb 21, 2026)**: Added ability to duplicate overnight stays
-  - New "Duplicate Stay" button in overnight stay details modal (blue styling with copy icon)
-  - Opens a modal with pre-filled dates (defaults to 1 week later, same duration)
-  - Edit check-in/check-out dates before creating duplicate
-  - Creates a new booking for the same pet/client with new dates
-- ✅ **Load Recurring Walks (Feb 21, 2026)**: Added "Load Recurring Walks" button to batch scheduling mode
-  - In batch scheduling mode, two buttons now always visible: "Load Recurring Walks" and "Copy Yesterday"
-  - "Load Recurring Walks" fetches recurring schedules for the selected walker on the scheduled day
-  - Automatically filters by day of week and checks for already-scheduled appointments
+  - Opens form with pre-filled dates (defaults to 1 week later, same duration)
+  - Creates new booking for same pet/client with new dates
+- ✅ **Load Recurring Walks (Feb 21, 2026)**: Added recurring walk support to batch scheduling
+  - "Load Recurring Walks" button manually loads recurring schedules
+  - Auto-preloads recurring walks when starting batch scheduling for a walker
   - Shows "Recurring" badge on walks loaded from recurring schedules
+  - Filters by day of week and checks for already-scheduled appointments
+- ✅ **Early Walk Warning (Feb 21, 2026)**: Walker prompt when starting walk too early
+  - If walker tries to start walk >7 minutes before scheduled time, shows warning modal
+  - Options: "Wait for Scheduled Time" or "Reschedule to Now"
+  - "Start Now" updates the scheduled time and begins the walk
 - ✅ **Pet Name Search (Feb 21, 2026)**: Scheduling now searches by pet name instead of client
   - Type pet name to search - shows matching pets with breed and owner name
   - Selecting a pet auto-sets the client and loads all their pets
