@@ -1360,39 +1360,43 @@ const CalendarPage = () => {
 
                 {/* Add walk form */}
                 <div className="space-y-4">
-                  {/* Pet Search */}
+                  {/* Pet Selection - Only pets this walker has walked before */}
                   <div className="space-y-2">
-                    <Label>Search Pet *</Label>
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        placeholder="Type pet name..."
-                        value={petSearchQuery}
-                        onChange={(e) => setPetSearchQuery(e.target.value)}
-                        className="w-full"
-                      />
-                      {filteredPets.length > 0 && petSearchQuery.length >= 1 && (
-                        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                          {filteredPets.slice(0, 10).map((pet) => {
+                    <Label>Select Pet *</Label>
+                    {walkerPets.length > 0 ? (
+                      <Select 
+                        value={formData.pet_ids[0] || ''} 
+                        onValueChange={(petId) => {
+                          const pet = walkerPets.find(p => p.id === petId);
+                          if (pet) {
+                            handlePetSelect(pet);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a pet..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {walkerPets.map((pet) => {
                             const owner = clients.find(c => c.id === pet.owner_id);
-                            const allPetNames = getOwnerPetNames(pet.owner_id);
+                            const ownerPets = allPets.filter(p => p.owner_id === pet.owner_id);
+                            const petNames = ownerPets.map(p => p.name).join(' & ');
                             return (
-                              <div
-                                key={pet.id}
-                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
-                                onClick={() => handlePetSelect(pet)}
-                              >
-                                <span className="font-medium">{allPetNames}</span>
-                                <span className="text-xs text-muted-foreground">{owner?.full_name}</span>
-                              </div>
+                              <SelectItem key={pet.id} value={pet.id}>
+                                {petNames} ({owner?.full_name || 'Unknown'})
+                              </SelectItem>
                             );
                           })}
-                        </div>
-                      )}
-                    </div>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">
+                        This walker hasn't walked any pets yet. Use "Add Single Appointment" to assign their first walk.
+                      </p>
+                    )}
                   </div>
 
-                  {/* Selected Pets */}
+                  {/* Selected Pets - allow toggling individual pets from same owner */}
                   {selectedClientPets.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {selectedClientPets.map((pet) => (
