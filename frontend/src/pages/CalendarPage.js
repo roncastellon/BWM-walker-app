@@ -64,6 +64,11 @@ const CalendarPage = () => {
   const [allPets, setAllPets] = useState([]); // All pets for search
   const [petSearchQuery, setPetSearchQuery] = useState(''); // Pet search input
   
+  // Batch scheduling mode state
+  const [scheduleMode, setScheduleMode] = useState(null); // null, 'single', or 'batch'
+  const [batchWalkerId, setBatchWalkerId] = useState(''); // Walker for batch mode
+  const [batchWalks, setBatchWalks] = useState([]); // Walks added in batch mode
+  
   // Service categories for filtering
   const SERVICE_CATEGORIES = [
     { value: 'all', label: 'All Services' },
