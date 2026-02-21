@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { 
   Moon, Calendar, Clock, PawPrint, CheckCircle, AlertTriangle,
   ChevronLeft, ChevronRight, LogIn, LogOut, Plus, RefreshCw, User,
-  DollarSign, Mail
+  DollarSign, Mail, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,6 +28,9 @@ const AdminOvernightsPage = () => {
   const [extendDays, setExtendDays] = useState(1);
   const [endingTodayPrompt, setEndingTodayPrompt] = useState([]);
   const [invoices, setInvoices] = useState([]); // Track invoices for appointments
+  
+  // Remove stay confirmation state
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   
   // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
