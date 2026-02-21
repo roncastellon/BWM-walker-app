@@ -307,17 +307,45 @@ const CalendarPage = () => {
     setScheduleMode(null); // Show mode selection first
     setBatchWalkerId('');
     setBatchWalks([]);
+    setWalkerPets([]); // Clear walker's pets
     setAddDialogOpen(true);
   };
 
-  // Start batch scheduling for a specific walker
-  const startBatchScheduling = (walkerId) => {
+  // Start batch scheduling for a specific walker - fetch their walked pets
+  const startBatchScheduling = async (walkerId) => {
     setBatchWalkerId(walkerId);
     setBatchWalks([]);
     setFormData(prev => ({
       ...prev,
       walker_id: walkerId
     }));
+    
+    // Fetch pets this walker has walked before
+    try {
+      const response = await api.get('/appointments/calendar');
+      const walkerAppts = response.data.filter(a => 
+        a.walker_id === walkerId && 
+        isWalkService(a.service_type)
+      );
+      
+      // Extract unique pet IDs from walker's history
+      const walkedPetIds = new Set();
+      walkerAppts.forEach(a => {
+        if (a.pet_ids) {
+          a.pet_ids.forEach(id => walkedPetIds.add(id));
+        }
+      });
+      
+      // Get full pet objects and sort alphabetically
+      const walkerPetList = allPets
+        .filter(p => walkedPetIds.has(p.id))
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      
+      setWalkerPets(walkerPetList);
+    } catch (error) {
+      console.error('Failed to fetch walker pets:', error);
+      setWalkerPets([]);
+    }
   };
 
   // Add walk to batch (doesn't save yet, just adds to list)
