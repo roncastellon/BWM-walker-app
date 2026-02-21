@@ -1701,6 +1701,8 @@ const CalendarPage = () => {
                 Create Appointment
               </Button>
             </form>
+              </>
+            )}
           </DialogContent>
         </Dialog>
 
