@@ -22,7 +22,7 @@ def admin_session():
     if login_response.status_code != 200:
         pytest.skip("Admin login failed")
     
-    token = login_response.json().get("token")
+    token = login_response.json().get("access_token")
     session.headers.update({"Authorization": f"Bearer {token}"})
     return session
 
@@ -40,7 +40,7 @@ def walker_session():
     if login_response.status_code != 200:
         return None
     
-    token = login_response.json().get("token")
+    token = login_response.json().get("access_token")
     session.headers.update({"Authorization": f"Bearer {token}"})
     return session
 
