@@ -776,7 +776,7 @@ const WalkerDashboard = () => {
               Welcome, {user?.full_name?.split(' ')[0]}!
             </h1>
             <p className="text-secondary-foreground/80">
-              {todayAppointments.length} walks scheduled today
+              {todayAppointments.length} walks scheduled {new Date().getHours() >= 22 ? 'tomorrow' : 'today'}
             </p>
           </div>
           <div className="absolute right-4 bottom-0 opacity-10">
