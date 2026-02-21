@@ -74,6 +74,16 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
   - Confirmation dialog with pet details before deletion
   - New DELETE `/api/appointments/{appt_id}` endpoint (admin only)
   - Removes the appointment completely from the database
+- ✅ **Duplicate Stay Button (Feb 21, 2026)**: Added ability to duplicate overnight stays
+  - New "Duplicate Stay" button in overnight stay details modal (blue styling with copy icon)
+  - Opens a modal with pre-filled dates (defaults to 1 week later, same duration)
+  - Edit check-in/check-out dates before creating duplicate
+  - Creates a new booking for the same pet/client with new dates
+- ✅ **Load Recurring Walks (Feb 21, 2026)**: Added "Load Recurring Walks" button to batch scheduling mode
+  - In batch scheduling mode, two buttons now always visible: "Load Recurring Walks" and "Copy Yesterday"
+  - "Load Recurring Walks" fetches recurring schedules for the selected walker on the scheduled day
+  - Automatically filters by day of week and checks for already-scheduled appointments
+  - Shows "Recurring" badge on walks loaded from recurring schedules
 - ✅ **Pet Name Search (Feb 21, 2026)**: Scheduling now searches by pet name instead of client
   - Type pet name to search - shows matching pets with breed and owner name
   - Selecting a pet auto-sets the client and loads all their pets
