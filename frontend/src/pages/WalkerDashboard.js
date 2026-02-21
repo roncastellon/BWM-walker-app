@@ -391,9 +391,42 @@ const WalkerDashboard = () => {
     return Math.max(0, Math.floor(diffMs / 60000));
   };
 
+  // Check if a walk is too early (more than 7 minutes before scheduled time)
+  const isWalkTooEarly = (appt) => {
+    if (!appt?.scheduled_time) return false;
+    const now = new Date();
+    const [hours, minutes] = appt.scheduled_time.split(':').map(Number);
+    const scheduledDate = new Date();
+    scheduledDate.setHours(hours, minutes, 0, 0);
+    const diffMs = scheduledDate - now;
+    const minutesEarly = Math.floor(diffMs / 60000);
+    return minutesEarly > 7; // More than 7 minutes early
+  };
+  
+  // Calculate how many minutes early
+  const getMinutesEarly = (appt) => {
+    if (!appt?.scheduled_time) return 0;
+    const now = new Date();
+    const [hours, minutes] = appt.scheduled_time.split(':').map(Number);
+    const scheduledDate = new Date();
+    scheduledDate.setHours(hours, minutes, 0, 0);
+    const diffMs = scheduledDate - now;
+    return Math.max(0, Math.floor(diffMs / 60000));
+  };
+
   const startWalk = async (apptId) => {
     // Find the appointment
     const appt = todayAppointments.find(a => a.id === apptId);
+    
+    // Check if too early (more than 7 minutes before scheduled time)
+    if (appt && isWalkTooEarly(appt)) {
+      const minutesEarly = getMinutesEarly(appt);
+      setEarlyStartAppt(appt);
+      setEarlyStartMinutes(minutesEarly);
+      setEarlyRescheduleTime('');
+      setEarlyStartModalOpen(true);
+      return;
+    }
     
     // Check if late
     if (appt && isWalkLate(appt)) {
@@ -406,7 +439,7 @@ const WalkerDashboard = () => {
       return;
     }
     
-    // Not late - proceed with normal start flow
+    // Not early or late - proceed with normal start flow
     proceedWithStartWalk(apptId);
   };
   
