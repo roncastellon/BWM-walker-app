@@ -68,6 +68,7 @@ const CalendarPage = () => {
   const [scheduleMode, setScheduleMode] = useState(null); // null, 'single', or 'batch'
   const [batchWalkerId, setBatchWalkerId] = useState(''); // Walker for batch mode
   const [batchWalks, setBatchWalks] = useState([]); // Walks added in batch mode
+  const [walkerPets, setWalkerPets] = useState([]); // Pets this walker has walked before
   
   // Service categories for filtering
   const SERVICE_CATEGORIES = [
