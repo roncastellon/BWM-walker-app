@@ -284,6 +284,7 @@ const CalendarPage = () => {
       duration_type: 'minutes'
     });
     setSelectedClientPets([]);
+    setPetSearchQuery(''); // Clear pet search
     setAddDialogOpen(true);
   };
 
