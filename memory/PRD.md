@@ -65,6 +65,13 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Admin Invoices Page
 
 ### Recent Updates (February 2026)
+- ✅ **Overnight Appointment Fix (Feb 21, 2026)**: Fixed overnight stays to create a SINGLE appointment instead of multiple 1-day appointments
+  - Selecting overnight service now shows "Start Date" and "End Date" fields
+  - End date is required for overnight/daycare services (validation error if missing)
+  - Creates ONE appointment with `scheduled_date` (start) and `end_date` (end)
+  - Check-in only shows on start date, check-out prompt only on end date
+  - Removed fallback code that was creating multiple 1-day appointments
+  - Note: Legacy "bad" data (multiple 1-day appointments) may still exist in database
 - ✅ **Admin Force-Complete Walk (Feb 21, 2026)**: Admins can mark missed/unclosed walks as completed
   - New "Mark as Complete" button in appointment detail modal (CalendarPage.js)
   - Button only appears for walk services (walk_30, walk_45, walk_60) when status is scheduled/in_progress
