@@ -4,7 +4,7 @@ Test just the GET recurring schedules endpoint
 """
 import requests
 
-BASE_URL = "https://walk-dash-redesign.preview.emergentagent.com"
+BASE_URL = "https://pet-ops-platform.preview.emergentagent.com"
 
 def test_get_recurring_schedules():
     # Login with new_onboard_client

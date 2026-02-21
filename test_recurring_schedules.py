@@ -6,7 +6,7 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-BASE_URL = "https://walk-dash-redesign.preview.emergentagent.com"
+BASE_URL = "https://pet-ops-platform.preview.emergentagent.com"
 
 def test_recurring_schedules():
     print("🔄 Testing Recurring Schedule Functionality")
