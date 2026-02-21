@@ -1512,7 +1512,7 @@ const CalendarPage = () => {
                     </div>
                   )}
 
-                  {/* Service & Time in row */}
+                  {/* Service & Number of Walks */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label className="text-xs">Service</Label>
@@ -1530,17 +1530,40 @@ const CalendarPage = () => {
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Time</Label>
-                      <Select value={formData.scheduled_time} onValueChange={(value) => setFormData({ ...formData, scheduled_time: value })}>
+                      <Label className="text-xs"># of Walks</Label>
+                      <Select value={String(numWalks)} onValueChange={(value) => handleNumWalksChange(parseInt(value))}>
                         <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Time" />
+                          <SelectValue placeholder="1" />
                         </SelectTrigger>
                         <SelectContent>
-                          {timeSlots.map((slot) => (
-                            <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
+                          {[1, 2, 3, 4, 5].map((num) => (
+                            <SelectItem key={num} value={String(num)}>{num}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+
+                  {/* Time slots for each walk */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Time for Each Walk</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {walkTimes.map((time, index) => (
+                        <Select 
+                          key={index} 
+                          value={time} 
+                          onValueChange={(value) => handleWalkTimeChange(index, value)}
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder={`Walk ${index + 1}`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {timeSlots.map((slot) => (
+                              <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ))}
                     </div>
                   </div>
 
@@ -1552,7 +1575,7 @@ const CalendarPage = () => {
                     onClick={addToBatch}
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Walk to Schedule
+                    Add {numWalks} Walk{numWalks > 1 ? 's' : ''} to Schedule
                   </Button>
                 </div>
 
@@ -1564,6 +1587,8 @@ const CalendarPage = () => {
                     onClick={() => {
                       setBatchWalkerId('');
                       setBatchWalks([]);
+                      setNumWalks(1);
+                      setWalkTimes(['']);
                     }}
                   >
                     ← Back
