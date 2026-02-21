@@ -548,6 +548,40 @@ const WalkerDashboard = () => {
     return slots;
   };
 
+  // Handle early start - Wait (dismiss modal, don't start walk)
+  const handleEarlyStartWait = () => {
+    setEarlyStartModalOpen(false);
+    setEarlyStartAppt(null);
+    toast.info(`Walk scheduled for ${formatTime12Hour(earlyStartAppt?.scheduled_time)}`);
+  };
+  
+  // Handle early start - Reschedule to now
+  const handleEarlyStartReschedule = async () => {
+    if (!earlyStartAppt) return;
+    
+    // Get current time rounded to nearest 5 minutes
+    const now = new Date();
+    const minutes = Math.ceil(now.getMinutes() / 5) * 5;
+    now.setMinutes(minutes);
+    const newTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    setSaving(true);
+    try {
+      await api.put(`/appointments/${earlyStartAppt.id}/walker-reschedule`, {
+        new_time: newTime
+      });
+      toast.success('Walk rescheduled to now');
+      setEarlyStartModalOpen(false);
+      // Refresh data and proceed with walk
+      await fetchData();
+      proceedWithStartWalk(earlyStartAppt.id);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to reschedule');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const requestGpsPermission = () => {
     setGpsStatus('requesting');
     navigator.geolocation.getCurrentPosition(
