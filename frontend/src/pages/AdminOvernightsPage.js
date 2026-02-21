@@ -905,6 +905,74 @@ const AdminOvernightsPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Duplicate Stay Modal */}
+      <Dialog open={duplicateModalOpen} onOpenChange={setDuplicateModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-blue-600">
+              <Copy className="w-5 h-5" />
+              Duplicate Overnight Stay
+            </DialogTitle>
+            <DialogDescription>
+              Create a new booking for the same pet with new dates
+            </DialogDescription>
+          </DialogHeader>
+          {selectedStay && (
+            <div className="space-y-4 py-2">
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <PawPrint className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <p className="font-bold">{selectedStay.pet_names?.join(', ') || 'Pet'}</p>
+                    <p className="text-sm text-muted-foreground">{selectedStay.client_name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Original: {selectedStay.scheduled_date} - {selectedStay.end_date || selectedStay.scheduled_date}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Check-in Date</Label>
+                  <Input
+                    type="date"
+                    value={duplicateForm.scheduled_date}
+                    onChange={(e) => setDuplicateForm(prev => ({ ...prev, scheduled_date: e.target.value }))}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Check-out Date</Label>
+                  <Input
+                    type="date"
+                    value={duplicateForm.end_date}
+                    onChange={(e) => setDuplicateForm(prev => ({ ...prev, end_date: e.target.value }))}
+                    min={duplicateForm.scheduled_date || new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setDuplicateModalOpen(false)}
+              className="rounded-full"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDuplicateStay}
+              className="rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Create Duplicate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Extend Stay Modal */}
       <Dialog open={extendModalOpen} onOpenChange={setExtendModalOpen}>
         <DialogContent>
