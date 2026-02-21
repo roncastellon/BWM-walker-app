@@ -1502,18 +1502,27 @@ const CalendarPage = () => {
                   </DialogDescription>
                 </DialogHeader>
 
-                {/* Copy Yesterday Button - show when no walks added yet */}
-                {batchWalks.length === 0 && (
+                {/* Quick load buttons - always visible */}
+                <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-dashed"
+                    className="flex-1 border-dashed"
+                    onClick={loadRecurringWalks}
+                  >
+                    <CalendarDays className="w-4 h-4 mr-2" />
+                    Load Recurring Walks
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 border-dashed"
                     onClick={copyYesterdaySchedule}
                   >
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Copy Yesterday's Schedule
+                    Copy Yesterday
                   </Button>
-                )}
+                </div>
 
                 {/* Walks added so far */}
                 {batchWalks.length > 0 && (
