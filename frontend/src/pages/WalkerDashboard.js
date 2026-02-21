@@ -142,8 +142,19 @@ const WalkerDashboard = () => {
       setWalkers(walkersRes.data || []);
       setTradeRequests(tradesRes.data || []);
       
-      const today = new Date().toISOString().split('T')[0];
+      // Get effective schedule date (shows today until 10PM, then tomorrow)
       const now = new Date();
+      const hour = now.getHours();
+      let scheduleDate;
+      if (hour >= 22) {
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        scheduleDate = tomorrow.toISOString().split('T')[0];
+      } else {
+        scheduleDate = now.toISOString().split('T')[0];
+      }
+      
+      const today = now.toISOString().split('T')[0];
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       
       // Calculate completed walks stats
@@ -164,8 +175,9 @@ const WalkerDashboard = () => {
       
       setCompletedStats({ today: todayCompleted, week: weekCompleted, month: monthCompleted });
       
+      // Use scheduleDate for displayed appointments (respects 10 PM cutoff)
       const todayAppts = apptsRes.data
-        .filter(a => a.scheduled_date === today)
+        .filter(a => a.scheduled_date === scheduleDate)
         .sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
       
       setTodayAppointments(todayAppts);
