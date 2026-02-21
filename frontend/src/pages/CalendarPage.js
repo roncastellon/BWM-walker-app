@@ -363,24 +363,33 @@ const CalendarPage = () => {
     }
   };
 
-  // Add walk to batch (doesn't save yet, just adds to list)
+  // Add walks to batch (adds multiple walks based on numWalks and walkTimes)
   const addToBatch = () => {
-    if (!formData.client_id || !formData.service_type || !formData.scheduled_time) {
-      toast.error('Please fill in pet, service, and time');
+    if (!formData.client_id || !formData.service_type) {
+      toast.error('Please select a pet and service');
       return;
     }
     
-    const walk = {
+    // Check that all times are filled
+    const validTimes = walkTimes.filter(t => t && t.trim() !== '');
+    if (validTimes.length !== numWalks) {
+      toast.error(`Please select a time for each walk (${numWalks} walks)`);
+      return;
+    }
+    
+    // Add each walk with its time
+    const newWalks = walkTimes.map((time, index) => ({
       ...formData,
       walker_id: batchWalkerId,
-      id: `temp-${Date.now()}`, // Temporary ID for display
+      scheduled_time: time,
+      id: `temp-${Date.now()}-${index}`, // Temporary ID for display
       pet_names: selectedClientPets.filter(p => formData.pet_ids.includes(p.id)).map(p => p.name),
       client_name: clients.find(c => c.id === formData.client_id)?.full_name || 'Unknown'
-    };
+    }));
     
-    setBatchWalks(prev => [...prev, walk]);
+    setBatchWalks(prev => [...prev, ...newWalks]);
     
-    // Reset form for next walk (keep date and walker)
+    // Reset form for next pet
     setFormData(prev => ({
       ...prev,
       client_id: '',
@@ -391,8 +400,30 @@ const CalendarPage = () => {
     }));
     setSelectedClientPets([]);
     setPetSearchQuery('');
+    setNumWalks(1);
+    setWalkTimes(['']);
     
-    toast.success('Walk added to schedule');
+    toast.success(`${newWalks.length} walk${newWalks.length > 1 ? 's' : ''} added to schedule`);
+  };
+
+  // Update number of walks and resize walkTimes array
+  const handleNumWalksChange = (num) => {
+    const newNum = Math.max(1, Math.min(10, num)); // Limit 1-10
+    setNumWalks(newNum);
+    setWalkTimes(prev => {
+      const newTimes = [...prev];
+      while (newTimes.length < newNum) newTimes.push('');
+      return newTimes.slice(0, newNum);
+    });
+  };
+
+  // Update a specific walk time
+  const handleWalkTimeChange = (index, time) => {
+    setWalkTimes(prev => {
+      const newTimes = [...prev];
+      newTimes[index] = time;
+      return newTimes;
+    });
   };
 
   // Save all batch walks
