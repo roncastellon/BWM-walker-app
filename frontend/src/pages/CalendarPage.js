@@ -203,6 +203,36 @@ const CalendarPage = () => {
     }
   };
 
+  // Handle pet selection - auto-sets client and loads their other pets
+  const handlePetSelect = async (pet) => {
+    if (!pet) return;
+    
+    // Set client from pet's owner
+    const clientId = pet.owner_id;
+    setFormData(prev => ({
+      ...prev,
+      client_id: clientId,
+      pet_ids: [pet.id]
+    }));
+    
+    // Fetch all pets for this client
+    try {
+      const response = await api.get(`/pets?owner_id=${clientId}`);
+      setSelectedClientPets(response.data);
+    } catch (error) {
+      setSelectedClientPets([pet]); // At least show the selected pet
+    }
+    
+    setPetSearchQuery(''); // Clear search
+  };
+
+  // Filter pets based on search query
+  const filteredPets = petSearchQuery.length >= 1
+    ? allPets.filter(pet => 
+        pet.name?.toLowerCase().includes(petSearchQuery.toLowerCase())
+      )
+    : [];
+
   const openAppointmentDetail = async (appt) => {
     setSelectedAppointment(appt);
     setDetailLoading(true);
