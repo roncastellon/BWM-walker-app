@@ -337,12 +337,24 @@ const CalendarPage = () => {
         }
       });
       
-      // Get full pet objects and sort alphabetically
-      const walkerPetList = allPets
-        .filter(p => walkedPetIds.has(p.id))
-        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      // Get full pet objects that this walker has walked
+      const walkedPets = allPets.filter(p => walkedPetIds.has(p.id));
       
-      setWalkerPets(walkerPetList);
+      // Group by owner and deduplicate - only show one entry per owner
+      const ownersSeen = new Set();
+      const uniqueOwnerPets = [];
+      
+      // Sort by pet name first
+      walkedPets.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      
+      for (const pet of walkedPets) {
+        if (!ownersSeen.has(pet.owner_id)) {
+          ownersSeen.add(pet.owner_id);
+          uniqueOwnerPets.push(pet);
+        }
+      }
+      
+      setWalkerPets(uniqueOwnerPets);
     } catch (error) {
       console.error('Failed to fetch walker pets:', error);
       setWalkerPets([]);
