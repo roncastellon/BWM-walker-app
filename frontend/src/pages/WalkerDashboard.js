@@ -103,8 +103,44 @@ const WalkerDashboard = () => {
     checkOnboardingStatus();
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, []);
+
+  // Countdown timer for next walk
+  useEffect(() => {
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    
+    if (nextWalk && nextWalk.scheduled_time && !activeWalk) {
+      const updateCountdown = () => {
+        const now = new Date();
+        const [hours, minutes] = nextWalk.scheduled_time.split(':').map(Number);
+        const scheduledDate = new Date();
+        scheduledDate.setHours(hours, minutes, 0, 0);
+        
+        const diffMs = scheduledDate - now;
+        
+        if (diffMs <= 0) {
+          setCountdown({ hours: 0, minutes: 0, seconds: 0, isNow: true });
+        } else {
+          const totalSeconds = Math.floor(diffMs / 1000);
+          const h = Math.floor(totalSeconds / 3600);
+          const m = Math.floor((totalSeconds % 3600) / 60);
+          const s = totalSeconds % 60;
+          setCountdown({ hours: h, minutes: m, seconds: s, isNow: false });
+        }
+      };
+      
+      updateCountdown(); // Initial update
+      countdownRef.current = setInterval(updateCountdown, 1000);
+    } else {
+      setCountdown(null);
+    }
+    
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [nextWalk, activeWalk]);
 
   const checkOnboardingStatus = async () => {
     try {
