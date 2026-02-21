@@ -1529,10 +1529,15 @@ const CalendarPage = () => {
                   <div className="bg-gray-50 rounded-lg p-3 space-y-2 max-h-32 overflow-y-auto">
                     {batchWalks.map((walk) => (
                       <div key={walk.id} className="flex items-center justify-between text-sm bg-white p-2 rounded">
-                        <div>
+                        <div className="flex items-center gap-2">
                           <span className="font-medium">{formatTime12Hour(walk.scheduled_time)}</span>
-                          <span className="mx-2">•</span>
+                          <span className="text-gray-400">•</span>
                           <span>{walk.pet_names?.join(', ')}</span>
+                          {walk.is_recurring && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+                              Recurring
+                            </Badge>
+                          )}
                         </div>
                         <Button
                           type="button"
