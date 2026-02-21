@@ -61,6 +61,8 @@ const CalendarPage = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [appointmentDetail, setAppointmentDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [allPets, setAllPets] = useState([]); // All pets for search
+  const [petSearchQuery, setPetSearchQuery] = useState(''); // Pet search input
   
   // Service categories for filtering
   const SERVICE_CATEGORIES = [
