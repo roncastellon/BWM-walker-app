@@ -26,7 +26,7 @@ import {
   Clock, User, PawPrint, ChevronLeft, ChevronRight, 
   CalendarDays, CalendarRange, Calendar as CalendarIcon,
   MapPin, Phone, Mail, X, Plus, Edit, Trash2, Save,
-  UserCheck, CheckCircle, PlayCircle, XCircle, RotateCcw
+  UserCheck, CheckCircle, PlayCircle, XCircle, RotateCcw, Users
 } from 'lucide-react';
 import { 
   format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths,
