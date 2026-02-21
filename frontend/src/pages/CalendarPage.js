@@ -304,7 +304,86 @@ const CalendarPage = () => {
     });
     setSelectedClientPets([]);
     setPetSearchQuery(''); // Clear pet search
+    setScheduleMode(null); // Show mode selection first
+    setBatchWalkerId('');
+    setBatchWalks([]);
     setAddDialogOpen(true);
+  };
+
+  // Start batch scheduling for a specific walker
+  const startBatchScheduling = (walkerId) => {
+    setBatchWalkerId(walkerId);
+    setBatchWalks([]);
+    setFormData(prev => ({
+      ...prev,
+      walker_id: walkerId
+    }));
+  };
+
+  // Add walk to batch (doesn't save yet, just adds to list)
+  const addToBatch = () => {
+    if (!formData.client_id || !formData.service_type || !formData.scheduled_time) {
+      toast.error('Please fill in pet, service, and time');
+      return;
+    }
+    
+    const walk = {
+      ...formData,
+      walker_id: batchWalkerId,
+      id: `temp-${Date.now()}`, // Temporary ID for display
+      pet_names: selectedClientPets.filter(p => formData.pet_ids.includes(p.id)).map(p => p.name),
+      client_name: clients.find(c => c.id === formData.client_id)?.full_name || 'Unknown'
+    };
+    
+    setBatchWalks(prev => [...prev, walk]);
+    
+    // Reset form for next walk (keep date and walker)
+    setFormData(prev => ({
+      ...prev,
+      client_id: '',
+      pet_ids: [],
+      service_type: '',
+      scheduled_time: '',
+      notes: ''
+    }));
+    setSelectedClientPets([]);
+    setPetSearchQuery('');
+    
+    toast.success('Walk added to schedule');
+  };
+
+  // Save all batch walks
+  const saveBatchSchedule = async () => {
+    if (batchWalks.length === 0) {
+      toast.error('No walks to save');
+      return;
+    }
+    
+    try {
+      for (const walk of batchWalks) {
+        const { id, pet_names, client_name, ...walkData } = walk;
+        await api.post('/appointments/admin', {
+          ...walkData,
+          duration_type: 'minutes'
+        });
+      }
+      
+      const walkerName = walkers.find(w => w.id === batchWalkerId)?.full_name || 'Walker';
+      toast.success(`${batchWalks.length} walks scheduled for ${walkerName}!`);
+      
+      setBatchWalks([]);
+      setBatchWalkerId('');
+      setScheduleMode(null);
+      setAddDialogOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save schedule');
+    }
+  };
+
+  // Remove walk from batch
+  const removeFromBatch = (tempId) => {
+    setBatchWalks(prev => prev.filter(w => w.id !== tempId));
   };
 
   const openEditDialog = () => {
