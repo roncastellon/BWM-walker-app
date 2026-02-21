@@ -203,27 +203,41 @@ const CalendarPage = () => {
     }
   };
 
-  // Handle pet selection - auto-sets client and loads their other pets
+  // Handle pet selection - auto-sets client and loads their other pets (all pre-selected)
   const handlePetSelect = async (pet) => {
     if (!pet) return;
     
     // Set client from pet's owner
     const clientId = pet.owner_id;
-    setFormData(prev => ({
-      ...prev,
-      client_id: clientId,
-      pet_ids: [pet.id]
-    }));
     
-    // Fetch all pets for this client
+    // Fetch all pets for this client and pre-select ALL of them
     try {
       const response = await api.get(`/pets?owner_id=${clientId}`);
-      setSelectedClientPets(response.data);
+      const clientPets = response.data;
+      setSelectedClientPets(clientPets);
+      
+      // Pre-select ALL pets from this owner
+      setFormData(prev => ({
+        ...prev,
+        client_id: clientId,
+        pet_ids: clientPets.map(p => p.id)
+      }));
     } catch (error) {
-      setSelectedClientPets([pet]); // At least show the selected pet
+      setSelectedClientPets([pet]);
+      setFormData(prev => ({
+        ...prev,
+        client_id: clientId,
+        pet_ids: [pet.id]
+      }));
     }
     
     setPetSearchQuery(''); // Clear search
+  };
+
+  // Group pets by owner for search results - show all pet names together
+  const getOwnerPetNames = (ownerId) => {
+    const ownerPets = allPets.filter(p => p.owner_id === ownerId);
+    return ownerPets.map(p => p.name).join(' & ');
   };
 
   // Filter pets based on search query
