@@ -785,9 +785,64 @@ const AdminOvernightsPage = () => {
                   <Calendar className="w-4 h-4 mr-2" />
                   Edit Dates
                 </Button>
+                
+                {/* Remove Stay button - always available */}
+                <Button 
+                  onClick={() => setRemoveConfirmOpen(true)} 
+                  variant="outline" 
+                  className="rounded-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Remove Stay
+                </Button>
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Stay Confirmation Dialog */}
+      <Dialog open={removeConfirmOpen} onOpenChange={setRemoveConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="w-5 h-5" />
+              Remove Overnight Stay
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove this overnight stay? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedStay && (
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 my-4">
+              <div className="flex items-center gap-3">
+                <PawPrint className="w-6 h-6 text-red-600" />
+                <div>
+                  <p className="font-bold">{selectedStay.pet_names?.join(', ') || 'Pet'}</p>
+                  <p className="text-sm text-muted-foreground">{selectedStay.client_name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedStay.scheduled_date} - {selectedStay.end_date || selectedStay.scheduled_date}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setRemoveConfirmOpen(false)}
+              className="rounded-full"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleRemoveStay}
+              className="rounded-full bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Remove Stay
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
