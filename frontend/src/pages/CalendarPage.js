@@ -1448,6 +1448,20 @@ const CalendarPage = () => {
                         <Edit className="w-4 h-4 mr-1" />
                         Edit
                       </Button>
+                      {/* Mark as Complete button for admins - for scheduled/in_progress walks */}
+                      {(appointmentDetail.status === 'scheduled' || appointmentDetail.status === 'in_progress') && 
+                       !isDayNightService(appointmentDetail.service_type) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleAdminComplete}
+                          className="text-green-600 border-green-300 hover:bg-green-50"
+                          data-testid="admin-complete-btn"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Mark as Complete
+                        </Button>
+                      )}
                       {/* End Stay Early button for overnight/daycare services that are in progress */}
                       {isDayNightService(appointmentDetail.service_type) && 
                        appointmentDetail.status === 'in_progress' && (
