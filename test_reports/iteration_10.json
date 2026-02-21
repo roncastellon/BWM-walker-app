@@ -1,0 +1,98 @@
+{
+  "summary": "Completed testing of overnight appointment creation fix. All features working correctly - overnight stays now create a SINGLE appointment with start/end dates instead of multiple 1-day appointments.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Backend: POST /appointments/admin creates overnight appointment with end_date correctly",
+    "Backend: Overnight stay creates SINGLE appointment, not multiple 1-day appointments",
+    "Backend: stay_overnight service type works correctly",
+    "Backend: Appointment without end_date uses scheduled_date as default",
+    "Backend: Overnight appointments appear in calendar API with start/end dates",
+    "Backend: Check-in sets status to in_progress",
+    "Backend: Check-out sets status to completed",
+    "Frontend: Overnight service selection shows 'Start Date *' and 'End Date *' fields",
+    "Frontend: Non-overnight services show 'Date *' and 'Time *' fields",
+    "Frontend: End date is pre-filled to same as start date when selecting overnight service",
+    "Frontend: Validation error 'Please select an end date for overnight/daycare services' shows when end_date is missing",
+    "Frontend: AdminOvernightsPage shows CHECK IN badge on start date",
+    "Frontend: AdminOvernightsPage shows Checked In/Checked Out badges for completed stays",
+    "Frontend: Appointment detail modal shows START DATE and END DATE for overnight stays"
+  ],
+
+  "feature_verification": {
+    "overnight_single_appointment": {
+      "description": "Overnight stays create ONE appointment with scheduled_date and end_date instead of multiple 1-day appointments",
+      "backend_endpoint": "POST /appointments/admin",
+      "frontend_implementation": "CalendarPage.js handleCreateAppointment (lines 316-383)",
+      "status": "WORKING"
+    },
+    "start_end_date_fields": {
+      "description": "Selecting overnight service shows 'Start Date' and 'End Date' fields instead of 'Date' and 'Time'",
+      "frontend_implementation": "CalendarPage.js isDayNightService() helper (lines 87-91) and form fields (lines 1171-1215)",
+      "status": "WORKING"
+    },
+    "end_date_validation": {
+      "description": "End date is required for overnight services - error shows if missing",
+      "validation_location": "CalendarPage.js handleCreateAppointment (lines 333-336)",
+      "error_message": "Please select an end date for overnight/daycare services",
+      "status": "WORKING"
+    },
+    "check_in_check_out": {
+      "description": "Check-in shown on start date only, check-out prompt on end date only",
+      "frontend_location": "AdminOvernightsPage.js getStaysForDate (lines 164-169) and calendar display (lines 458-529)",
+      "status": "WORKING"
+    }
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_overnight_appointments.py",
+    "/app/test_reports/pytest/pytest_overnight.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "Code implementation is correct and follows the fix requirements",
+    "isDayNightService() helper correctly identifies overnight/daycare services",
+    "End date defaults to same as start date which is good UX",
+    "Validation prevents submission without end_date for overnight services",
+    "Note: Existing 'bad' data (multiple 1-day appointments without end_date) may still exist in database from before the fix"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_overnight_appointments.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (7/7 tests passed)",
+    "frontend": "100% (all overnight appointment features verified)"
+  },
+
+  "test_credentials": {
+    "admin": {"username": "demo_admin", "password": "demo123"}
+  },
+
+  "seed_data_creation": "Created test overnight appointments for validation testing - all cleaned up",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Overnight appointment creation fix is fully implemented and tested. When creating overnight appointments: 1) Service selection triggers 'Start Date' and 'End Date' fields to appear instead of 'Date' and 'Time', 2) end_date is required with validation error if missing, 3) Creates SINGLE appointment with scheduled_date (start) and end_date (end), 4) AdminOvernightsPage and CalendarPage correctly display CHECK IN on start date and check-out options on end date. Test file at /app/backend/tests/test_overnight_appointments.py covers all scenarios.",
+
+  "overnight_services_tested": [
+    "petsit_our_location",
+    "petsit_your_location",
+    "stay_overnight",
+    "overnight"
+  ]
+}
