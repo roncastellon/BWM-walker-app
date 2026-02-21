@@ -1724,6 +1724,77 @@ const WalkerDashboard = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Early Start Modal */}
+      <Dialog open={earlyStartModalOpen} onOpenChange={setEarlyStartModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-blue-600 flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Starting Early
+            </DialogTitle>
+            <DialogDescription>
+              You are attempting to start this walk {earlyStartMinutes} minutes early.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {earlyStartAppt && (
+            <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 my-2">
+              <p className="font-medium capitalize">{earlyStartAppt.service_type?.replace('_', ' ')}</p>
+              <p className="text-sm text-muted-foreground">
+                Scheduled: {formatTime12Hour(earlyStartAppt.scheduled_time)} • {earlyStartAppt.client_name}
+              </p>
+              {earlyStartAppt.pet_names?.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Pets: {earlyStartAppt.pet_names.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+          
+          <div className="space-y-4 py-2">
+            <p className="text-sm font-medium">Do you need to reschedule the walk or wait for the scheduled time?</p>
+            
+            {/* Option 1: Wait for scheduled time */}
+            <div className="p-3 rounded-lg border bg-gray-50 border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-800">Wait for Scheduled Time</p>
+                  <p className="text-xs text-gray-600">
+                    Start at {formatTime12Hour(earlyStartAppt?.scheduled_time)} as planned
+                  </p>
+                </div>
+                <Button 
+                  onClick={handleEarlyStartWait} 
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Clock className="w-4 h-4 mr-1" />
+                  Wait
+                </Button>
+              </div>
+            </div>
+            
+            {/* Option 2: Reschedule to now */}
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-green-800">Reschedule to Now</p>
+                  <p className="text-xs text-green-600">Update the scheduled time and start the walk</p>
+                </div>
+                <Button 
+                  onClick={handleEarlyStartReschedule} 
+                  className="bg-green-600 hover:bg-green-700 rounded-full"
+                  disabled={saving}
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  Start Now
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Reschedule Appointment Modal */}
       <Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
         <DialogContent>
