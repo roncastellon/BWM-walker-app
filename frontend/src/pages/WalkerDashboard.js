@@ -43,6 +43,10 @@ const WalkerDashboard = () => {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [startingWalk, setStartingWalk] = useState(false);
   const timerRef = useRef(null);
+  const countdownRef = useRef(null);
+  
+  // Countdown timer state
+  const [countdown, setCountdown] = useState(null);
   
   // GPS Permission Dialog State
   const [gpsDialogOpen, setGpsDialogOpen] = useState(false);
