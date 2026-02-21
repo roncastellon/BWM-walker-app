@@ -1157,6 +1157,8 @@ const CalendarPage = () => {
                     <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                       {filteredPets.slice(0, 10).map((pet) => {
                         const owner = clients.find(c => c.id === pet.owner_id);
+                        const allPetNames = getOwnerPetNames(pet.owner_id);
+                        const ownerPetCount = allPets.filter(p => p.owner_id === pet.owner_id).length;
                         return (
                           <div
                             key={pet.id}
@@ -1165,8 +1167,10 @@ const CalendarPage = () => {
                             data-testid={`pet-option-${pet.id}`}
                           >
                             <div>
-                              <span className="font-medium">{pet.name}</span>
-                              <span className="text-sm text-muted-foreground ml-2">({pet.breed || pet.species})</span>
+                              <span className="font-medium">{allPetNames}</span>
+                              {ownerPetCount > 1 && (
+                                <span className="text-xs text-green-600 ml-2">({ownerPetCount} pets)</span>
+                              )}
                             </div>
                             <span className="text-xs text-muted-foreground">
                               {owner?.full_name || 'Unknown owner'}
