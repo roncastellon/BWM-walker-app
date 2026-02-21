@@ -576,7 +576,10 @@ const AdminOvernightsPage = () => {
               <p className="text-sm text-muted-foreground text-center py-4">No active stays</p>
             ) : (
               <div className="space-y-2">
-                {overnights.filter(s => s.status === 'in_progress').map(stay => (
+                {overnights.filter(s => s.status === 'in_progress').map(stay => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const daysLeft = getDaysRemaining(stay, todayStr);
+                  return (
                   <div
                     key={stay.id}
                     onClick={() => openStayDetails(stay)}
@@ -596,11 +599,19 @@ const AdminOvernightsPage = () => {
                         </p>
                       </div>
                     </div>
-                    <Badge className={`${getStatusColor(stay.status)} rounded-full`}>
-                      Checked In
-                    </Badge>
+                    <div className="text-right">
+                      <Badge className={`${getStatusColor(stay.status)} rounded-full`}>
+                        Checked In
+                      </Badge>
+                      {daysLeft !== null && (
+                        <p className="text-xs text-purple-600 font-medium mt-1">
+                          {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+                        </p>
+                      )}
+                    </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
