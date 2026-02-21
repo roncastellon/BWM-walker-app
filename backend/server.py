@@ -3334,6 +3334,45 @@ async def end_walk(appt_id: str, current_user: dict = Depends(get_current_user))
     )
     return {"message": "Walk completed", "duration_minutes": duration}
 
+@api_router.post("/appointments/{appt_id}/admin-complete")
+async def admin_complete_appointment(appt_id: str, notes: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Admin can mark any scheduled or in_progress appointment as completed"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if appt.get('status') not in ['scheduled', 'in_progress']:
+        raise HTTPException(status_code=400, detail=f"Cannot complete appointment with status: {appt.get('status')}")
+    
+    now = datetime.now(timezone.utc)
+    update_data = {
+        "status": "completed",
+        "end_time": now.isoformat(),
+        "completed_by_admin": True,
+        "admin_completed_at": now.isoformat()
+    }
+    
+    # If walk wasn't started, set start_time to scheduled time for records
+    if not appt.get('start_time'):
+        scheduled_time = appt.get('scheduled_time', '09:00')
+        scheduled_date = appt.get('scheduled_date', now.strftime('%Y-%m-%d'))
+        try:
+            start_dt = datetime.strptime(f"{scheduled_date} {scheduled_time}", '%Y-%m-%d %H:%M')
+            start_dt = start_dt.replace(tzinfo=timezone.utc)
+            update_data['start_time'] = start_dt.isoformat()
+        except:
+            update_data['start_time'] = now.isoformat()
+    
+    if notes:
+        update_data['admin_notes'] = notes
+    
+    await db.appointments.update_one({"id": appt_id}, {"$set": update_data})
+    
+    return {"message": "Appointment marked as completed by admin"}
+
 # Walk completion with questionnaire
 class WalkCompletionData(BaseModel):
     did_pee: Optional[bool] = None
