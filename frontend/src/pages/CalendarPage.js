@@ -293,6 +293,24 @@ const CalendarPage = () => {
     }
   };
 
+  // Admin force-complete a walk (for missed or unclosed appointments)
+  const handleAdminComplete = async () => {
+    if (!appointmentDetail) return;
+    
+    const confirmMsg = `Mark this walk as completed? This will close the appointment as if it was completed normally.`;
+    
+    if (!window.confirm(confirmMsg)) return;
+    
+    try {
+      await api.post(`/appointments/${appointmentDetail.id}/admin-complete`);
+      toast.success('Walk marked as completed');
+      closeAppointmentDetail();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to complete appointment');
+    }
+  };
+
   const handleCreateAppointment = async (e) => {
     e.preventDefault();
     
