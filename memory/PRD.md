@@ -65,6 +65,11 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Admin Invoices Page
 
 ### Recent Updates (February 2026)
+- ✅ **Pet Name Search (Feb 21, 2026)**: Scheduling now searches by pet name instead of client
+  - Type pet name to search - shows matching pets with breed and owner name
+  - Selecting a pet auto-sets the client and loads all their pets
+  - Multi-pet selection still available after initial pet selection
+  - Much faster workflow for scheduling when you know the pet's name
 - ✅ **Overnight Appointment Fix (Feb 21, 2026)**: Fixed overnight stays to create a SINGLE appointment instead of multiple 1-day appointments
   - Selecting overnight service now shows "Start Date" and "End Date" fields
   - End date is required for overnight/daycare services (validation error if missing)
