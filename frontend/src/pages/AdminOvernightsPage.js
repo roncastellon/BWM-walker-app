@@ -331,6 +331,16 @@ const AdminOvernightsPage = () => {
     setActionModalOpen(true);
   };
 
+  // Calculate days remaining for a stay
+  const getDaysRemaining = (stay, dateStr) => {
+    if (!stay.end_date || stay.status === 'completed') return null;
+    const endDate = new Date(stay.end_date);
+    const currentViewDate = new Date(dateStr);
+    const diffTime = endDate - currentViewDate;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 ? diffDays : null;
+  };
+
   const openExtendModal = (stay) => {
     setSelectedStay(stay);
     setExtendDays(1);
