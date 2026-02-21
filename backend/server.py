@@ -3213,6 +3213,8 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         walker_id = appt_data.get('walker_id')
         service_type = appt_data.get('service_type', 'walk_30')
         client_id = appt_data.get('client_id')
+        pet_ids = appt_data.get('pet_ids', [])
+        end_date = appt_data.get('end_date')
         
         # If walker is creating, they can only assign to themselves or leave unassigned
         if not is_admin and walker_id and walker_id != current_user['id']:
@@ -3223,6 +3225,46 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
             client = await db.users.find_one({"id": client_id}, {"_id": 0})
             if not client:
                 raise HTTPException(status_code=400, detail=f"Client not found: {client_id}")
+        
+        # Check for duplicate appointments (same client, overlapping pets, same service, same date/time)
+        duplicate_query = {
+            "client_id": client_id,
+            "service_type": service_type,
+            "status": {"$nin": ["cancelled", "completed"]},  # Only check active appointments
+        }
+        
+        # For overnight/daycare (multi-day), check date overlap
+        if end_date and end_date != scheduled_date:
+            # Multi-day appointment - check if dates overlap with existing
+            duplicate_query["$or"] = [
+                # New appointment starts during existing
+                {"scheduled_date": {"$lte": scheduled_date}, "end_date": {"$gte": scheduled_date}},
+                # New appointment ends during existing
+                {"scheduled_date": {"$lte": end_date}, "end_date": {"$gte": end_date}},
+                # New appointment contains existing
+                {"scheduled_date": {"$gte": scheduled_date}, "end_date": {"$lte": end_date}},
+            ]
+        else:
+            # Single day appointment - check same date and time
+            duplicate_query["scheduled_date"] = scheduled_date
+            if scheduled_time:
+                duplicate_query["scheduled_time"] = scheduled_time
+        
+        # Check for overlapping pets
+        if pet_ids:
+            duplicate_query["pet_ids"] = {"$elemMatch": {"$in": pet_ids}}
+        
+        existing = await db.appointments.find_one(duplicate_query, {"_id": 0})
+        if existing:
+            pet_names = []
+            for pid in pet_ids:
+                pet = await db.pets.find_one({"id": pid}, {"_id": 0, "name": 1})
+                if pet:
+                    pet_names.append(pet.get("name", "Pet"))
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Duplicate appointment: {', '.join(pet_names) if pet_names else 'This pet'} already has a {service_type.replace('_', ' ')} scheduled for this date/time"
+            )
         
         # Check walker availability with 15-minute buffer after walk ends
         if walker_id:
@@ -3236,12 +3278,12 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         appointment = Appointment(
             client_id=client_id,
             walker_id=walker_id,
-            pet_ids=appt_data.get('pet_ids', []),
+            pet_ids=pet_ids,
             service_type=service_type,
             scheduled_date=scheduled_date,
             scheduled_time=scheduled_time,
             notes=appt_data.get('notes', ''),
-            end_date=appt_data.get('end_date'),
+            end_date=end_date,
             duration_type=appt_data.get('duration_type', 'minutes'),
             duration_value=appt_data.get('duration_value', 1),
             status=appt_data.get('status', 'scheduled')
