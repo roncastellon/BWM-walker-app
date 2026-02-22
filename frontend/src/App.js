@@ -31,6 +31,7 @@ import AdminInvoicesPage from "./pages/AdminInvoicesPage";
 import AdminPayrollPage from "./pages/AdminPayrollPage";
 import AdminOvernightsPage from "./pages/AdminOvernightsPage";
 import AdminDaycareCalendarPage from "./pages/AdminDaycareCalendarPage";
+import AdminTimeOffPage from "./pages/AdminTimeOffPage";
 import AdminProfilePage from "./pages/AdminProfilePage";
 import LiveTrackingPage from "./pages/LiveTrackingPage";
 import MassTextPage from "./pages/MassTextPage";
@@ -351,6 +352,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminDaycareCalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/time-off"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminTimeOffPage />
           </ProtectedRoute>
         }
       />
