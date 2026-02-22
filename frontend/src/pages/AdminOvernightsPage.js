@@ -518,7 +518,7 @@ const AdminOvernightsPage = () => {
         {/* Week View */}
         <div className="grid grid-cols-1 sm:grid-cols-7 gap-2">
           {weekDates.map((date) => {
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = formatLocalDate(date);
             const isToday = dateStr === today;
             const stays = getStaysForDate(dateStr);
             
