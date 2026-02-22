@@ -14,6 +14,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Helper to format date as YYYY-MM-DD in LOCAL timezone
+const formatLocalDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const WalkerSchedulePage = () => {
   const navigate = useNavigate();
   const { user, api } = useAuth();
@@ -27,7 +35,7 @@ const WalkerSchedulePage = () => {
     client_id: '',
     pet_ids: [],
     service_type: '',
-    scheduled_date: new Date().toISOString().split('T')[0],
+    scheduled_date: formatLocalDate(new Date()),
     scheduled_time: '',
     notes: '',
     assign_to_me: true, // Default to assigning to themselves
