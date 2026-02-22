@@ -189,18 +189,28 @@ const WalkerDashboard = () => {
       setTradeRequests(tradesRes.data || []);
       
       // Get effective schedule date (shows today until 10PM, then tomorrow)
+      // IMPORTANT: Use local date formatting, NOT toISOString() which converts to UTC
       const now = new Date();
       const hour = now.getHours();
+      
+      // Helper to format date as YYYY-MM-DD in LOCAL timezone
+      const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
       let scheduleDate;
       if (hour >= 22) {
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        scheduleDate = tomorrow.toISOString().split('T')[0];
+        scheduleDate = formatLocalDate(tomorrow);
       } else {
-        scheduleDate = now.toISOString().split('T')[0];
+        scheduleDate = formatLocalDate(now);
       }
       
-      const today = now.toISOString().split('T')[0];
+      const today = formatLocalDate(now);
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       
       // Calculate completed walks stats
