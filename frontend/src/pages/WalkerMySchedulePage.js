@@ -35,8 +35,10 @@ const WalkerMySchedulePage = () => {
 
   const fetchAppointments = async () => {
     try {
-      const response = await api.get('/appointments/walker');
-      setAppointments(response.data || []);
+      // Use calendar endpoint and filter for this walker
+      const response = await api.get('/appointments/calendar');
+      const walkerAppts = (response.data || []).filter(a => a.walker_id === user?.id);
+      setAppointments(walkerAppts);
     } catch (error) {
       console.error('Failed to fetch appointments:', error);
       toast.error('Failed to load schedule');
