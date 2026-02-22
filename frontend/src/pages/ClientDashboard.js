@@ -46,7 +46,7 @@ const ClientDashboard = () => {
   const [scheduleView, setScheduleView] = useState('day'); // Default to day view
   
   // Completed walks review state
-  const [completedWalksDate, setCompletedWalksDate] = useState(new Date().toISOString().split('T')[0]);
+  const [completedWalksDate, setCompletedWalksDate] = useState(formatLocalDate(new Date()));
   const [selectedCompletedWalk, setSelectedCompletedWalk] = useState(null);
   const [walkDetailModalOpen, setWalkDetailModalOpen] = useState(false);
 
