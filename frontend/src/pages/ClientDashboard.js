@@ -17,6 +17,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Helper to format date as YYYY-MM-DD in LOCAL timezone
+const formatLocalDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const ClientDashboard = () => {
   const { user, api } = useAuth();
   const navigate = useNavigate();
