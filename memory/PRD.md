@@ -65,6 +65,29 @@ Build a dog walker/pet sitting app with scheduling, shared calendar, client list
 - ✅ Admin Invoices Page
 
 ### Recent Updates (February 2026)
+- ✅ **Batch Scheduling UI Fix (Feb 22, 2026)**: Fixed batch scheduler for editing/removing copied walks
+  - Each walk in the batch list now has an editable time picker (Select component)
+  - Walks copied from yesterday or loaded from recurring schedules can now have their time changed
+  - Remove button (red X) on each walk to delete from batch before finalizing
+  - Increased max-height of batch list for better visibility of multiple walks
+- ✅ **Overnights on Admin Dashboard Fix (Feb 22, 2026)**: Fixed overnight stays not appearing on schedule
+  - Changed filtering logic to check if current date falls within start_date and end_date range
+  - Multi-day appointments now correctly show on all days they span
+  - Overnights tab count now accurate
+- ✅ **Admin Time Off & Reassignments Page (Feb 22, 2026)**: New admin UI for managing time-off
+  - New page at `/admin/time-off` for managing walker time-off requests
+  - "Needs Reassignment" tab shows appointments needing a new walker
+  - "Time-Off History" tab shows all time-off requests with status
+  - Reassignment dialog allows selecting new walker and confirming
+  - Quick action card added to Admin Dashboard Schedule tab
+- ✅ **Timezone Bug Fix (Feb 22, 2026)**: Fixed critical schedule disappearing bug
+  - Replaced `.toISOString()` with local time formatting across all date comparisons
+  - Uses `toLocaleString('sv-SE', { timeZone: 'America/New_York' })` for reliable local dates
+  - Schedules now correctly show until 10 PM local time
+- ✅ **Walker My Schedule Page (Feb 22, 2026)**: Fixed walker navigation to schedule
+  - Created new `WalkerMySchedulePage.js` for viewing walker's appointments
+  - "My Schedule" link now correctly shows appointments instead of creation form
+  - Form to create walks moved to `/walker/schedule/new`
 - ✅ **Calendar 'Walks' Filter Fix (Feb 21, 2026)**: Fixed bug where selecting 'Walks' filter showed 0 appointments
   - Changed from exact list matching to pattern-based matching
   - Now matches any service_type containing 'walk'
