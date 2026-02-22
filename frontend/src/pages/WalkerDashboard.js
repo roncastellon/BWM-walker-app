@@ -923,7 +923,7 @@ const WalkerDashboard = () => {
                   </div>
                 </div>
                 <Button 
-                  onClick={() => navigate('/walker/schedule')}
+                  onClick={() => navigate('/walker/schedule/new')}
                   className="rounded-full bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
