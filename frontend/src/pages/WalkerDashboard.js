@@ -2010,10 +2010,11 @@ const WalkerDashboard = () => {
                 const petNames = appt?.pet_names?.join(', ') || appt?.pets?.map(p => p.name).join(', ') || 'a pet';
                 const timeStr = appt?.scheduled_time || '';
                 const dateStr = appt?.scheduled_date || '';
-                const todayStr = new Date().toISOString().split('T')[0];
+                const nowDate = new Date();
+                const todayStr = formatLocalDate(nowDate);
                 const tomorrowDate = new Date();
                 tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-                const tomorrowStr = tomorrowDate.toISOString().split('T')[0];
+                const tomorrowStr = formatLocalDate(tomorrowDate);
                 
                 // Format date nicely
                 let dateDisplay = dateStr;
