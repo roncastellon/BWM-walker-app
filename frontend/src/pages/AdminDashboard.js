@@ -208,7 +208,7 @@ const AdminDashboard = () => {
       schedule,
       selectedWalkerId: schedule.walker_id || '',
       changeType: 'one_time', // Default to one-time
-      specificDate: nextDate.toISOString().split('T')[0]
+      specificDate: formatLocalDate(nextDate)
     });
   };
 
