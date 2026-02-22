@@ -652,7 +652,7 @@ const AdminOvernightsPage = () => {
             ) : (
               <div className="space-y-2">
                 {overnights.filter(s => s.status === 'in_progress').map(stay => {
-                  const todayStr = new Date().toISOString().split('T')[0];
+                  const todayStr = formatLocalDate(new Date());
                   const daysLeft = getDaysRemaining(stay, todayStr);
                   return (
                   <div
