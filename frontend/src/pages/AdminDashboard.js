@@ -545,7 +545,7 @@ const AdminDashboard = () => {
           {/* SCHEDULE TAB */}
           <TabsContent value="schedule" className="space-y-4">
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <Link to="/admin/calendar">
                 <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full">
                   <CardContent className="p-4 flex items-center gap-3">
@@ -566,8 +566,21 @@ const AdminDashboard = () => {
                       <CalendarPlus className="w-5 h-5 text-orange-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">Add Appointment</p>
+                      <p className="font-medium text-sm">Add Service</p>
                       <p className="text-xs text-muted-foreground">Schedule new</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/admin/time-off">
+                <Card className="rounded-xl hover:shadow-md transition-all cursor-pointer h-full border-orange-200">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Time Off</p>
+                      <p className="text-xs text-muted-foreground">Reassignments</p>
                     </div>
                   </CardContent>
                 </Card>
