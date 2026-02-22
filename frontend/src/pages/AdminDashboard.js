@@ -299,6 +299,14 @@ const AdminDashboard = () => {
     }
   };
 
+  // Helper to format date as YYYY-MM-DD in LOCAL timezone (avoids UTC conversion issues)
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Helper: Get the effective schedule date (shows today until 10PM, then tomorrow)
   const getEffectiveScheduleDate = () => {
     const now = new Date();
@@ -308,11 +316,11 @@ const AdminDashboard = () => {
     if (hour >= 22) {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      return tomorrow.toISOString().split('T')[0];
+      return formatLocalDate(tomorrow);
     }
     
     // Otherwise, show today's schedule
-    return now.toISOString().split('T')[0];
+    return formatLocalDate(now);
   };
 
   // Get today's appointments (respects 10 PM cutoff)
