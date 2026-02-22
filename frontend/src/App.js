@@ -13,6 +13,7 @@ import ClientOnboardingPage from "./pages/ClientOnboardingPage";
 import StaffOnboardingPage from "./pages/StaffOnboardingPage";
 import WalkerDashboard from "./pages/WalkerDashboard";
 import WalkerSchedulePage from "./pages/WalkerSchedulePage";
+import WalkerMySchedulePage from "./pages/WalkerMySchedulePage";
 import SitterDashboard from "./pages/SitterDashboard";
 import SitterProfilePage from "./pages/SitterProfilePage";
 import AdminDashboard from "./pages/AdminDashboard";
