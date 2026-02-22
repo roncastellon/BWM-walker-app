@@ -251,7 +251,7 @@ const WalkerSchedulePage = () => {
                   type="date"
                   value={formData.scheduled_date}
                   onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={formatLocalDate(new Date())}
                 />
               </div>
               <div className="space-y-2">
