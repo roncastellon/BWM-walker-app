@@ -325,8 +325,14 @@ const AdminDashboard = () => {
   };
 
   // Get today's appointments (respects 10 PM cutoff)
+  // For multi-day appointments (overnights), check if scheduleDate falls within the range
   const scheduleDate = getEffectiveScheduleDate();
   const allTodayAppts = appointments.filter(a => {
+    // For multi-day appointments (overnights/daycare), check if date falls within range
+    if (a.end_date && a.end_date !== a.scheduled_date) {
+      return scheduleDate >= a.scheduled_date && scheduleDate <= a.end_date;
+    }
+    // Single day appointment: exact match
     return a.scheduled_date === scheduleDate;
   });
   

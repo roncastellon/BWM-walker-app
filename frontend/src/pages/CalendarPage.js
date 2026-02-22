@@ -1606,15 +1606,32 @@ const CalendarPage = () => {
 
                 {/* Walks added so far */}
                 {batchWalks.length > 0 && (
-                  <div className="bg-gray-50 rounded-lg p-3 space-y-2 max-h-32 overflow-y-auto">
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
                     {batchWalks.map((walk) => (
                       <div key={walk.id} className="flex items-center justify-between text-sm bg-white p-2 rounded">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{formatTime12Hour(walk.scheduled_time)}</span>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {/* Editable time picker for each walk */}
+                          <Select 
+                            value={walk.scheduled_time} 
+                            onValueChange={(newTime) => {
+                              setBatchWalks(prev => prev.map(w => 
+                                w.id === walk.id ? { ...w, scheduled_time: newTime } : w
+                              ));
+                            }}
+                          >
+                            <SelectTrigger className="w-[100px] h-7 text-xs font-medium">
+                              <SelectValue>{formatTime12Hour(walk.scheduled_time)}</SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {timeSlots.map((slot) => (
+                                <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <span className="text-gray-400">•</span>
-                          <span>{walk.pet_names?.join(', ')}</span>
+                          <span className="truncate">{walk.pet_names?.join(', ')}</span>
                           {walk.is_recurring && (
-                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200 shrink-0">
                               Recurring
                             </Badge>
                           )}
@@ -1624,7 +1641,8 @@ const CalendarPage = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFromBatch(walk.id)}
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700 shrink-0 ml-2"
+                          data-testid={`remove-batch-walk-${walk.id}`}
                         >
                           <X className="w-4 h-4" />
                         </Button>
