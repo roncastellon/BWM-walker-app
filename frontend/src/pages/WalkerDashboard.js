@@ -222,11 +222,11 @@ const WalkerDashboard = () => {
       // This week (last 7 days including today)
       const weekAgo = new Date(now);
       weekAgo.setDate(weekAgo.getDate() - 6);
-      const weekAgoStr = weekAgo.toISOString().split('T')[0];
+      const weekAgoStr = formatLocalDate(weekAgo);
       const weekCompleted = completedAppts.filter(a => a.scheduled_date >= weekAgoStr && a.scheduled_date <= today).length;
       
       // This month (from 1st of current month)
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const monthStart = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
       const monthCompleted = completedAppts.filter(a => a.scheduled_date >= monthStart && a.scheduled_date <= today).length;
       
       setCompletedStats({ today: todayCompleted, week: weekCompleted, month: monthCompleted });
