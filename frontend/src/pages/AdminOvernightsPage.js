@@ -437,7 +437,7 @@ const AdminOvernightsPage = () => {
   };
 
   const weekDates = getWeekDates();
-  const today = new Date().toISOString().split('T')[0];
+  const today = formatLocalDate(new Date());
 
   if (loading) {
     return (
