@@ -341,7 +341,7 @@ const WalkerDashboard = () => {
     
     // Check if the appointment is for today
     const apptDate = selectedApptForReschedule.scheduled_date;
-    const today = now.toISOString().split('T')[0];
+    const today = formatLocalDate(now);
     
     if (apptDate === today && newScheduledTime < currentTimeStr) {
       toast.error('Cannot reschedule to a time that has already passed');
@@ -373,7 +373,7 @@ const WalkerDashboard = () => {
     
     // Check if the appointment is for today
     const apptDate = selectedApptForReschedule.scheduled_date;
-    const today = now.toISOString().split('T')[0];
+    const today = formatLocalDate(now);
     const isToday = apptDate === today;
     
     const slots = [];
