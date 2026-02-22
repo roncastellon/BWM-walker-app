@@ -56,7 +56,15 @@ const SitterDashboard = () => {
       setStats(statsRes.data);
       setContacts(contactsRes.data || []);
       
-      const today = new Date().toISOString().split('T')[0];
+      // Helper to format date as YYYY-MM-DD in LOCAL timezone
+      const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
+      const today = formatLocalDate(new Date());
       
       // Filter for stay-type appointments
       const stayTypes = ['stay_day', 'stay_overnight', 'stay_extended', 'overnight', 'petsit_our_location'];
