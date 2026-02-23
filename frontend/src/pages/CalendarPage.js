@@ -608,7 +608,19 @@ const CalendarPage = () => {
     setNumWalks(newNum);
     setWalkTimes(prev => {
       const newTimes = [...prev];
-      while (newTimes.length < newNum) newTimes.push('');
+      // Add default times for new slots (staggered by 30 minutes)
+      while (newTimes.length < newNum) {
+        const lastTime = newTimes[newTimes.length - 1] || '09:00';
+        const [h, m] = lastTime.split(':').map(Number);
+        let newHour = h;
+        let newMin = m + 30;
+        if (newMin >= 60) {
+          newMin = 0;
+          newHour++;
+        }
+        if (newHour > 20) newHour = 9; // Reset if past 8 PM
+        newTimes.push(`${newHour.toString().padStart(2, '0')}:${newMin.toString().padStart(2, '0')}`);
+      }
       return newTimes.slice(0, newNum);
     });
   };
