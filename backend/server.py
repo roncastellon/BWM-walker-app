@@ -3334,6 +3334,23 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         print(f"Error creating appointment: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create appointment: {str(e)}")
 
+@api_router.delete("/appointments/purge-invalid")
+async def purge_invalid_appointments(current_user: dict = Depends(get_current_user)):
+    """Delete appointments with missing or empty scheduled_date"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Find appointments with no scheduled_date or empty string
+    result = await db.appointments.delete_many({
+        "$or": [
+            {"scheduled_date": None},
+            {"scheduled_date": ""},
+            {"scheduled_date": {"$exists": False}}
+        ]
+    })
+    
+    return {"deleted_count": result.deleted_count, "message": f"Purged {result.deleted_count} invalid appointments"}
+
 @api_router.post("/appointments/{appt_id}/start")
 async def start_walk(appt_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] not in ['admin', 'walker']:
