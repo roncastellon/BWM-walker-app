@@ -319,9 +319,14 @@ const CalendarPage = () => {
   const startBatchScheduling = async (walkerId) => {
     setBatchWalkerId(walkerId);
     setBatchWalks([]);
+    
+    // CRITICAL: Ensure scheduled_date is set to the current calendar date
+    const currentDateStr = format(currentDate, 'yyyy-MM-dd');
     setFormData(prev => ({
       ...prev,
-      walker_id: walkerId
+      walker_id: walkerId,
+      scheduled_date: currentDateStr,  // Always sync with calendar
+      end_date: currentDateStr
     }));
     
     // Fetch pets this walker has walked before
@@ -360,7 +365,7 @@ const CalendarPage = () => {
       setWalkerPets(uniqueOwnerPets);
       
       // Auto-preload recurring walks for this walker on the selected day
-      await autoLoadRecurringWalks(walkerId);
+      await autoLoadRecurringWalks(walkerId, currentDateStr);
     } catch (error) {
       console.error('Failed to fetch walker pets:', error);
       setWalkerPets([]);
