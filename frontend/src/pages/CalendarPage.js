@@ -452,7 +452,9 @@ const CalendarPage = () => {
   // Copy yesterday's schedule for this walker
   const copyYesterdaySchedule = async () => {
     try {
-      const yesterday = new Date(formData.scheduled_date);
+      // Use formData.scheduled_date, but fallback to currentDate if empty
+      const dateToUse = formData.scheduled_date || format(currentDate, 'yyyy-MM-dd');
+      const yesterday = new Date(dateToUse);
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
       
@@ -471,7 +473,7 @@ const CalendarPage = () => {
       // Convert yesterday's walks to batch format with today's date
       const copiedWalks = yesterdayWalks.map((walk, index) => ({
         ...walk,
-        scheduled_date: formData.scheduled_date, // Use today's date
+        scheduled_date: dateToUse, // Use the resolved date
         id: `temp-${Date.now()}-${index}`,
         pet_names: walk.pet_names || [],
         client_name: walk.client_name || 'Unknown'
