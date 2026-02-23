@@ -581,9 +581,13 @@ const CalendarPage = () => {
       return;
     }
     
+    // Ensure we have a valid scheduled_date (fallback to currentDate)
+    const dateToUse = formData.scheduled_date || format(currentDate, 'yyyy-MM-dd');
+    
     // Add each walk with its time
     const newWalks = walkTimes.map((time, index) => ({
       ...formData,
+      scheduled_date: dateToUse,  // Ensure date is always set
       walker_id: batchWalkerId,
       scheduled_time: time,
       id: `temp-${Date.now()}-${index}`, // Temporary ID for display
@@ -593,14 +597,15 @@ const CalendarPage = () => {
     
     setBatchWalks(prev => [...prev, ...newWalks]);
     
-    // Reset form for next pet
+    // Reset form for next pet but preserve the scheduled_date
     setFormData(prev => ({
       ...prev,
       client_id: '',
       pet_ids: [],
       service_type: '',
       scheduled_time: '',
-      notes: ''
+      notes: '',
+      scheduled_date: dateToUse  // Preserve the date
     }));
     setSelectedClientPets([]);
     setPetSearchQuery('');
