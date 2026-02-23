@@ -187,12 +187,14 @@ const PayrollPage = () => {
     return `${mins} min`;
   };
 
-  // Group walks by service type for review
+  // Group walks by service type for review (only included walks)
   const getServiceBreakdown = () => {
     if (!currentPayroll?.walks) return {};
     
+    const includedWalks = currentPayroll.walks.filter(w => !excludedWalks.has(w.id));
+    
     const breakdown = {};
-    currentPayroll.walks.forEach(walk => {
+    includedWalks.forEach(walk => {
       const type = walk.service_type || 'other';
       if (!breakdown[type]) {
         breakdown[type] = {
@@ -206,6 +208,15 @@ const PayrollPage = () => {
       breakdown[type].walks.push(walk);
     });
     return breakdown;
+  };
+
+  // Get totals for included walks only
+  const getIncludedTotals = () => {
+    const includedWalks = currentPayroll?.walks?.filter(w => !excludedWalks.has(w.id)) || [];
+    return {
+      count: includedWalks.length,
+      earnings: includedWalks.reduce((sum, w) => sum + (w.earnings || 0), 0)
+    };
   };
 
   const formatServiceType = (type) => {
