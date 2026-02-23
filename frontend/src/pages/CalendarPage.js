@@ -1767,8 +1767,10 @@ const CalendarPage = () => {
                           value={time} 
                           onValueChange={(value) => handleWalkTimeChange(index, value)}
                         >
-                          <SelectTrigger className="h-9">
-                            <SelectValue placeholder={`Walk ${index + 1}`} />
+                          <SelectTrigger className="h-9" data-testid={`walk-time-select-${index}`}>
+                            <SelectValue>
+                              {time ? formatTime12Hour(time) : `Walk ${index + 1}`}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {timeSlots.map((slot) => (
