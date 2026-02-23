@@ -70,7 +70,7 @@ const CalendarPage = () => {
   const [batchWalks, setBatchWalks] = useState([]); // Walks added in batch mode
   const [walkerPets, setWalkerPets] = useState([]); // Pets this walker has walked before
   const [numWalks, setNumWalks] = useState(1); // Number of walks to add
-  const [walkTimes, setWalkTimes] = useState(['']); // Time for each walk
+  const [walkTimes, setWalkTimes] = useState(['09:00']); // Time for each walk - default 9 AM
   
   // Service categories for filtering
   // Service categories for filtering - 'walks' uses pattern matching for any walk-related service
