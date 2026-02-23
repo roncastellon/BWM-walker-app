@@ -623,10 +623,10 @@ const PayrollPage = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-semibold text-green-800">Total Payment Due</p>
-                  <p className="text-sm text-green-600">{currentPayroll?.total_walks} completed services</p>
+                  <p className="text-sm text-green-600">{getIncludedTotals().count} completed services</p>
                 </div>
                 <p className="text-3xl font-bold text-green-700">
-                  ${currentPayroll?.total_earnings?.toFixed(2)}
+                  ${getIncludedTotals().earnings.toFixed(2)}
                 </p>
               </div>
             </div>
