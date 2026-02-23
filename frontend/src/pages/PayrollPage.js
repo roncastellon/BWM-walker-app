@@ -136,7 +136,8 @@ const PayrollPage = () => {
   };
 
   const openReviewModal = () => {
-    if (!currentPayroll || currentPayroll.total_walks === 0) {
+    const includedWalks = currentPayroll?.walks?.filter(w => !excludedWalks.has(w.id)) || [];
+    if (includedWalks.length === 0) {
       toast.error('No completed services to submit');
       return;
     }
@@ -146,7 +147,18 @@ const PayrollPage = () => {
   const submitPaysheet = async () => {
     setSubmitting(true);
     try {
-      await api.post('/paysheets/submit');
+      // Get only included walks with potentially edited earnings
+      const includedWalks = currentPayroll?.walks?.filter(w => !excludedWalks.has(w.id)) || [];
+      
+      // Submit with custom walk data (edited amounts)
+      await api.post('/paysheets/submit', {
+        walk_overrides: includedWalks.map(w => ({
+          id: w.id,
+          earnings: w.earnings,
+          edited: w.edited || false
+        })),
+        excluded_walk_ids: Array.from(excludedWalks)
+      });
       toast.success('Paysheet submitted to admin for payment!');
       setReviewModalOpen(false);
       fetchData();
