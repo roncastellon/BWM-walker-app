@@ -333,12 +333,12 @@ const PayrollPage = () => {
             <div>
               <CardTitle>Completed Services</CardTitle>
               <CardDescription>
-                Only completed services can be submitted for payment
+                Edit amounts or remove services before submitting. Tap the $ to edit.
               </CardDescription>
             </div>
             <Button
               onClick={openReviewModal}
-              disabled={!currentPayroll || currentPayroll.total_walks === 0}
+              disabled={!currentPayroll || currentPayroll.walks?.filter(w => !excludedWalks.has(w.id)).length === 0}
               className="rounded-full bg-green-600 hover:bg-green-700"
               data-testid="submit-for-pay-btn"
             >
@@ -355,54 +355,143 @@ const PayrollPage = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {currentPayroll.walks.map((walk) => (
-                  <div
-                    key={walk.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-muted/50 gap-3"
-                    data-testid={`walk-${walk.id}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <PawPrint className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{walk.client_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {walk.pet_names?.join(', ')}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="rounded-full text-xs">
-                            {walk.date}
-                          </Badge>
-                          {walk.time && (
+                {currentPayroll.walks.map((walk) => {
+                  const isExcluded = excludedWalks.has(walk.id);
+                  const isEditing = editingWalkId === walk.id;
+                  
+                  return (
+                    <div
+                      key={walk.id}
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl gap-3 transition-all ${
+                        isExcluded 
+                          ? 'bg-red-50/50 opacity-60 border border-red-200' 
+                          : 'bg-muted/50'
+                      }`}
+                      data-testid={`walk-${walk.id}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          isExcluded ? 'bg-red-100' : 'bg-primary/10'
+                        }`}>
+                          <PawPrint className={`w-5 h-5 ${isExcluded ? 'text-red-500' : 'text-primary'}`} />
+                        </div>
+                        <div>
+                          <p className={`font-medium ${isExcluded ? 'line-through text-muted-foreground' : ''}`}>
+                            {walk.client_name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {walk.pet_names?.join(', ')}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
                             <Badge variant="secondary" className="rounded-full text-xs">
-                              {walk.time}
+                              {walk.date}
                             </Badge>
-                          )}
-                          <Badge className={`rounded-full text-xs ${getServiceColor(walk.service_type)}`}>
-                            {formatServiceType(walk.service_type)}
-                          </Badge>
+                            {walk.time && (
+                              <Badge variant="secondary" className="rounded-full text-xs">
+                                {walk.time}
+                              </Badge>
+                            )}
+                            <Badge className={`rounded-full text-xs ${getServiceColor(walk.service_type)}`}>
+                              {formatServiceType(walk.service_type)}
+                            </Badge>
+                            {walk.edited && (
+                              <Badge className="rounded-full text-xs bg-amber-100 text-amber-800">
+                                Edited
+                              </Badge>
+                            )}
+                            {isExcluded && (
+                              <Badge className="rounded-full text-xs bg-red-100 text-red-800">
+                                Excluded
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4 sm:gap-6">
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground">Duration</p>
-                        <p className="font-medium">{formatDuration(walk.duration_minutes)}</p>
-                      </div>
-                      {walk.distance_meters > 0 && (
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="text-center hidden sm:block">
+                          <p className="text-xs text-muted-foreground">Duration</p>
+                          <p className="font-medium">{formatDuration(walk.duration_minutes)}</p>
+                        </div>
+                        
+                        {/* Editable Earnings */}
                         <div className="text-center">
-                          <p className="text-xs text-muted-foreground">Distance</p>
-                          <p className="font-medium">{formatDistance(walk.distance_meters)}</p>
+                          <p className="text-xs text-muted-foreground">Earned</p>
+                          {isEditing ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-green-600">$</span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={editAmount}
+                                onChange={(e) => setEditAmount(e.target.value)}
+                                className="w-20 h-7 text-center text-sm"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveEditedEarnings(walk.id);
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 text-green-600"
+                                onClick={() => saveEditedEarnings(walk.id)}
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 text-gray-500"
+                                onClick={cancelEdit}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => startEditWalk(walk)}
+                              className={`font-bold flex items-center gap-1 hover:bg-green-100 px-2 py-1 rounded transition-colors ${
+                                isExcluded ? 'text-gray-400 line-through' : 'text-green-600'
+                              }`}
+                              disabled={isExcluded}
+                            >
+                              ${walk.earnings?.toFixed(2)}
+                              {!isExcluded && <Pencil className="w-3 h-3 opacity-50" />}
+                            </button>
+                          )}
                         </div>
-                      )}
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground">Earned</p>
-                        <p className="font-bold text-green-600">${walk.earnings?.toFixed(2)}</p>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-1">
+                          {!isEditing && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-amber-600 hover:bg-amber-100"
+                                onClick={() => setAmountToZero(walk.id)}
+                                title="Set to $0"
+                                disabled={isExcluded}
+                              >
+                                <DollarSign className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className={`h-8 w-8 p-0 ${isExcluded ? 'text-green-600 hover:bg-green-100' : 'text-red-600 hover:bg-red-100'}`}
+                                onClick={() => toggleExcludeWalk(walk.id)}
+                                title={isExcluded ? 'Include in submission' : 'Exclude from submission'}
+                              >
+                                {isExcluded ? <CheckCircle className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
