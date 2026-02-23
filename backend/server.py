@@ -3235,6 +3235,7 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         client_id = appt_data.get('client_id')
         pet_ids = appt_data.get('pet_ids', [])
         end_date = appt_data.get('end_date')
+        override_conflicts = appt_data.get('override_conflicts', False)  # Batch scheduling can override
         
         # If walker is creating, they can only assign to themselves or leave unassigned
         if not is_admin and walker_id and walker_id != current_user['id']:
@@ -3276,15 +3277,22 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         
         existing = await db.appointments.find_one(duplicate_query, {"_id": 0})
         if existing:
-            pet_names = []
-            for pid in pet_ids:
-                pet = await db.pets.find_one({"id": pid}, {"_id": 0, "name": 1})
-                if pet:
-                    pet_names.append(pet.get("name", "Pet"))
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Duplicate appointment: {', '.join(pet_names) if pet_names else 'This pet'} already has a {service_type.replace('_', ' ')} scheduled for this date/time"
-            )
+            if override_conflicts and is_admin:
+                # Admin batch scheduling - cancel the conflicting appointment
+                await db.appointments.update_one(
+                    {"id": existing["id"]},
+                    {"$set": {"status": "cancelled", "cancellation_reason": "replaced_by_batch_schedule"}}
+                )
+            else:
+                pet_names = []
+                for pid in pet_ids:
+                    pet = await db.pets.find_one({"id": pid}, {"_id": 0, "name": 1})
+                    if pet:
+                        pet_names.append(pet.get("name", "Pet"))
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Duplicate appointment: {', '.join(pet_names) if pet_names else 'This pet'} already has a {service_type.replace('_', ' ')} scheduled for this date/time"
+                )
         
         # Check walker availability with 15-minute buffer after walk ends
         if walker_id:
