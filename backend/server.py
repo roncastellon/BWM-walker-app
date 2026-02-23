@@ -4699,7 +4699,7 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
     walk_details = []
     
     for walk in pending_walks:
-        duration = walk.get('actual_duration_minutes', 0)
+        duration = walk.get('actual_duration_minutes') or 0  # Handle None
         service_type = walk.get('service_type', '')
         # Use flat rate per service, not duration-based
         earnings = calculate_walk_earnings(service_type, duration, custom_pay_rates)
