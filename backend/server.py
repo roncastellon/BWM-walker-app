@@ -4740,10 +4740,20 @@ async def get_current_payroll(current_user: dict = Depends(get_current_user)):
     }
 
 @api_router.post("/paysheets/submit")
-async def submit_paysheet(current_user: dict = Depends(get_current_user)):
-    """Submit accumulated walks as a paysheet"""
+async def submit_paysheet(request: Request, current_user: dict = Depends(get_current_user)):
+    """Submit accumulated walks as a paysheet with optional edits"""
     if current_user['role'] != 'walker':
         raise HTTPException(status_code=403, detail="Walkers only")
+    
+    # Get optional overrides from request body
+    body = {}
+    try:
+        body = await request.json()
+    except:
+        pass  # No body is fine
+    
+    walk_overrides = body.get('walk_overrides', [])
+    excluded_walk_ids = set(body.get('excluded_walk_ids', []))
     
     # Get current accumulated data
     current_payroll = await get_current_payroll(current_user)
@@ -4752,6 +4762,26 @@ async def submit_paysheet(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="No walks to submit")
     
     walks = current_payroll['walks']
+    
+    # Apply exclusions
+    walks = [w for w in walks if w['id'] not in excluded_walk_ids]
+    
+    if len(walks) == 0:
+        raise HTTPException(status_code=400, detail="No walks to submit after exclusions")
+    
+    # Apply earnings overrides
+    override_map = {o['id']: o for o in walk_overrides}
+    for walk in walks:
+        if walk['id'] in override_map:
+            override = override_map[walk['id']]
+            walk['earnings'] = override.get('earnings', walk['earnings'])
+            if override.get('edited'):
+                walk['edited'] = True
+    
+    # Recalculate totals
+    total_earnings = sum(w.get('earnings', 0) for w in walks)
+    total_minutes = sum(w.get('duration_minutes', 0) for w in walks)
+    total_hours = round(total_minutes / 60, 2)
     
     # Determine period dates
     dates = [w['date'] for w in walks]
@@ -4762,9 +4792,9 @@ async def submit_paysheet(current_user: dict = Depends(get_current_user)):
         walker_id=current_user['id'],
         period_start=period_start,
         period_end=period_end,
-        total_hours=current_payroll['total_hours'],
-        total_walks=current_payroll['total_walks'],
-        total_earnings=current_payroll['total_earnings'],
+        total_hours=total_hours,
+        total_walks=len(walks),
+        total_earnings=round(total_earnings, 2),
         appointment_ids=[w['id'] for w in walks],
         walk_details=walks,
         submitted=True
