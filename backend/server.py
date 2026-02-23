@@ -3237,6 +3237,14 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         end_date = appt_data.get('end_date')
         override_conflicts = appt_data.get('override_conflicts', False)  # Batch scheduling can override
         
+        # Validate required fields
+        if not scheduled_date:
+            raise HTTPException(status_code=400, detail="scheduled_date is required")
+        if not client_id:
+            raise HTTPException(status_code=400, detail="client_id is required")
+        if not pet_ids or len(pet_ids) == 0:
+            raise HTTPException(status_code=400, detail="At least one pet_id is required")
+        
         # If walker is creating, they can only assign to themselves or leave unassigned
         if not is_admin and walker_id and walker_id != current_user['id']:
             raise HTTPException(status_code=403, detail="Walkers can only assign walks to themselves")
