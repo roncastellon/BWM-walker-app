@@ -487,8 +487,9 @@ const CalendarPage = () => {
   // Load recurring walks assigned to this walker for the scheduled day
   const loadRecurringWalks = async () => {
     try {
-      // Get day of week for scheduled date (0 = Sunday, 1 = Monday, etc.)
-      const scheduledDate = new Date(formData.scheduled_date);
+      // Use formData.scheduled_date, but fallback to currentDate if empty
+      const dateToUse = formData.scheduled_date || format(currentDate, 'yyyy-MM-dd');
+      const scheduledDate = new Date(dateToUse);
       const dayOfWeek = scheduledDate.getDay();
       
       // Fetch recurring schedules
