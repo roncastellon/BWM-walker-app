@@ -16,6 +16,11 @@ const PayrollPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  
+  // Edit state
+  const [editingWalkId, setEditingWalkId] = useState(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [excludedWalks, setExcludedWalks] = useState(new Set()); // Walks to exclude from submission
 
   useEffect(() => {
     fetchData();
@@ -30,11 +35,104 @@ const PayrollPage = () => {
       ]);
       setCurrentPayroll(payrollRes.data);
       setPaysheets(tsRes.data);
+      setExcludedWalks(new Set()); // Reset excluded walks on refresh
     } catch (error) {
       toast.error('Failed to load payroll data');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Start editing a walk's earnings
+  const startEditWalk = (walk) => {
+    setEditingWalkId(walk.id);
+    setEditAmount(walk.earnings?.toFixed(2) || '0');
+  };
+
+  // Save edited earnings
+  const saveEditedEarnings = (walkId) => {
+    const newAmount = parseFloat(editAmount);
+    if (isNaN(newAmount) || newAmount < 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+    
+    // Update the walk's earnings in local state
+    setCurrentPayroll(prev => {
+      if (!prev) return prev;
+      const updatedWalks = prev.walks.map(w => 
+        w.id === walkId ? { ...w, earnings: newAmount, edited: true } : w
+      );
+      const newTotal = updatedWalks
+        .filter(w => !excludedWalks.has(w.id))
+        .reduce((sum, w) => sum + (w.earnings || 0), 0);
+      return {
+        ...prev,
+        walks: updatedWalks,
+        total_earnings: newTotal
+      };
+    });
+    
+    setEditingWalkId(null);
+    setEditAmount('');
+    toast.success('Amount updated');
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingWalkId(null);
+    setEditAmount('');
+  };
+
+  // Toggle exclude/include a walk from submission
+  const toggleExcludeWalk = (walkId) => {
+    setExcludedWalks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(walkId)) {
+        newSet.delete(walkId);
+      } else {
+        newSet.add(walkId);
+      }
+      return newSet;
+    });
+    
+    // Recalculate total
+    setCurrentPayroll(prev => {
+      if (!prev) return prev;
+      const newExcluded = new Set(excludedWalks);
+      if (newExcluded.has(walkId)) {
+        newExcluded.delete(walkId);
+      } else {
+        newExcluded.add(walkId);
+      }
+      const newTotal = prev.walks
+        .filter(w => !newExcluded.has(w.id))
+        .reduce((sum, w) => sum + (w.earnings || 0), 0);
+      return {
+        ...prev,
+        total_earnings: newTotal,
+        total_walks: prev.walks.filter(w => !newExcluded.has(w.id)).length
+      };
+    });
+  };
+
+  // Set amount to zero
+  const setAmountToZero = (walkId) => {
+    setCurrentPayroll(prev => {
+      if (!prev) return prev;
+      const updatedWalks = prev.walks.map(w => 
+        w.id === walkId ? { ...w, earnings: 0, edited: true } : w
+      );
+      const newTotal = updatedWalks
+        .filter(w => !excludedWalks.has(w.id))
+        .reduce((sum, w) => sum + (w.earnings || 0), 0);
+      return {
+        ...prev,
+        walks: updatedWalks,
+        total_earnings: newTotal
+      };
+    });
+    toast.success('Amount set to $0');
   };
 
   const openReviewModal = () => {
