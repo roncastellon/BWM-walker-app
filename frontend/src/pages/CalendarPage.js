@@ -622,7 +622,7 @@ const CalendarPage = () => {
     });
   };
 
-  // Save all batch walks
+  // Save all batch walks - with option to override conflicts
   const saveBatchSchedule = async () => {
     if (batchWalks.length === 0) {
       toast.error('No walks to save');
@@ -631,10 +631,11 @@ const CalendarPage = () => {
     
     try {
       for (const walk of batchWalks) {
-        const { id, pet_names, client_name, ...walkData } = walk;
+        const { id, pet_names, client_name, is_recurring, recurring_schedule_id, ...walkData } = walk;
         await api.post('/appointments/admin', {
           ...walkData,
-          duration_type: 'minutes'
+          duration_type: 'minutes',
+          override_conflicts: true  // Tell backend to replace conflicting appointments
         });
       }
       
