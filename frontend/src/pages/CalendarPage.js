@@ -1801,7 +1801,7 @@ const CalendarPage = () => {
                       setBatchWalkerId('');
                       setBatchWalks([]);
                       setNumWalks(1);
-                      setWalkTimes(['']);
+                      setWalkTimes(['09:00']);
                     }}
                   >
                     ← Back
