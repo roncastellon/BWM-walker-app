@@ -4,8 +4,9 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
-import { Clock, DollarSign, CheckCircle, Send, PawPrint, RefreshCw, FileText, AlertCircle } from 'lucide-react';
+import { Clock, DollarSign, CheckCircle, Send, PawPrint, RefreshCw, FileText, AlertCircle, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PayrollPage = () => {
