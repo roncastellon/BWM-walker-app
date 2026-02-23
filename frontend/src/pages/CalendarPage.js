@@ -641,6 +641,14 @@ const CalendarPage = () => {
       return;
     }
     
+    // Verify all walks have a scheduled_date
+    const walksWithoutDate = batchWalks.filter(w => !w.scheduled_date);
+    if (walksWithoutDate.length > 0) {
+      toast.error('Some walks are missing a scheduled date. Please try again.');
+      console.error('Walks without date:', walksWithoutDate);
+      return;
+    }
+    
     try {
       for (const walk of batchWalks) {
         const { id, pet_names, client_name, is_recurring, recurring_schedule_id, ...walkData } = walk;
