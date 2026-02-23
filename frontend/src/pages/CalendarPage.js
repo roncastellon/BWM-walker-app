@@ -597,7 +597,7 @@ const CalendarPage = () => {
     setSelectedClientPets([]);
     setPetSearchQuery('');
     setNumWalks(1);
-    setWalkTimes(['']);
+    setWalkTimes(['09:00']);
     
     toast.success(`${newWalks.length} walk${newWalks.length > 1 ? 's' : ''} added to schedule`);
   };
