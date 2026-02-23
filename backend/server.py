@@ -3197,6 +3197,24 @@ async def update_appointment(appt_id: str, update_data: dict, current_user: dict
     updated_appt = await db.appointments.find_one({"id": appt_id}, {"_id": 0})
     return updated_appt
 
+# Admin endpoint to purge invalid appointments (must be before dynamic route)
+@api_router.delete("/appointments/purge-invalid")
+async def purge_invalid_appointments(current_user: dict = Depends(get_current_user)):
+    """Delete appointments with missing or empty scheduled_date"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Find appointments with no scheduled_date or empty string
+    result = await db.appointments.delete_many({
+        "$or": [
+            {"scheduled_date": None},
+            {"scheduled_date": ""},
+            {"scheduled_date": {"$exists": False}}
+        ]
+    })
+    
+    return {"deleted_count": result.deleted_count, "message": f"Purged {result.deleted_count} invalid appointments"}
+
 # Admin endpoint to delete an appointment (e.g., remove overnight stay)
 @api_router.delete("/appointments/{appt_id}")
 async def delete_appointment(appt_id: str, current_user: dict = Depends(get_current_user)):
