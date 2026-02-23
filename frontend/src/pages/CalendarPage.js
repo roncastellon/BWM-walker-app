@@ -508,7 +508,7 @@ const CalendarPage = () => {
       // Check which ones are already scheduled (to avoid duplicates)
       const existingAppts = await api.get('/appointments/calendar');
       const existingForDate = existingAppts.data.filter(a => 
-        a.scheduled_date === formData.scheduled_date &&
+        a.scheduled_date === dateToUse &&
         a.status !== 'cancelled'
       );
       
@@ -545,7 +545,7 @@ const CalendarPage = () => {
           client_id: sched.client_id,
           pet_ids: sched.pet_ids || [],
           service_type: sched.service_type,
-          scheduled_date: formData.scheduled_date,
+          scheduled_date: dateToUse,  // Use the resolved date
           scheduled_time: sched.scheduled_time,
           walker_id: batchWalkerId,
           notes: sched.notes || '',
