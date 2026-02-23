@@ -373,10 +373,10 @@ const CalendarPage = () => {
   };
 
   // Auto-load recurring walks when starting batch scheduling
-  const autoLoadRecurringWalks = async (walkerId) => {
+  const autoLoadRecurringWalks = async (walkerId, scheduledDateStr) => {
     try {
       // Get day of week for scheduled date (0 = Sunday, 1 = Monday, etc.)
-      const scheduledDate = new Date(formData.scheduled_date);
+      const scheduledDate = new Date(scheduledDateStr);
       const dayOfWeek = scheduledDate.getDay();
       
       // Fetch recurring schedules
@@ -394,7 +394,7 @@ const CalendarPage = () => {
       // Check which ones are already scheduled (to avoid duplicates)
       const existingAppts = await api.get('/appointments/calendar');
       const existingForDate = existingAppts.data.filter(a => 
-        a.scheduled_date === formData.scheduled_date &&
+        a.scheduled_date === scheduledDateStr &&
         a.status !== 'cancelled'
       );
       
