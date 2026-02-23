@@ -1817,6 +1817,19 @@ const CalendarPage = () => {
                       setBatchWalks([]);
                       setNumWalks(1);
                       setWalkTimes(['09:00']);
+                      // Reset formData but preserve the scheduled_date from calendar
+                      const currentDateStr = format(currentDate, 'yyyy-MM-dd');
+                      setFormData(prev => ({
+                        ...prev,
+                        client_id: '',
+                        walker_id: '',
+                        pet_ids: [],
+                        service_type: '',
+                        scheduled_time: '',
+                        notes: '',
+                        scheduled_date: currentDateStr,
+                        end_date: currentDateStr
+                      }));
                     }}
                   >
                     ← Back
