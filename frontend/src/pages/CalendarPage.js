@@ -429,7 +429,7 @@ const CalendarPage = () => {
           client_id: sched.client_id,
           pet_ids: sched.pet_ids || [],
           service_type: sched.service_type,
-          scheduled_date: formData.scheduled_date,
+          scheduled_date: scheduledDateStr,  // Use the passed date
           scheduled_time: sched.scheduled_time,
           walker_id: walkerId,
           notes: sched.notes || '',
