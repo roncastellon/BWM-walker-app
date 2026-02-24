@@ -300,7 +300,11 @@ const CalendarPage = () => {
   };
 
   const openAddDialog = (date = null) => {
-    const initialDate = date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
+    console.log('[DEBUG] openAddDialog called with date:', date, 'currentDate state:', currentDate);
+    // Always use currentDate if no date parameter provided
+    const dateToUse = date || currentDate;
+    const initialDate = format(dateToUse, 'yyyy-MM-dd');
+    console.log('[DEBUG] Using initialDate:', initialDate);
     setFormData({
       client_id: '',
       walker_id: '',
