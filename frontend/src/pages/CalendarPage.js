@@ -988,6 +988,17 @@ const CalendarPage = () => {
 
   const filterAppointments = (date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
+    
+    // Debug: Log once per render for current date
+    if (dateStr === format(currentDate, 'yyyy-MM-dd')) {
+      console.log(`[DEBUG] filterAppointments for ${dateStr}:`, {
+        totalAppointments: appointments.length,
+        selectedWalker,
+        selectedServiceCategory,
+        appointmentsForDate: appointments.filter(a => a.scheduled_date === dateStr).length
+      });
+    }
+    
     return appointments.filter(appt => {
       // For multi-day appointments (overnights/daycare), check if date falls within range
       let dateMatch = false;
