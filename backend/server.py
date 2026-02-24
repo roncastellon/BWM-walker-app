@@ -3344,7 +3344,16 @@ async def admin_create_appointment(appt_data: dict, current_user: dict = Depends
         )
         appt_dict = appointment.model_dump()
         appt_dict['created_at'] = appt_dict['created_at'].isoformat()
+        
+        # DEBUG: Log the appointment being created
+        logging.info(f"[APPOINTMENT CREATE] ID: {appointment.id}, Date: {appointment.scheduled_date}, Time: {appointment.scheduled_time}, Walker: {appointment.walker_id}, Client: {appointment.client_id}, Pets: {appointment.pet_ids}")
+        
         await db.appointments.insert_one(appt_dict)
+        
+        # DEBUG: Verify it was saved
+        saved = await db.appointments.find_one({"id": appointment.id}, {"_id": 0, "id": 1, "scheduled_date": 1})
+        logging.info(f"[APPOINTMENT VERIFY] Saved appointment: {saved}")
+        
         return appointment
     except HTTPException:
         raise
