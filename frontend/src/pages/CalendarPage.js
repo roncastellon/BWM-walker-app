@@ -837,17 +837,20 @@ const CalendarPage = () => {
         
         if (walkCount > 1) {
           // Create multiple walks at the same time
+          const createdIds = [];
           for (let i = 0; i < walkCount; i++) {
-            await api.post('/appointments/admin', {
+            const response = await api.post('/appointments/admin', {
               ...formData,
               duration_type: 'minutes',
-              override_conflicts: true,  // Allow overriding duplicates
+              override_conflicts: true,
               notes: formData.notes ? `${formData.notes} (Walk ${i + 1} of ${walkCount})` : `Walk ${i + 1} of ${walkCount}`
             });
+            createdIds.push(response.data?.id);
           }
+          console.log('[DEBUG] Created multiple walks:', createdIds);
           toast.success(`${walkCount} walks created successfully`);
         } else {
-          // DEBUG: Log what we're sending
+          // Single appointment
           const appointmentData = {
             ...formData,
             duration_type: 'minutes',
@@ -856,8 +859,16 @@ const CalendarPage = () => {
           console.log('[DEBUG] Creating single appointment with data:', JSON.stringify(appointmentData, null, 2));
           
           const response = await api.post('/appointments/admin', appointmentData);
-          console.log('[DEBUG] Appointment created response:', response.data);
-          toast.success('Appointment created successfully');
+          const createdId = response.data?.id;
+          const createdDate = response.data?.scheduled_date;
+          console.log('[DEBUG] Appointment created - ID:', createdId, 'Date:', createdDate);
+          
+          if (!createdId) {
+            console.error('[DEBUG] Warning: No ID returned from create API');
+            toast.warning('Appointment may not have been created properly');
+          } else {
+            toast.success(`Appointment created (${createdDate} at ${formData.scheduled_time})`);
+          }
         }
       }
       
