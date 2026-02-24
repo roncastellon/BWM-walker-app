@@ -1886,7 +1886,10 @@ const CalendarPage = () => {
                           <div
                             key={pet.id}
                             className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
-                            onClick={() => handlePetSelect(pet)}
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // Prevent input blur
+                              handlePetSelect(pet);
+                            }}
                             data-testid={`pet-option-${pet.id}`}
                           >
                             <div>
