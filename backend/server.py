@@ -57,6 +57,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 app = FastAPI(title="WagWalk API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
 
+# Health check endpoint for Kubernetes liveness/readiness probes
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
 # Enums
 class UserRole(str, Enum):
     ADMIN = "admin"
