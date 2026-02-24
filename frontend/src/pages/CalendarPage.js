@@ -1329,6 +1329,10 @@ const CalendarPage = () => {
   return (
     <Layout>
       <div className="space-y-6" data-testid="calendar-page">
+        {/* Version indicator - remove after confirming deployment works */}
+        <div className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full inline-block">
+          v2.1 - Feb 24 Fix
+        </div>
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
