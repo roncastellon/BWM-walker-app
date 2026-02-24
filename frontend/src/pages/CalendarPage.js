@@ -755,8 +755,24 @@ const CalendarPage = () => {
     
     const isDayNight = isDayNightService(formData.service_type);
     
-    if (!formData.client_id || !formData.service_type || !formData.scheduled_date) {
-      toast.error('Please fill in all required fields');
+    // Better validation with specific error messages
+    if (!formData.client_id) {
+      toast.error('Please select a pet first');
+      return;
+    }
+    
+    if (!formData.pet_ids || formData.pet_ids.length === 0) {
+      toast.error('Please select at least one pet');
+      return;
+    }
+    
+    if (!formData.service_type) {
+      toast.error('Please select a service');
+      return;
+    }
+    
+    if (!formData.scheduled_date) {
+      toast.error('Please select a date');
       return;
     }
     
@@ -775,11 +791,11 @@ const CalendarPage = () => {
     try {
       if (isDayNight) {
         // For overnight/day services, create a SINGLE appointment with start and end dates
-        // This creates ONE stay, not multiple daily appointments
         await api.post('/appointments/admin', {
           ...formData,
           scheduled_time: '',
-          duration_type: getDurationTypeForService(formData.service_type)
+          duration_type: getDurationTypeForService(formData.service_type),
+          override_conflicts: true  // Allow overriding duplicates
         });
         
         const startDate = new Date(formData.scheduled_date);
@@ -797,6 +813,7 @@ const CalendarPage = () => {
             await api.post('/appointments/admin', {
               ...formData,
               duration_type: 'minutes',
+              override_conflicts: true,  // Allow overriding duplicates
               notes: formData.notes ? `${formData.notes} (Walk ${i + 1} of ${walkCount})` : `Walk ${i + 1} of ${walkCount}`
             });
           }
@@ -804,7 +821,8 @@ const CalendarPage = () => {
         } else {
           await api.post('/appointments/admin', {
             ...formData,
-            duration_type: 'minutes'
+            duration_type: 'minutes',
+            override_conflicts: true  // Allow overriding duplicates
           });
           toast.success('Appointment created successfully');
         }
