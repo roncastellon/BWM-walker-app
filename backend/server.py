@@ -2968,7 +2968,9 @@ async def get_calendar_appointments(current_user: dict = Depends(get_current_use
     elif current_user['role'] == 'walker':
         query['walker_id'] = current_user['id']
     
-    appointments = await db.appointments.find(query, {"_id": 0}).to_list(500)
+    # Sort by scheduled_date descending to get recent/upcoming appointments first
+    # Increased limit to 2000 to handle larger appointment volumes
+    appointments = await db.appointments.find(query, {"_id": 0}).sort("scheduled_date", -1).to_list(2000)
     
     # Format for calendar view
     calendar_events = []
