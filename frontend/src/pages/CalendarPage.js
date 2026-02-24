@@ -667,29 +667,48 @@ const CalendarPage = () => {
     const walksWithoutDate = batchWalks.filter(w => !w.scheduled_date);
     if (walksWithoutDate.length > 0) {
       toast.error('Some walks are missing a scheduled date. Please try again.');
-      console.error('Walks without date:', walksWithoutDate);
+      console.error('[DEBUG] Walks without date:', walksWithoutDate);
       return;
     }
     
+    console.log('[DEBUG] Saving batch walks:', batchWalks.map(w => ({
+      scheduled_date: w.scheduled_date,
+      scheduled_time: w.scheduled_time,
+      walker_id: w.walker_id,
+      pet_ids: w.pet_ids,
+      service_type: w.service_type
+    })));
+    
     try {
+      const createdAppointments = [];
       for (const walk of batchWalks) {
         const { id, pet_names, client_name, is_recurring, recurring_schedule_id, ...walkData } = walk;
-        await api.post('/appointments/admin', {
+        const appointmentData = {
           ...walkData,
           duration_type: 'minutes',
-          override_conflicts: true  // Tell backend to replace conflicting appointments
-        });
+          override_conflicts: true
+        };
+        console.log('[DEBUG] Creating batch appointment:', JSON.stringify(appointmentData, null, 2));
+        const response = await api.post('/appointments/admin', appointmentData);
+        console.log('[DEBUG] Batch appointment created:', response.data?.id);
+        createdAppointments.push(response.data);
       }
       
       const walkerName = walkers.find(w => w.id === batchWalkerId)?.full_name || 'Walker';
       toast.success(`${batchWalks.length} walks scheduled for ${walkerName}!`);
+      console.log('[DEBUG] All batch appointments created:', createdAppointments.length);
       
       setBatchWalks([]);
       setBatchWalkerId('');
       setScheduleMode(null);
       setAddDialogOpen(false);
-      fetchData();
+      
+      // Fetch fresh data
+      console.log('[DEBUG] Fetching updated appointments after batch save...');
+      await fetchData();
+      console.log('[DEBUG] fetchData completed after batch save');
     } catch (error) {
+      console.error('[DEBUG] Batch save error:', error.response?.data || error.message);
       toast.error(error.response?.data?.detail || 'Failed to save schedule');
     }
   };
