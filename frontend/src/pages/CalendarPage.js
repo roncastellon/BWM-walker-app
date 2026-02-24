@@ -330,11 +330,13 @@ const CalendarPage = () => {
 
   // Start batch scheduling for a specific walker - fetch their walked pets
   const startBatchScheduling = async (walkerId) => {
+    console.log('[DEBUG] startBatchScheduling called for walker:', walkerId);
     setBatchWalkerId(walkerId);
     setBatchWalks([]);
     
     // CRITICAL: Ensure scheduled_date is set to the current calendar date
     const currentDateStr = format(currentDate, 'yyyy-MM-dd');
+    console.log('[DEBUG] Setting batch scheduled_date to:', currentDateStr);
     setFormData(prev => ({
       ...prev,
       walker_id: walkerId,
@@ -349,6 +351,7 @@ const CalendarPage = () => {
         a.walker_id === walkerId && 
         isWalkService(a.service_type)
       );
+      console.log('[DEBUG] Walker has walked', walkerAppts.length, 'times');
       
       // Extract unique pet IDs from walker's history
       const walkedPetIds = new Set();
@@ -360,6 +363,7 @@ const CalendarPage = () => {
       
       // Get full pet objects that this walker has walked
       const walkedPets = allPets.filter(p => walkedPetIds.has(p.id));
+      console.log('[DEBUG] Found', walkedPets.length, 'unique pets for walker');
       
       // Group by owner and deduplicate - only show one entry per owner
       const ownersSeen = new Set();
@@ -376,11 +380,13 @@ const CalendarPage = () => {
       }
       
       setWalkerPets(uniqueOwnerPets);
+      console.log('[DEBUG] Set walker pets:', uniqueOwnerPets.length);
       
       // Auto-preload recurring walks for this walker on the selected day
       await autoLoadRecurringWalks(walkerId, currentDateStr);
+      console.log('[DEBUG] Completed autoLoadRecurringWalks');
     } catch (error) {
-      console.error('Failed to fetch walker pets:', error);
+      console.error('[DEBUG] Failed to fetch walker pets:', error);
       setWalkerPets([]);
     }
   };
