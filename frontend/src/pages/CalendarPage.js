@@ -163,6 +163,7 @@ const CalendarPage = () => {
 
   const fetchData = async () => {
     try {
+      console.log('[DEBUG] fetchData starting...');
       const requests = [
         api.get('/appointments/calendar'),
         api.get('/users/walkers'),
@@ -176,6 +177,13 @@ const CalendarPage = () => {
       }
       
       const responses = await Promise.all(requests);
+      console.log('[DEBUG] Fetched appointments count:', responses[0].data.length);
+      console.log('[DEBUG] Appointments by date:', responses[0].data.reduce((acc, a) => {
+        const date = a.scheduled_date || 'NULL';
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {}));
+      
       setAppointments(responses[0].data);
       setWalkers(responses[1].data);
       setServices(responses[2].data);
@@ -186,6 +194,7 @@ const CalendarPage = () => {
         if (responses[5]) setAllPets(responses[5].data);
       }
     } catch (error) {
+      console.error('[DEBUG] fetchData error:', error);
       toast.error('Failed to load calendar data');
     } finally {
       setLoading(false);
