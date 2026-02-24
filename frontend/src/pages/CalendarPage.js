@@ -819,17 +819,26 @@ const CalendarPage = () => {
           }
           toast.success(`${walkCount} walks created successfully`);
         } else {
-          await api.post('/appointments/admin', {
+          // DEBUG: Log what we're sending
+          const appointmentData = {
             ...formData,
             duration_type: 'minutes',
-            override_conflicts: true  // Allow overriding duplicates
-          });
+            override_conflicts: true
+          };
+          console.log('[DEBUG] Creating single appointment with data:', JSON.stringify(appointmentData, null, 2));
+          
+          const response = await api.post('/appointments/admin', appointmentData);
+          console.log('[DEBUG] Appointment created response:', response.data);
           toast.success('Appointment created successfully');
         }
       }
       
       setAddDialogOpen(false);
-      fetchData();
+      
+      // DEBUG: Fetch fresh data and log
+      console.log('[DEBUG] Fetching updated appointments...');
+      await fetchData();
+      console.log('[DEBUG] fetchData completed');
     } catch (error) {
       console.error('Create appointment error:', error.response?.data || error.message);
       const errorMsg = error.response?.data?.detail || error.message || 'Failed to create appointment';
